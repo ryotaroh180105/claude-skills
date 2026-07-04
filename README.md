@@ -65,6 +65,9 @@ claude-skills/
 | `pr-review` | GitHub PR のレビュー実行（取得→レビュー→承認後にコメント投稿） |
 | `github-trends` | GitHub トレンドからスキルネタを収集し候補リスト化（採択はユーザー判断） |
 | `lp-builder` | LP制作副業（ヒアリング→構成→実装→デプロイ→修正対応） |
+| `article-writer` | note記事の企画・執筆・推敲（文体メモ運用付き） |
+| `owned-media` | SEO記事作成（KW選定→競合分析→執筆→E-E-A-Tチェック） |
+| `twitter-intel` | X からの情報収集・要約（収集経路の自動選択） |
 
 今後の追加予定と優先順位は [ROADMAP.md](ROADMAP.md)、各スキルの要件定義は [docs/skill-requirements.md](docs/skill-requirements.md) を参照。
 
@@ -115,10 +118,13 @@ EOF
 
 ```bash
 python3 scripts/validate_skills.py
-git add .
+git add plugins/<new-skill> .claude-plugin/marketplace.json README.md
 git commit -m "Add: <new-skill>"
 git push
 ```
+
+手順の詳細（description のトリガー設計・前提セットアップ節の書き方・練度向上の回し方）は
+`skill-creator` スキル（`plugins/skill-creator`）が正。ここは最小手順のみ。
 
 GitHub Actions（`.github/workflows/validate-skills.yml`）が push / PR のたびに
 `validate_skills.py` を実行し、`marketplace.json` に登録されたスキルの

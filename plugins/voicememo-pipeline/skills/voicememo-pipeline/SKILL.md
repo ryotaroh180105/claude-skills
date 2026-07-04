@@ -124,7 +124,8 @@ EOF
 初回セットアップ時や動作が怪しいときは、API を呼ばない `--dry-run` で検証する:
 
 ```bash
-# ダミーでよいので対応拡張子のファイルを用意して実行
+# 中身のあるダミーファイルを用意して実行（0 バイトのファイルは検証で弾かれるので touch は不可）
+printf 'dummy' > ./sample.m4a
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/voicememo-pipeline/scripts/transcribe.py" \
   ./sample.m4a --dry-run
 ```

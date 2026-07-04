@@ -1,0 +1,8 @@
+{
+  "name": "twitter-intel",
+  "description": "X（Twitter）から仕事に活かせる情報（スキルネタ・技術トレンド・SNS運用の勝ちパターン・バズ構造）を収集・要約するスキル。xAI x_search / agent-reach / X API v2 のうち利用可能な収集経路を自動選択し、出典URL付きの調査レポートと ROADMAP 候補リストを出力する。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}

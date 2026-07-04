@@ -88,6 +88,24 @@
       "source": "./plugins/lp-builder",
       "description": "LP制作の副業案件をヒアリング→構成設計→単一HTML実装→デプロイ→修正対応まで一気通貫で進めるスキル。",
       "category": "productivity"
+    },
+    {
+      "name": "article-writer",
+      "source": "./plugins/article-writer",
+      "description": "note記事の企画・執筆・推敲スキル。切り口設計→タイトル案→構成→執筆（文体メモ運用）→推敲→公開設定提案。",
+      "category": "productivity"
+    },
+    {
+      "name": "owned-media",
+      "source": "./plugins/owned-media",
+      "description": "オウンドメディアのSEO記事作成スキル。キーワード選定→競合分析→アウトライン→執筆→E-E-A-T・メタ情報チェック。",
+      "category": "productivity"
+    },
+    {
+      "name": "twitter-intel",
+      "source": "./plugins/twitter-intel",
+      "description": "X（Twitter）から仕事に活かせる情報を収集・要約するスキル。xAI x_search / agent-reach / X API v2 から利用可能な経路を自動選択。",
+      "category": "productivity"
     }
   ]
 }

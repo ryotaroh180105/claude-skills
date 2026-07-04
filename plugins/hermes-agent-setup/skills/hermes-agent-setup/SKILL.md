@@ -90,17 +90,28 @@ hermes            # ターミナル UI 起動
 ## スモークテスト（セットアップ完了の判定）
 
 同梱の `scripts/smoke_test.sh` を実行するか、以下を手動で実行する。
+（`$SKILL_DIR` は「同梱ファイル」節で定義するこのスキルのディレクトリ）
+
+```bash
+bash "$SKILL_DIR/scripts/smoke_test.sh"
+```
+
+手動で確認する場合:
 
 ```bash
 # 1. 認証確認（200 でモデル一覧が返れば OK）
 curl -sS https://api.x.ai/v1/models \
   -H "Authorization: Bearer $XAI_API_KEY"
 
-# 2. X 検索の最小実行（テンプレートの body を使用）
+# 2. X 検索の最小実行
+#    テンプレートをそのまま送らない（REPLACE_ME_QUERY が残ったまま送信される）。
+#    コピーを作り、クエリを差し替えてから送信する:
+sed 's/REPLACE_ME_QUERY/直近24時間の Claude Code の話題を1件、URL付きで教えて/' \
+  "$SKILL_DIR/templates/x_search_request.json" > /tmp/x_search_request.json
 curl -sS https://api.x.ai/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
-  -d @templates/x_search_request.json
+  -d @/tmp/x_search_request.json
 ```
 
 合格条件: 2 のレスポンスに検索結果を踏まえたテキスト出力が含まれ、HTTP エラーが
@@ -178,8 +189,15 @@ YouTube / GitHub / RSS / 一般ウェブを即読め、X はブラウザの cook
 
 ## 同梱ファイル
 
-パスはすべて **この SKILL.md があるディレクトリ基準**（例:
-`plugins/hermes-agent-setup/skills/hermes-agent-setup/templates/env.example`）。
+カレントディレクトリはユーザーの作業場所であることが多いため、同梱ファイルは
+相対パスではなく必ず以下の `$SKILL_DIR` を基準に参照する:
+
+```bash
+# プラグインとしてインストール済みの場合
+SKILL_DIR="${CLAUDE_PLUGIN_ROOT}/skills/hermes-agent-setup"
+# claude-skills リポジトリ内で直接作業している場合
+SKILL_DIR="<リポジトリルート>/plugins/hermes-agent-setup/skills/hermes-agent-setup"
+```
 
 - `templates/env.example` — 環境変数テンプレート（`REPLACE_ME` を差し替えるだけ）
 - `templates/x_search_request.json` — X 検索リクエスト body（`/v1/responses` 用）

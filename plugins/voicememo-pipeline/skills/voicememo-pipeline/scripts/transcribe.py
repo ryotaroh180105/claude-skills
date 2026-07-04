@@ -97,9 +97,11 @@ def build_multipart(fields: dict, file_field: str, path: Path, mime: str):
             f'Content-Disposition: form-data; name="{name}"\r\n\r\n'
             f"{value}\r\n".encode("utf-8")
         )
+    # ヘッダ内で引用符・改行は multipart を壊すため無害な文字に置換する
+    safe_name = "".join("_" if c in '"\r\n\\' else c for c in path.name)
     parts.append(
         f"--{boundary}\r\n"
-        f'Content-Disposition: form-data; name="{file_field}"; filename="{path.name}"\r\n'
+        f'Content-Disposition: form-data; name="{file_field}"; filename="{safe_name}"\r\n'
         f"Content-Type: {mime}\r\n\r\n".encode("utf-8")
     )
     parts.append(path.read_bytes())
@@ -134,7 +136,9 @@ def main() -> None:
     path = Path(args.audio).expanduser()
     mime = validate_audio(path)
     size_mb = path.stat().st_size / (1024 * 1024)
-    out_path = Path(args.out) if args.out else path.with_name(path.stem + "_transcript.txt")
+    out_path = Path(args.out).expanduser() if args.out else path.with_name(path.stem + "_transcript.txt")
+    if out_path.is_dir():
+        out_path = out_path / (path.stem + "_transcript.txt")
 
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
 
@@ -160,6 +164,14 @@ def main() -> None:
             "先にリクエスト内容だけ確認したい場合は --dry-run を付けてください (キー不要)。",
             2,
         )
+
+    # 課金される API 呼び出しの前に出力先へ書き込めることを確認しておく
+    try:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        fail(f"出力先ディレクトリを作成できません: {out_path.parent} ({e})\n対処方法: --out で書き込み可能なパスを指定してください。", 1)
+    if not os.access(out_path.parent, os.W_OK):
+        fail(f"出力先に書き込み権限がありません: {out_path.parent}\n対処方法: --out で書き込み可能なパスを指定してください。", 1)
 
     fields = {"model": args.model, "response_format": "text"}
     if args.language:
@@ -196,9 +208,16 @@ def main() -> None:
         fail(f"OpenAI API エラー (HTTP {e.code}): {detail}{hint}", 3)
     except urllib.error.URLError as e:
         fail(f"ネットワークエラー: {e.reason}\n対処方法: インターネット接続とプロキシ設定を確認してください。", 3)
+    except OSError as e:
+        # 応答の受信途中のタイムアウト・切断（TimeoutError 含む）
+        fail(f"ネットワークエラー（応答の受信中に失敗）: {e}\n対処方法: 回線が不安定な可能性があります。再実行してください。", 3)
 
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(transcript + "\n", encoding="utf-8")
+    try:
+        out_path.write_text(transcript + "\n", encoding="utf-8")
+    except OSError as e:
+        # 課金済みの結果を失わないよう、保存に失敗したら標準出力に全文を出す
+        print(transcript)
+        fail(f"出力先への書き込みに失敗しました: {out_path} ({e})\n文字起こし結果は上に全文出力済みです（API の再実行は不要）。", 1)
     print(f"完了: 文字起こし結果を保存しました -> {out_path}")
     print(f"文字数: {len(transcript)}")
 

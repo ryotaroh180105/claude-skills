@@ -26,19 +26,33 @@ code=$(curl -sS -o /tmp/xai_models.json -w '%{http_code}' \
   -H "Authorization: Bearer $XAI_API_KEY")
 if [ "$code" = "200" ]; then
   ok "認証成功 (HTTP 200)。利用可能モデル:"
-  grep -o '"id":"[^"]*"' /tmp/xai_models.json | head -10
+  if command -v python3 >/dev/null 2>&1; then
+    python3 -c 'import json; d = json.load(open("/tmp/xai_models.json")); print("\n".join(m.get("id", "?") for m in d.get("data", [])[:10]))'
+  else
+    # python3 が無い環境向けフォールバック（コロン後の空白の有無どちらにも対応）
+    grep -oE '"id"[[:space:]]*:[[:space:]]*"[^"]*"' /tmp/xai_models.json | head -10
+  fi
 else
   ng "HTTP $code — 401/403 ならキーが無効。console.x.ai で再発行してください"
   exit 1
 fi
 
 step "3/3 X 検索の最小実行 (POST /v1/responses)"
-body='{"model":"grok-4","input":[{"role":"user","content":"直近24時間で Claude Code について最も反響のあった X 投稿を1件、URL付きで教えて"}],"tools":[{"type":"x_search"}]}'
+# リクエスト body はテンプレートを唯一の正とし、クエリだけ差し替える（モデル名の二重管理を避ける）
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+TEMPLATE="$SCRIPT_DIR/../templates/x_search_request.json"
+if [ ! -f "$TEMPLATE" ]; then
+  ng "テンプレートが見つかりません: $TEMPLATE"
+  printf '\n結果: pass=%d fail=%d\n' "$pass" "$fail"
+  exit 1
+fi
+sed 's/REPLACE_ME_QUERY/直近24時間で Claude Code について最も反響のあった X 投稿を1件、URL付きで教えて/' \
+  "$TEMPLATE" > /tmp/xai_smoke_request.json
 code=$(curl -sS -o /tmp/xai_smoke.json -w '%{http_code}' \
   https://api.x.ai/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
-  -d "$body")
+  -d @/tmp/xai_smoke_request.json)
 if [ "$code" = "200" ]; then
   ok "x_search 実行成功。レスポンス冒頭:"
   head -c 500 /tmp/xai_smoke.json; echo
