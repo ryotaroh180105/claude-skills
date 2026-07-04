@@ -16,6 +16,12 @@
       "source": "./plugins/agent-reach",
       "description": "Set up and use Agent-Reach so Claude Code can search and read across Twitter/X, Reddit, YouTube, GitHub, LinkedIn, Instagram, Bilibili, XiaoHongShu, RSS, and general web pages without per-platform API keys.",
       "category": "productivity"
+    },
+    {
+      "name": "hermes-x-search",
+      "source": "./plugins/hermes-x-search",
+      "description": "Install and configure Hermes Agent (NousResearch/hermes-agent) and use its x_search tool to research X (Twitter) posts, threads, and profiles on a SuperGrok / X Premium+ subscription instead of paying per-call for the X API.",
+      "category": "productivity"
     }
   ]
 }
