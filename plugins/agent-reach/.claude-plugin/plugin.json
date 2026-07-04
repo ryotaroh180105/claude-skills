@@ -1,0 +1,9 @@
+{
+  "name": "agent-reach",
+  "description": "Set up and use Agent-Reach so Claude Code can search and read across Twitter/X, Reddit, YouTube, GitHub, LinkedIn, Instagram, Bilibili, XiaoHongShu, RSS, and general web pages without per-platform API keys.",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  },
+  "category": "productivity"
+}
