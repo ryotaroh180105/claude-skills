@@ -1,0 +1,8 @@
+{
+  "name": "consulting-quiz",
+  "description": "コンサル・営業の基礎知識（ロジカルシンキング・フレームワーク・会計財務・営業手法・ケース面接）をクイズ形式で出題・採点し、quiz-log.md で弱点を管理する学習スキル。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}

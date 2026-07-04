@@ -92,13 +92,13 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 |---|---|---|
 | ✅ | `testcase-usecase` | テストケース + ユースケース洗い出し |
 | ✅ | `document-creation` | 書類作成スキル |
-| ⬜ | `pickup-automation` | ピックアップ自動化スキル |
+| ✅ | `pickup-automation` | ピックアップ自動化スキル |
 
 学習・知識:
 
 | Status | Skill | 説明 |
 |---|---|---|
-| ⬜ | `consulting-quiz` | コンサル・営業知識クイズ |
+| ✅ | `consulting-quiz` | コンサル・営業知識クイズ |
 | ⬜ | `aws-exam-practice` | AWS模試スキル |
 
 ## バッチ計画

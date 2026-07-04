@@ -71,6 +71,8 @@ claude-skills/
 | `sns-auto-posting` | 投稿キューの approved 行を X に投稿（Instagram/TikTok は手動整形） |
 | `testcase-usecase` | ユースケース・テストケースの網羅的洗い出し（TSV納品対応） |
 | `document-creation` | 議事録・提案書・報告書・社外メールの型付き作成 |
+| `consulting-quiz` | コンサル・営業知識クイズ（出題・採点・弱点管理） |
+| `pickup-automation` | 条件抽出ピックアップ業務の自動化（定義ファイル運用） |
 
 今後の追加予定と優先順位は [ROADMAP.md](ROADMAP.md)、各スキルの要件定義は [docs/skill-requirements.md](docs/skill-requirements.md) を参照。
 

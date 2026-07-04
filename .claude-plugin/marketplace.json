@@ -124,6 +124,18 @@
       "source": "./plugins/document-creation",
       "description": "議事録・提案書・報告書・社外メールを型で素早く作るビジネス書類作成スキル。3段階のトーン調整対応。",
       "category": "productivity"
+    },
+    {
+      "name": "consulting-quiz",
+      "source": "./plugins/consulting-quiz",
+      "description": "コンサル・営業知識（ロジカルシンキング/フレームワーク/会計/営業/ケース面接）のクイズ出題・採点・弱点管理スキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "pickup-automation",
+      "source": "./plugins/pickup-automation",
+      "description": "情報源から条件に合うものを抽出・整形して届けるピックアップ業務の自動化スキル。初回はヒアリングで定義ファイルを作成。",
+      "category": "productivity"
     }
   ]
 }
