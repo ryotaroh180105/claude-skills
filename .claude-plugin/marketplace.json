@@ -106,6 +106,12 @@
       "source": "./plugins/twitter-intel",
       "description": "X（Twitter）から仕事に活かせる情報を収集・要約するスキル。xAI x_search / agent-reach / X API v2 から利用可能な経路を自動選択。",
       "category": "productivity"
+    },
+    {
+      "name": "sns-auto-posting",
+      "source": "./plugins/sns-auto-posting",
+      "description": "投稿キュー（post-queue.md）の approved 行を X に投稿し、Instagram/TikTok は手動投稿用に整形出力する実行系スキル。",
+      "category": "productivity"
     }
   ]
 }

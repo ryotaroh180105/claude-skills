@@ -83,7 +83,7 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 | ✅ | `lp-builder` | LP作成副業スキル |
 | ✅ | `article-writer` | note記事作成スキル |
 | ✅ | `owned-media` | オウンドメディア記事作成スキル |
-| 🚧 | `sns-auto-posting` | Twitter/Instagram/TikTok 自動運用 |
+| ✅ | `sns-auto-posting` | Twitter/Instagram/TikTok 自動運用 |
 | ✅ | `twitter-intel` | Twitter情報収集スキル |
 
 インターン業務:

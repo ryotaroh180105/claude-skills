@@ -1,0 +1,9 @@
+{
+  "name": "sns-auto-posting",
+  "description": "sns-ops-team が生成した投稿キュー（post-queue.md）の approved 行を読み取り、X へは API 経由で実際に投稿、Instagram/TikTok へは手動投稿用テキストを整形出力する実行系スキル。投稿成功後にステータスを posted に更新し、結果サマリーを報告する。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  },
+  "category": "productivity"
+}
