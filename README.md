@@ -73,6 +73,7 @@ claude-skills/
 | `document-creation` | 議事録・提案書・報告書・社外メールの型付き作成 |
 | `consulting-quiz` | コンサル・営業知識クイズ（出題・採点・弱点管理） |
 | `pickup-automation` | 条件抽出ピックアップ業務の自動化（定義ファイル運用） |
+| `aws-exam-practice` | AWS 認定試験（SAA）の模試・演習・弱点復習 |
 
 今後の追加予定と優先順位は [ROADMAP.md](ROADMAP.md)、各スキルの要件定義は [docs/skill-requirements.md](docs/skill-requirements.md) を参照。
 

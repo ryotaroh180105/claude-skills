@@ -136,6 +136,12 @@
       "source": "./plugins/pickup-automation",
       "description": "情報源から条件に合うものを抽出・整形して届けるピックアップ業務の自動化スキル。初回はヒアリングで定義ファイルを作成。",
       "category": "productivity"
+    },
+    {
+      "name": "aws-exam-practice",
+      "source": "./plugins/aws-exam-practice",
+      "description": "AWS 認定試験（SAA-C03 デフォルト）の模試・演習スキル。シナリオ型4択、ドメイン別採点、弱点復習の学習ログ管理。",
+      "category": "productivity"
     }
   ]
 }
