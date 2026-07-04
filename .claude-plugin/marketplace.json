@@ -16,6 +16,30 @@
       "source": "./plugins/agent-reach",
       "description": "Set up and use Agent-Reach so Claude Code can search and read across Twitter/X, Reddit, YouTube, GitHub, LinkedIn, Instagram, Bilibili, XiaoHongShu, RSS, and general web pages without per-platform API keys.",
       "category": "productivity"
+    },
+    {
+      "name": "requirements-definition",
+      "source": "./plugins/requirements-definition",
+      "description": "曖昧な依頼・アイデアからイシュー特定→MECE分解→ピラミッド構造化で構造化された要件定義書を作成するスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "work-approach-playbook",
+      "source": "./plugins/work-approach-playbook",
+      "description": "仕事の進め方プレイブック。作業前チェックリスト・報連相・完了報告・振り返りの型を提供するスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "skill-creator",
+      "source": "./plugins/skill-creator",
+      "description": "このリポジトリで新しいスキルを作成・改善・導入確認するためのメタスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "task-management",
+      "source": "./plugins/task-management",
+      "description": "インターン・副業・学習のタスクを TODO.md ベースで受付→分解→優先順位付け→進捗管理→週次振り返りするスキル。",
+      "category": "productivity"
     }
   ]
 }

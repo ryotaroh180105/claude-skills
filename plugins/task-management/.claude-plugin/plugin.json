@@ -1,0 +1,8 @@
+{
+  "name": "task-management",
+  "description": "個人タスク（インターン業務・副業・学習）を Markdown ベースの TODO.md で管理するスキル。受付→分解→優先順位付け→着手順決定→進捗管理→週次振り返りのワークフローを提供し、オプションで GitHub Issues とも連携する。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}
