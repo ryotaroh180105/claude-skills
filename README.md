@@ -69,6 +69,7 @@ claude-skills/
 | `owned-media` | SEO記事作成（KW選定→競合分析→執筆→E-E-A-Tチェック） |
 | `twitter-intel` | X からの情報収集・要約（収集経路の自動選択） |
 | `sns-auto-posting` | 投稿キューの approved 行を X に投稿（Instagram/TikTok は手動整形） |
+| `testcase-usecase` | ユースケース・テストケースの網羅的洗い出し（TSV納品対応） |
 
 今後の追加予定と優先順位は [ROADMAP.md](ROADMAP.md)、各スキルの要件定義は [docs/skill-requirements.md](docs/skill-requirements.md) を参照。
 

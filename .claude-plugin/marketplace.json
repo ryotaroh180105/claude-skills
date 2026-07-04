@@ -112,6 +112,12 @@
       "source": "./plugins/sns-auto-posting",
       "description": "投稿キュー（post-queue.md）の approved 行を X に投稿し、Instagram/TikTok は手動投稿用に整形出力する実行系スキル。",
       "category": "productivity"
+    },
+    {
+      "name": "testcase-usecase",
+      "source": "./plugins/testcase-usecase",
+      "description": "仕様・要件からユースケースとテストケースを網羅的に洗い出すスキル。正常系/異常系/境界値の展開とTSV納品まで。",
+      "category": "productivity"
     }
   ]
 }

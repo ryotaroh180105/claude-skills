@@ -1,0 +1,9 @@
+{
+  "name": "testcase-usecase",
+  "description": "仕様・要件からユースケースとテストケースを網羅的に洗い出す。不明点リスト作成→ユースケース列挙→正常系/異常系/境界値のテストケース展開→リスクベース優先度付け→Markdown表とスプレッドシート貼り付け用TSVで出力。QA・テスト設計業務用。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  },
+  "category": "productivity"
+}

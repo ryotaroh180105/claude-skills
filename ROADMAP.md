@@ -90,7 +90,7 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 
 | Status | Skill | 説明 |
 |---|---|---|
-| ⬜ | `testcase-usecase` | テストケース + ユースケース洗い出し |
+| ✅ | `testcase-usecase` | テストケース + ユースケース洗い出し |
 | ⬜ | `document-creation` | 書類作成スキル |
 | ⬜ | `pickup-automation` | ピックアップ自動化スキル |
 
