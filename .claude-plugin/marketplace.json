@@ -10,6 +10,12 @@
       "source": "./plugins/session-start-hook",
       "description": "Create SessionStart hooks for Claude Code on the web so dependencies are installed before tests and linters run.",
       "category": "productivity"
+    },
+    {
+      "name": "agent-reach",
+      "source": "./plugins/agent-reach",
+      "description": "Set up and use Agent-Reach so Claude Code can search and read across Twitter/X, Reddit, YouTube, GitHub, LinkedIn, Instagram, Bilibili, XiaoHongShu, RSS, and general web pages without per-platform API keys.",
+      "category": "productivity"
     }
   ]
 }
