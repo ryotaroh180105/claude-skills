@@ -40,6 +40,30 @@
       "source": "./plugins/task-management",
       "description": "インターン・副業・学習のタスクを TODO.md ベースで受付→分解→優先順位付け→進捗管理→週次振り返りするスキル。",
       "category": "productivity"
+    },
+    {
+      "name": "model-switcher",
+      "source": "./plugins/model-switcher",
+      "description": "タスク種別に応じて Claude モデル（Fable/Opus/Sonnet/Haiku）を選択・切り替えてコスト効率を最適化するスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "voicememo-pipeline",
+      "source": "./plugins/voicememo-pipeline",
+      "description": "録音ファイルを文字起こし→議事録+会話フィードバック生成→Google Drive保存・Slack送信まで自動で行うパイプラインスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "sns-ops-team",
+      "source": "./plugins/sns-ops-team",
+      "description": "SNS運用を企画・リサーチ・執筆・レビュー・スケジュール管理のマルチエージェントで回すオーケストレーションスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "hermes-agent-setup",
+      "source": "./plugins/hermes-agent-setup",
+      "description": "Hermes Agent + MCP + xAI Grok の X/ウェブ検索を組み合わせた情報収集基盤のセットアップ・運用スキル。",
+      "category": "productivity"
     }
   ]
 }

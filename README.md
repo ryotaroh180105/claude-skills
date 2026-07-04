@@ -57,6 +57,10 @@ claude-skills/
 | `work-approach-playbook` | 仕事の進め方プレイブック（作業前チェックリスト・報連相・完了報告・振り返り） |
 | `skill-creator` | このリポジトリでスキルを作成・改善・導入確認するメタスキル |
 | `task-management` | TODO.md ベースのタスク管理（分解・優先順位付け・週次振り返り） |
+| `model-switcher` | タスク種別に応じた Claude モデルの選択・切り替え（コスト最適化） |
+| `voicememo-pipeline` | 録音→文字起こし→議事録+フィードバック→Drive/Slack 送信の自動パイプライン |
+| `sns-ops-team` | SNS運用のマルチエージェントオーケストレーション（企画・執筆・レビュー・キュー管理） |
+| `hermes-agent-setup` | Hermes Agent + MCP + Grok/X Search の情報収集基盤セットアップ・運用 |
 
 今後の追加予定と優先順位は [ROADMAP.md](ROADMAP.md)、各スキルの要件定義は [docs/skill-requirements.md](docs/skill-requirements.md) を参照。
 
