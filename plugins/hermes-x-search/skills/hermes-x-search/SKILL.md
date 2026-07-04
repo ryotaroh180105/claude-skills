@@ -101,22 +101,44 @@ reported to kill the OAuth flow or the process mid-request. If a run fails in a
 remote/CI environment, retry from a physical machine's terminal before assuming
 the setup itself is broken.
 
-## Calling from Claude Code / scripts
+## Claude Code as query designer, local terminal as executor
 
-For one-shot, non-interactive calls (from Claude Code, cron, or a script), use
-`-z` for clean stdout and `--accept-hooks` so any hooks declared in the user's
-Hermes config get registered without an interactive prompt:
+**Do not try to run `hermes` yourself from inside a Claude Code remote/cloud
+session.** As established above, OAuth and long-running calls are unreliable
+there — the working setup (OAuth login, `x_search` access) lives on the user's
+local machine, not this session. Split the work instead:
 
-```bash
-hermes -z "Xでの直近の反応をまとめて" --accept-hooks
-```
+1. **Claude Code designs the query.** Turn the user's ask ("Xで◯◯の反応を見て")
+   into a single, self-contained `hermes -z` command. Fold the fixed output
+   shape from "Structuring output" below directly into the prompt text — the
+   local run is one-shot with no follow-up turn, so ask for the structure
+   up front rather than trying to reshape the answer afterward:
 
-On WSL2, invoke it from the Windows side as `wsl -d Ubuntu -- hermes -z "..." --accept-hooks`.
+   ```bash
+   hermes -z "◯◯についての直近のXの投稿・反応を調べて、次の形式で出力して：
+   1. 今日見るべき話題 2. 元ポスト/スレッドのURL 3. 投稿に使える切り口
+   4. 未確認・断定できない点 5. 明日以降も追うべき項目" --accept-hooks
+   ```
+
+   `--accept-hooks` registers any hooks in the user's Hermes config without an
+   interactive prompt; `-z` gives clean stdout with nothing else to parse. On
+   WSL2 the user runs it as `wsl -d Ubuntu -- hermes -z "..." --accept-hooks`.
+
+2. **Hand the command to the user, not a tool call.** Tell them to run it in a
+   plain local terminal (not this session, not an editor-embedded terminal) and
+   paste back whatever it prints — including if it errors or times out.
+
+3. **Claude Code takes the raw pasted output and does the judgment/formatting
+   work**: separate confirmed facts (with source URLs) from unconfirmed
+   chatter, pull out post-worthy angles, and flag what still needs follow-up.
+   Don't just relay Hermes's raw text back to the user unchanged — that
+   formatting/judgment step is what this skill's remote side is actually for.
 
 ## Usage patterns
 
-Ask in natural language once enabled — Hermes routes to `x_search` automatically
-for X-specific asks:
+Hermes routes these kinds of asks to `x_search` automatically once enabled —
+use them as the natural-language core of the `hermes -z` prompt you hand to the
+user for local execution:
 
 - "この件についてXでどんな反応が出てるか調べて" → searches recent posts/threads
 - "◯◯さんの直近の投稿を要約して" → profile/timeline search
