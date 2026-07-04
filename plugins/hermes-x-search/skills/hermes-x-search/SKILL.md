@@ -49,8 +49,19 @@ curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
 ```
 
 Installs Python 3.11, Node.js, ripgrep, ffmpeg, and Git automatically — no
-prerequisites. Windows: `iex (irm https://hermes-agent.nousresearch.com/install.ps1)`
-in PowerShell.
+prerequisites.
+
+**Windows: WSL2 is not required.** Native Windows install works for the CLI,
+messaging gateway, cron, browser tool, and MCP — everything this skill needs:
+
+```powershell
+iex (irm https://hermes-agent.nousresearch.com/install.ps1)
+```
+
+The only feature that still needs WSL2 is the web dashboard's embedded `/chat`
+terminal tab (it needs a POSIX PTY Windows doesn't provide) — irrelevant for
+`x_search` usage from the CLI. Don't tell the user WSL2 is a prerequisite unless
+they specifically want that dashboard tab.
 
 ## Enabling x_search
 
@@ -83,9 +94,24 @@ hermes -z "test query"    # smoke-test — a 403 here means OAuth was rejected f
 
 Notes from real-world use: the first `x_search` call can take ~2-3 minutes —
 worth telling the user to expect the wait rather than assume it hung. Run Hermes
-from a plain terminal (Terminal.app on macOS) rather than an editor's integrated
-terminal — VS Code's integrated terminal has been reported to kill the process
-mid-request on macOS.
+from a plain, local terminal (Terminal.app on macOS, or a native Windows/WSL2
+console) rather than an editor's integrated terminal or a remote/cloud session —
+both VS Code's integrated terminal and remote execution environments have been
+reported to kill the OAuth flow or the process mid-request. If a run fails in a
+remote/CI environment, retry from a physical machine's terminal before assuming
+the setup itself is broken.
+
+## Calling from Claude Code / scripts
+
+For one-shot, non-interactive calls (from Claude Code, cron, or a script), use
+`-z` for clean stdout and `--accept-hooks` so any hooks declared in the user's
+Hermes config get registered without an interactive prompt:
+
+```bash
+hermes -z "Xでの直近の反応をまとめて" --accept-hooks
+```
+
+On WSL2, invoke it from the Windows side as `wsl -d Ubuntu -- hermes -z "..." --accept-hooks`.
 
 ## Usage patterns
 
