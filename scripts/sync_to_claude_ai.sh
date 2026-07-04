@@ -4,12 +4,11 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SKILLS_DIR="$REPO_ROOT/skills"
 OUTPUT_DIR="$REPO_ROOT/dist"
 
 mkdir -p "$OUTPUT_DIR"
 
-for skill in "$SKILLS_DIR"/*/; do
+for skill in "$REPO_ROOT"/plugins/*/skills/*/; do
     skill_name="$(basename "$skill")"
     echo "Packaging $skill_name..."
     python3 "$REPO_ROOT/scripts/package_skill.py" "$skill" -o "$OUTPUT_DIR"
