@@ -118,6 +118,12 @@
       "source": "./plugins/testcase-usecase",
       "description": "仕様・要件からユースケースとテストケースを網羅的に洗い出すスキル。正常系/異常系/境界値の展開とTSV納品まで。",
       "category": "productivity"
+    },
+    {
+      "name": "document-creation",
+      "source": "./plugins/document-creation",
+      "description": "議事録・提案書・報告書・社外メールを型で素早く作るビジネス書類作成スキル。3段階のトーン調整対応。",
+      "category": "productivity"
     }
   ]
 }
