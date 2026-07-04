@@ -1,6 +1,6 @@
 ---
 name: hermes-x-search
-description: Install, configure, and use Hermes Agent (github.com/NousResearch/hermes-agent) to research X (Twitter) posts, threads, and profiles via its x_search tool, billed against a SuperGrok or X Premium+ subscription instead of per-call X API charges. Use when the user wants daily X research, trend/competitor monitoring, or quote-repost source verification without paying for the X API.
+description: Install, configure, and use Hermes Agent (github.com/NousResearch/hermes-agent) to research X (Twitter) posts, threads, and profiles via its x_search tool, run against the user's existing X/Grok subscription (tier requirements are inconsistently enforced — try before assuming a paid tier is needed) instead of per-call X API charges. Use when the user wants daily X research, trend/competitor monitoring, or quote-repost source verification without paying for the X API.
 ---
 
 # Hermes x_search
@@ -13,16 +13,29 @@ results with citations — no scraping, no separate X API key.
 
 ## Cost reality — read this before promising "free"
 
-`x_search` is **not free by default**. It requires one of these to authenticate:
+`x_search` via `xai-oauth` needs an xAI/X subscription, but **tier enforcement is
+currently inconsistent and not something you can rely on from documentation
+alone**:
 
-- **SuperGrok** (~$30/month, standalone subscription via grok.com, no X account needed), or
-- **X Premium+** (~$40/month, includes Grok access plus X platform perks)
+- Official docs (`docs/guides/xai-grok-oauth.md`) state OAuth requires **SuperGrok**
+  (~$30/month, standalone via grok.com) or **X Premium+** (~$40/month).
+- In practice, `NousResearch/hermes-agent#26847` (filed 2026-05-16, closed as
+  "not planned") reports the backend sometimes enforces **Heavy-tier only**,
+  returning 403 even for paying SuperGrok Standard / Premium+ subscribers —
+  contradicting the "available on every tier" announcement from the same week.
+- Anecdotally, some users report plain **X Premium** (~$8/month, no Plus) passing
+  the OAuth check and successfully running `x_search`. This is not documented or
+  guaranteed — it may reflect a temporarily lenient backend check, Premium vs.
+  Premium+ terminology confusion, or genuine tier-independent behavior. Treat it
+  as "worth trying," not as a supported feature.
 
-Plain **X Premium** (the old Blue tier, ~$8/month) does **not** unlock `x_search` —
-calls will fail with a 403 "no active Grok subscription" error. If the user already
-pays for SuperGrok or Premium+, `x_search` runs against that subscription's quota
-with no additional per-call charge — that's the "practically free" case. Confirm
-which tier the user has before assuming this path works.
+**Practical guidance:** since running `hermes auth add xai-oauth` and testing costs
+nothing extra beyond the subscription the user already has, just try it on whatever
+tier the user has (Free/Premium/Premium+/SuperGrok) and check with `hermes -z
+"test query"` or the `hermes tools` status. If OAuth 403s, fall back to an
+`XAI_API_KEY` (pay-per-token against the standard xAI API, tier-independent) or to
+this repo's `agent-reach` skill (free, cookie-based scraping, no subscription at
+all).
 
 The alternative bundled tool, `xurl` (official X API v2 CLI), is billed per-call
 against the X Developer API (new apps require a minimum $5 credit purchase) — use
@@ -48,16 +61,31 @@ hermes tools
 # select "🐦 X (Twitter) Search"
 ```
 
-Then authenticate with SuperGrok/Premium+ OAuth (preferred — uses subscription
-quota) or an `XAI_API_KEY` (falls back to paid API spend if no OAuth session is
-configured). When both are present, OAuth wins.
+Authenticate via browser OAuth against whatever X/Grok subscription the user
+already has — don't assume it needs to be SuperGrok/Premium+ first, since tier
+enforcement is inconsistent (see Cost reality above):
+
+```bash
+hermes auth add xai-oauth
+# headless/no browser available: hermes auth add xai-oauth --no-browser
+```
+
+When both an OAuth session and `XAI_API_KEY` are present, OAuth wins (so it's used
+against subscription quota instead of paid API spend, when it works).
 
 Verify:
 
 ```bash
-hermes model      # confirm an LLM provider is configured
-hermes tools       # confirm x_search shows as enabled
+hermes model              # confirm an LLM provider is configured
+hermes tools               # confirm x_search shows as enabled
+hermes -z "test query"    # smoke-test — a 403 here means OAuth was rejected for this account/tier
 ```
+
+Notes from real-world use: the first `x_search` call can take ~2-3 minutes —
+worth telling the user to expect the wait rather than assume it hung. Run Hermes
+from a plain terminal (Terminal.app on macOS) rather than an editor's integrated
+terminal — VS Code's integrated terminal has been reported to kill the process
+mid-request on macOS.
 
 ## Usage patterns
 
@@ -103,8 +131,11 @@ APIキー・個人情報・未公開の戦略は含めないでください。
 
 - `x_search` results are Grok's synthesis of X content, not a raw firehose — treat
   it as a research aid, not a guaranteed-complete monitoring feed.
-- A 403 error almost always means the account isn't on SuperGrok/Premium+, not a
-  configuration bug — check the subscription tier before debugging further.
+- A 403 on `xai-oauth` doesn't reliably tell you anything about the account's tier
+  — per the linked GitHub issue, even paid SuperGrok/Premium+ accounts get 403'd
+  sometimes. Don't assume it's a config bug on the user's end; don't assume
+  upgrading tiers will fix it either. Retry, or fall back to `XAI_API_KEY`/
+  `agent-reach`.
 - Never put `XAI_API_KEY` or OAuth tokens in chat/context; configure them via
   `hermes tools` / the credential store, not inline.
 - If the user wants zero-subscription-cost scraping instead (accepting slower,
