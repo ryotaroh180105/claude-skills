@@ -70,9 +70,9 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 | ✅ | `voicememo-pipeline` | 録音→文字起こし→議事録+フィードバック→Drive/Slack 自動送信 |
 | ✅ | `sns-ops-team` | SNS運用チーム（マルチエージェント） |
 | ✅ | `model-switcher` | タスク種別別のモデル自動切り替え |
-| ⬜ | `github-trends` | GitHubトレンド定期取り込み（ユーザー採択判断） |
-| ⬜ | `code-review-adr` | コードレビュー + アーキテクチャADR |
-| ⬜ | `pr-review` | PRレビュースキル |
+| ✅ | `github-trends` | GitHubトレンド定期取り込み（ユーザー採択判断） |
+| ✅ | `code-review-adr` | コードレビュー + アーキテクチャADR |
+| ✅ | `pr-review` | PRレビュースキル |
 
 ### Tier3: 目的直結スキル
 

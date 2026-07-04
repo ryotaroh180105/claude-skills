@@ -64,6 +64,24 @@
       "source": "./plugins/hermes-agent-setup",
       "description": "Hermes Agent + MCP + xAI Grok の X/ウェブ検索を組み合わせた情報収集基盤のセットアップ・運用スキル。",
       "category": "productivity"
+    },
+    {
+      "name": "code-review-adr",
+      "source": "./plugins/code-review-adr",
+      "description": "観点別チェックリストでのコードレビューと、アーキテクチャ判断の ADR（docs/adr/）記録を一体で行うスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "pr-review",
+      "source": "./plugins/pr-review",
+      "description": "GitHub PR の情報取得→観点別レビュー→下書き提示→承認後のコメント投稿までを実行するスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "github-trends",
+      "source": "./plugins/github-trends",
+      "description": "GitHub トレンド・リポジトリ検索から仕事に活かせるスキルネタを収集し、ROADMAP の候補リストに追記するスキル（採択判断はユーザー）。",
+      "category": "productivity"
     }
   ]
 }

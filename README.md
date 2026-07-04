@@ -61,6 +61,9 @@ claude-skills/
 | `voicememo-pipeline` | 録音→文字起こし→議事録+フィードバック→Drive/Slack 送信の自動パイプライン |
 | `sns-ops-team` | SNS運用のマルチエージェントオーケストレーション（企画・執筆・レビュー・キュー管理） |
 | `hermes-agent-setup` | Hermes Agent + MCP + Grok/X Search の情報収集基盤セットアップ・運用 |
+| `code-review-adr` | 観点別コードレビュー + アーキテクチャ判断の ADR 記録 |
+| `pr-review` | GitHub PR のレビュー実行（取得→レビュー→承認後にコメント投稿） |
+| `github-trends` | GitHub トレンドからスキルネタを収集し候補リスト化（採択はユーザー判断） |
 
 今後の追加予定と優先順位は [ROADMAP.md](ROADMAP.md)、各スキルの要件定義は [docs/skill-requirements.md](docs/skill-requirements.md) を参照。
 
