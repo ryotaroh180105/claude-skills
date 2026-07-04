@@ -80,7 +80,7 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 
 | Status | Skill | 説明 |
 |---|---|---|
-| ⬜ | `lp-builder` | LP作成副業スキル |
+| ✅ | `lp-builder` | LP作成副業スキル |
 | ⬜ | `article-writer` | note記事作成スキル |
 | ⬜ | `owned-media` | オウンドメディア記事作成スキル |
 | ⬜ | `sns-auto-posting` | Twitter/Instagram/TikTok 自動運用 |

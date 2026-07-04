@@ -64,6 +64,7 @@ claude-skills/
 | `code-review-adr` | 観点別コードレビュー + アーキテクチャ判断の ADR 記録 |
 | `pr-review` | GitHub PR のレビュー実行（取得→レビュー→承認後にコメント投稿） |
 | `github-trends` | GitHub トレンドからスキルネタを収集し候補リスト化（採択はユーザー判断） |
+| `lp-builder` | LP制作副業（ヒアリング→構成→実装→デプロイ→修正対応） |
 
 今後の追加予定と優先順位は [ROADMAP.md](ROADMAP.md)、各スキルの要件定義は [docs/skill-requirements.md](docs/skill-requirements.md) を参照。
 

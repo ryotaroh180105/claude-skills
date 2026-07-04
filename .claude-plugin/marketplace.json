@@ -82,6 +82,12 @@
       "source": "./plugins/github-trends",
       "description": "GitHub トレンド・リポジトリ検索から仕事に活かせるスキルネタを収集し、ROADMAP の候補リストに追記するスキル（採択判断はユーザー）。",
       "category": "productivity"
+    },
+    {
+      "name": "lp-builder",
+      "source": "./plugins/lp-builder",
+      "description": "LP制作の副業案件をヒアリング→構成設計→単一HTML実装→デプロイ→修正対応まで一気通貫で進めるスキル。",
+      "category": "productivity"
     }
   ]
 }
