@@ -1,0 +1,9 @@
+{
+  "name": "session-start-hook",
+  "description": "Create SessionStart hooks for Claude Code on the web so dependencies are installed before tests and linters run.",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  },
+  "category": "productivity"
+}

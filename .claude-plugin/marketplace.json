@@ -1,0 +1,15 @@
+{
+  "name": "claude-skills",
+  "owner": {
+    "name": "ryotaroh180105"
+  },
+  "description": "Ryo's curated Claude Code skills, distributed as a plugin marketplace.",
+  "plugins": [
+    {
+      "name": "session-start-hook",
+      "source": "./plugins/session-start-hook",
+      "description": "Create SessionStart hooks for Claude Code on the web so dependencies are installed before tests and linters run.",
+      "category": "productivity"
+    }
+  ]
+}
