@@ -56,6 +56,13 @@ claude-skills/
 
 ## 新しいスキルを追加する
 
+**ゴールは「作った」ではなく「Claude Codeに実際に導入されている」こと。** リポジトリへのコミット・pushはゴールへの手段であり、以下のどちらかを最後に確認して初めて完了とする：
+
+- Claude Code CLI: `/plugin marketplace add ryotaroh180105/claude-skills` → `/plugin install <new-skill>@claude-skills` を実行し、`/plugin list` でインストール済み・enabledになっていることを確認する
+- Claude.ai（web）: `scripts/sync_to_claude_ai.sh` で `.skill` を生成し、Settings > Capabilities > Skills からアップロードして一覧に表示されることを確認する
+
+コミット・push・`validate_skills.py` の通過だけでは未完了。実際にインストールまで確認してから完了報告する。
+
 ```bash
 mkdir -p plugins/<new-skill>/.claude-plugin plugins/<new-skill>/skills/<new-skill>
 
