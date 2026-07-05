@@ -142,6 +142,12 @@
       "source": "./plugins/aws-exam-practice",
       "description": "AWS 認定試験（SAA-C03 デフォルト）の模試・演習スキル。シナリオ型4択、ドメイン別採点、弱点復習の学習ログ管理。",
       "category": "productivity"
+    },
+    {
+      "name": "hermes-x-search",
+      "source": "./plugins/hermes-x-search",
+      "description": "Install and configure Hermes Agent (NousResearch/hermes-agent) and use its x_search tool to research X (Twitter) posts, threads, and profiles on a SuperGrok / X Premium+ subscription instead of paying per-call for the X API.",
+      "category": "productivity"
     }
   ]
 }

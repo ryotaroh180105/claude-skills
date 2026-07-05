@@ -53,6 +53,7 @@ claude-skills/
 |---|---|
 | `session-start-hook` | Claude Code on the web 向けの SessionStart フックを設計・実装するスキル |
 | `agent-reach` | Agent-Reach (Twitter/X・Reddit・YouTube・GitHub・LinkedIn・Instagram 等を横断検索する OSS CLI) の導入・設定・利用を支援するスキル |
+| `hermes-x-search` | Hermes Agent (NousResearch/hermes-agent) の `x_search` を使い、SuperGrok/X Premium+ 契約枠でX(Twitter)の投稿・スレッド・プロフィールを調査するスキル |
 | `requirements-definition` | 曖昧な依頼からイシュー特定→MECE分解→ピラミッド構造化で要件定義書を作るスキル |
 | `work-approach-playbook` | 仕事の進め方プレイブック（作業前チェックリスト・報連相・完了報告・振り返り） |
 | `skill-creator` | このリポジトリでスキルを作成・改善・導入確認するメタスキル |
