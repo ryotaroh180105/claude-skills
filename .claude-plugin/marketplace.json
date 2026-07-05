@@ -30,8 +30,8 @@
       "category": "productivity"
     },
     {
-      "name": "claude-skills-creator",
-      "source": "./plugins/claude-skills-creator",
+      "name": "repo-skill-creator",
+      "source": "./plugins/repo-skill-creator",
       "description": "このリポジトリで新しいスキルを作成・改善・導入確認するためのメタスキル（Anthropic公式skill-creatorとの名前衝突回避のためリネーム）。",
       "category": "productivity"
     },
