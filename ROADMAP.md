@@ -57,22 +57,22 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 
 | Status | Skill | 説明 |
 |---|---|---|
-| ✅ | `requirements-definition` | 要件定義整理スキル（イシュー特定→MECE分解→ピラミッド構造） |
-| ✅ | `work-approach-playbook` | 仕事の進め方スキル（作業前チェックリスト） |
-| ✅ | `skill-creator` | スキル作成・練度向上スキル |
-| ✅ | `task-management` | タスク管理スキル |
+| 🎉 | `requirements-definition` | 要件定義整理スキル（イシュー特定→MECE分解→ピラミッド構造） |
+| 🎉 | `work-approach-playbook` | 仕事の進め方スキル（作業前チェックリスト） |
+| 🎉 | `skill-creator` | スキル作成・練度向上スキル |
+| 🎉 | `task-management` | タスク管理スキル |
 
 ### Tier2: 高難易度スキル（7/7までに実装）
 
 | Status | Skill | 説明 |
 |---|---|---|
-| ✅ | `hermes-agent-setup` | Hermes Agent + MCP + Grok/X Search 情報収集連携 |
-| ✅ | `voicememo-pipeline` | 録音→文字起こし→議事録+フィードバック→Drive/Slack 自動送信 |
-| ✅ | `sns-ops-team` | SNS運用チーム（マルチエージェント） |
-| ✅ | `model-switcher` | タスク種別別のモデル自動切り替え |
-| ✅ | `github-trends` | GitHubトレンド定期取り込み（ユーザー採択判断） |
-| ✅ | `code-review-adr` | コードレビュー + アーキテクチャADR |
-| ✅ | `pr-review` | PRレビュースキル |
+| 🎉 | `hermes-agent-setup` | Hermes Agent + MCP + Grok/X Search 情報収集連携 |
+| 🎉 | `voicememo-pipeline` | 録音→文字起こし→議事録+フィードバック→Drive/Slack 自動送信 |
+| 🎉 | `sns-ops-team` | SNS運用チーム（マルチエージェント） |
+| 🎉 | `model-switcher` | タスク種別別のモデル自動切り替え |
+| 🎉 | `github-trends` | GitHubトレンド定期取り込み（ユーザー採択判断） |
+| 🎉 | `code-review-adr` | コードレビュー + アーキテクチャADR |
+| 🎉 | `pr-review` | PRレビュースキル |
 
 ### Tier3: 目的直結スキル
 
@@ -80,26 +80,26 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 
 | Status | Skill | 説明 |
 |---|---|---|
-| ✅ | `lp-builder` | LP作成副業スキル |
-| ✅ | `article-writer` | note記事作成スキル |
-| ✅ | `owned-media` | オウンドメディア記事作成スキル |
-| ✅ | `sns-auto-posting` | Twitter/Instagram/TikTok 自動運用 |
-| ✅ | `twitter-intel` | Twitter情報収集スキル |
+| 🎉 | `lp-builder` | LP作成副業スキル |
+| 🎉 | `article-writer` | note記事作成スキル |
+| 🎉 | `owned-media` | オウンドメディア記事作成スキル |
+| 🎉 | `sns-auto-posting` | Twitter/Instagram/TikTok 自動運用 |
+| 🎉 | `twitter-intel` | Twitter情報収集スキル |
 
 インターン業務:
 
 | Status | Skill | 説明 |
 |---|---|---|
-| ✅ | `testcase-usecase` | テストケース + ユースケース洗い出し |
-| ✅ | `document-creation` | 書類作成スキル |
-| ✅ | `pickup-automation` | ピックアップ自動化スキル |
+| 🎉 | `testcase-usecase` | テストケース + ユースケース洗い出し |
+| 🎉 | `document-creation` | 書類作成スキル |
+| 🎉 | `pickup-automation` | ピックアップ自動化スキル |
 
 学習・知識:
 
 | Status | Skill | 説明 |
 |---|---|---|
-| ✅ | `consulting-quiz` | コンサル・営業知識クイズ |
-| ✅ | `aws-exam-practice` | AWS模試スキル |
+| 🎉 | `consulting-quiz` | コンサル・営業知識クイズ |
+| 🎉 | `aws-exam-practice` | AWS模試スキル |
 
 ## バッチ計画
 
