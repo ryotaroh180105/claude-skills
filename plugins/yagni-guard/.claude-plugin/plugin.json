@@ -1,0 +1,6 @@
+{
+  "name": "yagni-guard",
+  "description": "YAGNI（過剰設計防止）の観点でコード追加前後をチェックするスキル。",
+  "version": "1.0.0",
+  "author": { "name": "ryotaroh180105" }
+}

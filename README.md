@@ -75,6 +75,8 @@ claude-skills/
 | `consulting-quiz` | コンサル・営業知識クイズ（出題・採点・弱点管理） |
 | `pickup-automation` | 条件抽出ピックアップ業務の自動化（定義ファイル運用） |
 | `aws-exam-practice` | AWS 認定試験（SAA）の模試・演習・弱点復習 |
+| `token-saver` | 応答・コンテキスト両面でトークン消費を削減する簡潔応答モードスキル |
+| `yagni-guard` | 実装前後にYAGNIの観点でチェックし、過剰設計・不要な抽象化を防ぐスキル |
 
 今後の追加予定と優先順位は [ROADMAP.md](ROADMAP.md)、各スキルの要件定義は [docs/skill-requirements.md](docs/skill-requirements.md) を参照。
 
