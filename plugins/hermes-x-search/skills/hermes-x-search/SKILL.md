@@ -256,6 +256,41 @@ turn to clarify or reshape, so everything must be in the prompt up front:
    with a hermes usage error (hit twice in production). The watcher now
    escapes quotes as a backstop, but don't rely on it.
 
+### Engine routing: Hermes for X, NotebookLM for the web
+
+The relay supports two engines, selected by an optional header at the top of
+the query file (before the prompt body):
+
+```
+engine: notebooklm
+topic: ループエンジニアリング Verifier 設計
+（以下、通常のプロンプト本文）
+```
+
+- **No header / `engine: hermes`** → `hermes -z` with x_search. Use for
+  anything about X (Twitter) posts, threads, profiles, reactions.
+- **`engine: notebooklm`** → notebooklm-py on the local machine runs a web
+  Deep Research pass (`source add-research "<topic>" --import-all`) and then
+  answers the prompt body grounded in the gathered sources (`ask`), with
+  citations. Use for **all general web research** — docs, blogs, articles,
+  comparisons. The `topic:` line is the short research topic for source
+  gathering; the body is the full structured question.
+- Result frontmatter carries `engine:` so downstream consumers can tell
+  which path produced it.
+
+**Policy: Claude does not do the researching.** When the user asks for
+research, route X queries to hermes and web queries to notebooklm via the
+relay, then do only query design and result formatting. Claude's own
+WebSearch is for meta-purposes (debugging this pipeline, checking tool
+availability), not for answering the user's research questions.
+
+NotebookLM caveats: notebooklm-py is an unofficial client of undocumented
+Google APIs and can break without notice; per-notebook source caps depend on
+the Google account tier (start a fresh notebook when hitting caps); one-time
+`notebooklm login` (browser) is required on the local machine before first
+use, plus `notebooklm create` / `notebooklm use` to pick the research
+notebook.
+
 After the result returns, Claude Code still does the editorial pass (verify
 suspicious claims, reformat for the user's actual purpose) — reshaping the
 input does not replace judging the output.

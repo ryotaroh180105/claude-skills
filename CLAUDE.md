@@ -29,20 +29,26 @@
 だけでは完了とみなさず、実機インストール確認（`/plugin install` → `/plugin list`）
 まで行って初めて完了とする。
 
-## X(Twitter)調査は hermes-relay で実行できる（リモートセッションでも）
+## 調査は hermes-relay で実行する（リモートセッションでも）— Claude は整形のみ
 
-「Xで調べて」「hermesで検索して」と言われたとき、このリポジトリに push できる
-セッションなら**プラグイン未導入でも実行できる**。ユーザーのローカルPCで cron/
-タスクスケジューラ常駐の Hermes Agent (x_search) が `hermes-relay` ブランチを
-毎分監視している。
+調査依頼が来たとき、このリポジトリに push できるセッションなら**プラグイン
+未導入でも実行できる**。ユーザーのローカルPCでタスクスケジューラ常駐の
+watcher が `hermes-relay` ブランチを毎分監視し、エンジンに振り分ける:
+
+- **X(Twitter)の調査** → ヘッダなし（デフォルト）= Hermes Agent の x_search
+- **Web全般の調査**（記事・ドキュメント・比較など）→ クエリ先頭に
+  `engine: notebooklm` + `topic: <短い調査トピック>` を付ける = NotebookLM の
+  Deep Research + 出典付き回答
+- **Claude の役割はクエリ整形と結果整形のみ**。Claude 自身の WebSearch を
+  ユーザーの調査に使わない（パイプラインのデバッグ等のメタ用途のみ可）
 
 手順（詳細は `plugins/hermes-x-search/skills/hermes-x-search/SKILL.md` が正）:
 
 1. `hermes-relay` ブランチを clone し、`automation/queries/pending/<UTC時刻>-<slug>.md`
-   にプロンプト全文（日本語指定・出力セクション指定・根拠URL必須を含める）を置いて push
-2. 1〜4分後に `automation/results/<同名>.md` が返る（frontmatter に status、本文は
-   セクション化された Markdown）
-3. WebSearch での代替調査より先に、まずこのリレーを検討する（Xの実データが取れる）
+   にプロンプト全文（日本語指定・出力セクション指定・根拠URL必須。ASCIIの
+   ダブルクォートは使わない）を置いて push
+2. 1〜4分後に `automation/results/<同名>.md` が返る（frontmatter に engine/status、
+   本文はセクション化された Markdown）
 
-「このセッションからは Hermes を使えない」と答えるのは誤り。使えないのは
-`/plugin` のスキル読み込みであって、リレー経由の実行は git push さえできれば可能。
+「このセッションからは Hermes/NotebookLM を使えない」と答えるのは誤り。使えない
+のは `/plugin` のスキル読み込みであって、リレー経由の実行は git push さえできれば可能。
