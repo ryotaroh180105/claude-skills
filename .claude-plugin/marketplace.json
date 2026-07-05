@@ -148,6 +148,18 @@
       "source": "./plugins/hermes-x-search",
       "description": "Install and configure Hermes Agent (NousResearch/hermes-agent) and use its x_search tool to research X (Twitter) posts, threads, and profiles on a SuperGrok / X Premium+ subscription instead of paying per-call for the X API.",
       "category": "productivity"
+    },
+    {
+      "name": "token-saver",
+      "source": "./plugins/token-saver",
+      "description": "応答・コンテキスト両面でトークン消費を削減する簡潔応答モードスキル。高単価モデルでの作業前や大量繰り返し作業の前に使う。",
+      "category": "productivity"
+    },
+    {
+      "name": "yagni-guard",
+      "source": "./plugins/yagni-guard",
+      "description": "実装前後にYAGNI（過剰設計防止）の観点でチェックし、不要な抽象化・設定・防御的コードを防ぐスキル。",
+      "category": "productivity"
     }
   ]
 }

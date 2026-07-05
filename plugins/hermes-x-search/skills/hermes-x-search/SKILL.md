@@ -258,6 +258,26 @@ APIキー・個人情報・未公開の戦略は含めないでください。
   Windows PowerShell 5.1 reads `.ps1` files with the system's legacy codepage
   unless the file carries a UTF-8 BOM, so non-ASCII text (e.g. Japanese) reliably
   produces mojibake and string-parsing errors on Japanese-locale Windows.
+- If a Windows relay's queries sit in `pending` forever after a successful setup
+  run: check `schtasks /Query /TN HermesRelayWatcher /V /FO LIST` for
+  `前回の実行時刻` stuck at `1999/11/30` and `前回の結果: 267011`
+  (`SCHED_S_TASK_HAS_NOT_RUN`) — the task looks "Ready" with a valid next-run
+  time forever but has never actually fired. Root cause: `schtasks /Create`
+  defaults to "don't start on battery / stop if going on battery," which
+  silently blocks the task on any laptop that isn't plugged in. `setup-local.ps1`
+  now registers the task via the `ScheduledTasks` module with
+  `AllowStartIfOnBatteries`/`DontStopIfGoingOnBatteries` set — if the user is on
+  an older copy of the script, have them re-run the latest version rather than
+  debugging Hermes itself.
+- If a Windows relay's Task Scheduler task is confirmed running (`前回の結果: 0`
+  / recent `前回の実行時刻`) but queries still sit in `pending` forever: a stale
+  `.watcher.lock.d` from an earlier interrupted run silently no-ops every run
+  (exit 0, nothing processed) until it ages past the stale-lock threshold. Have
+  the user delete it manually to unblock immediately:
+  `Remove-Item "$env:USERPROFILE\.hermes-relay\.watcher.lock.d" -Recurse -Force`.
+  `watcher.log` in the relay dir (added after this was hit in testing) logs
+  pending-query counts and per-query start/finish, so check that first instead
+  of guessing.
 - If the user wants zero-subscription-cost scraping instead (accepting slower,
   more fragile results), point them at this same repo's `agent-reach` skill,
   which reads X via browser cookies rather than any paid API or subscription.
