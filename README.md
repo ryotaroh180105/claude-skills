@@ -41,7 +41,12 @@ claude-skills/
 
 インストール後は `/requirements-definition:requirements-definition` のようにプラグイン名で呼び出せる（多くはトリガー条件に合う依頼をするだけで自動発動する）。
 
-### Claude.ai（web）
+### Claude.ai（web・モバイル）
+
+claude.ai の個人スキルアップロードには公開APIが無く、Settings > Capabilities > Skills
+からの手動アップロードが必須（自動化不可）。Claude Code セッションでは
+`.skill` ファイルの生成・配布まで代行し、ユーザーの作業はドラッグ&ドロップの
+アップロードだけに絞る。
 
 1. `scripts/sync_to_claude_ai.sh` を実行して `dist/*.skill` を生成
 2. claude.ai の Settings > Capabilities > Skills から該当の `.skill` ファイルをアップロード
