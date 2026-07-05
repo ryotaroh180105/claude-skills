@@ -69,8 +69,17 @@ try {
         $start = Get-Date
         Log "starting hermes for ${id}"
 
+        # Force UTF-8 for the child process's stdout/stderr. Hermes (a Python
+        # CLI) writes UTF-8, but Start-Job spawns a fresh powershell.exe whose
+        # console encoding defaults to the system's legacy codepage (e.g.
+        # cp932 on Japanese Windows) unless told otherwise -- without this,
+        # multi-byte Japanese text gets captured as mojibake even though
+        # Hermes itself produced correct output.
         $job = Start-Job -ScriptBlock {
             param($bin, $q)
+            [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+            $OutputEncoding = [System.Text.Encoding]::UTF8
+            $env:PYTHONIOENCODING = "utf-8"
             & $bin -z $q --accept-hooks 2>&1 | Out-String
         } -ArgumentList $HermesBin, $query
 
