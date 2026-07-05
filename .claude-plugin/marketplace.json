@@ -160,6 +160,12 @@
       "source": "./plugins/yagni-guard",
       "description": "実装前後にYAGNI（過剰設計防止）の観点でチェックし、不要な抽象化・設定・防御的コードを防ぐスキル。",
       "category": "productivity"
+    },
+    {
+      "name": "loop-engineering",
+      "source": "./plugins/loop-engineering",
+      "description": "Trigger/Doer/Verifier(Maker-Checker)/Stop Rules/Memory/Skillsの6要素で、定型作業を安全な自律ループとして設計するスキル。",
+      "category": "productivity"
     }
   ]
 }
