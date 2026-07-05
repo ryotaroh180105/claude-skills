@@ -28,3 +28,21 @@
 `README.md` の「新しいスキルを追加する」節の手順に従う。加えて、コミット・push
 だけでは完了とみなさず、実機インストール確認（`/plugin install` → `/plugin list`）
 まで行って初めて完了とする。
+
+## X(Twitter)調査は hermes-relay で実行できる（リモートセッションでも）
+
+「Xで調べて」「hermesで検索して」と言われたとき、このリポジトリに push できる
+セッションなら**プラグイン未導入でも実行できる**。ユーザーのローカルPCで cron/
+タスクスケジューラ常駐の Hermes Agent (x_search) が `hermes-relay` ブランチを
+毎分監視している。
+
+手順（詳細は `plugins/hermes-x-search/skills/hermes-x-search/SKILL.md` が正）:
+
+1. `hermes-relay` ブランチを clone し、`automation/queries/pending/<UTC時刻>-<slug>.md`
+   にプロンプト全文（日本語指定・出力セクション指定・根拠URL必須を含める）を置いて push
+2. 1〜4分後に `automation/results/<同名>.md` が返る（frontmatter に status、本文は
+   セクション化された Markdown）
+3. WebSearch での代替調査より先に、まずこのリレーを検討する（Xの実データが取れる）
+
+「このセッションからは Hermes を使えない」と答えるのは誤り。使えないのは
+`/plugin` のスキル読み込みであって、リレー経由の実行は git push さえできれば可能。
