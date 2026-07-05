@@ -110,6 +110,26 @@ git push
 
 導入確認まで済んだら ROADMAP.md のステータスを 🎉 に更新する（後述）。
 
+### ⑧ 通知する（新規作成・version up の両方で毎回行う）
+
+スキルが新規作成された、または既存スキルの version が上がった（練度向上
+ワークフロー適用時）たびに、以下2点をセットで行う。ユーザーが Claude Code
+の画面を見ていない間に完了した作業に気づけるようにするため。
+
+1. **PushNotification** で1行の完了通知を送る。例:
+   `"新スキル: requirements-definition を作成しました"` /
+   `"task-management を v1.1.0 に更新しました"`。200字厳守、装飾なし。
+2. **SendUserFile** で対象スキルを `.skill`（zip）にパッケージして送る:
+   ```bash
+   python3 scripts/package_skill.py plugins/<name>/skills/<name> -o dist
+   ```
+   `dist/<name>.skill` を `SendUserFile` で送付する（`status: proactive`）。
+   zip 化しているのは claude.ai へそのままアップロードできる形にするためで、
+   中身は SKILL.md を含むフォルダそのもの。
+
+複数スキルを1バッチで作った場合はスキルごとに送らず、バッチ完了時に
+まとめて1回の通知＋複数ファイル送付でよい。
+
 ## 良い SKILL.md の書き方
 
 ### description にトリガー条件を書く
@@ -168,9 +188,9 @@ MCP サーバー・API キー・環境変数に依存するスキルは、本文
 2. **SKILL.md を修正する**。修正は症状に対応する最小限にとどめ、水増ししない。
 3. **version を上げる**。`plugin.json` の `version` をインクリメントする
    （トリガー条件や手順の修正はパッチ +0.0.1、節の追加など内容拡張はマイナー +0.1.0）。
-4. **検証 → commit / push → 再導入**。新規作成の⑤〜⑦と同じ。Claude Code は
+4. **検証 → commit / push → 再導入 → 通知**。新規作成の⑤〜⑧と同じ。Claude Code は
    `/plugin marketplace update claude-skills` で更新を取り込み、claude.ai は
-   `.skill` を再生成して再アップロードする。
+   `.skill` を再生成して再アップロードする。⑧の通知・ファイル送付も忘れずに行う。
 
 ## ROADMAP.md のステータス更新
 
