@@ -13,13 +13,18 @@ $QueryTimeout = if ($env:HERMES_QUERY_TIMEOUT) { [int]$env:HERMES_QUERY_TIMEOUT 
 $MaxParallel = if ($env:HERMES_MAX_PARALLEL) { [int]$env:HERMES_MAX_PARALLEL } else { 3 }
 
 # Task Scheduler runs with a minimal environment; watcher.env.ps1 pins the
-# hermes binary path captured at setup time.
+# hermes / notebooklm binary paths captured at setup time.
 $HermesBin = $null
+$NotebookLmBin = $null
 $envFile = Join-Path $RelayDir "watcher.env.ps1"
 if (Test-Path $envFile) { . $envFile }
 if (-not $HermesBin) {
     $cmd = Get-Command hermes -ErrorAction SilentlyContinue
     if ($cmd) { $HermesBin = $cmd.Source }
+}
+if (-not $NotebookLmBin) {
+    $cmd = Get-Command notebooklm -ErrorAction SilentlyContinue
+    if ($cmd) { $NotebookLmBin = $cmd.Source }
 }
 if (-not $HermesBin -or -not (Test-Path $HermesBin)) {
     Write-Output "$(Get-Date -Format o) hermes binary not found (set `$HermesBin in $envFile)"
@@ -95,31 +100,72 @@ try {
     $launched = @()
     foreach ($qfile in $batch) {
         $id = $qfile.BaseName
-        $query = [IO.File]::ReadAllText($qfile.FullName)
-        Log "starting hermes for ${id}"
+        $raw = [IO.File]::ReadAllText($qfile.FullName)
 
-        # Force UTF-8 for the child process's stdout/stderr. Hermes (a Python
-        # CLI) writes UTF-8, but Start-Job spawns a fresh powershell.exe whose
-        # console encoding defaults to the system's legacy codepage (e.g.
-        # cp932 on Japanese Windows) unless told otherwise -- without this,
-        # multi-byte Japanese text gets captured as mojibake even though
-        # Hermes itself produced correct output.
-        $job = Start-Job -ScriptBlock {
-            param($bin, $q)
-            [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-            $OutputEncoding = [System.Text.Encoding]::UTF8
-            $env:PYTHONIOENCODING = "utf-8"
-            # Escape embedded double quotes: PowerShell 5.1's native-command
-            # argument passing breaks the argument at unescaped embedded
-            # quotes, so a query containing "Fable 5" splits mid-string and
-            # hermes sees the remainder as a positional command (fails in
-            # ~1s with 'invalid choice'). Backslash-escaping survives the
-            # MSVCRT command-line reparse.
-            $q = $q -replace '"', '\"'
-            & $bin -z $q --accept-hooks 2>&1 | Out-String
-        } -ArgumentList $HermesBin, $query
+        # Engine routing. Optional header lines at the top of the query file:
+        #   engine: hermes | notebooklm      (default: hermes)
+        #   topic: <short research topic>    (notebooklm only; used for the
+        #                                     web Deep Research pass before
+        #                                     asking the full question)
+        # The remaining body is the prompt/question itself.
+        $engine = "hermes"
+        $topic = $null
+        $query = $raw
+        $lines = $raw -split "`r?`n"
+        if ($lines.Count -gt 0 -and $lines[0] -match '^engine:\s*(\S+)') {
+            $engine = $Matches[1].ToLower()
+            $rest = @($lines | Select-Object -Skip 1)
+            if ($rest.Count -gt 0 -and $rest[0] -match '^topic:\s*(.+)$') {
+                $topic = $Matches[1].Trim()
+                $rest = @($rest | Select-Object -Skip 1)
+            }
+            $query = ($rest -join "`n").Trim()
+        }
+        Log "starting $engine for ${id}"
 
-        $launched += [pscustomobject]@{ Id = $id; File = $qfile; Job = $job; Start = Get-Date }
+        # Force UTF-8 for the child process's stdout/stderr. Both engines are
+        # Python CLIs that write UTF-8, but Start-Job spawns a fresh
+        # powershell.exe whose console encoding defaults to the system's
+        # legacy codepage (e.g. cp932 on Japanese Windows) unless told
+        # otherwise -- without this, multi-byte Japanese text gets captured
+        # as mojibake even though the tool itself produced correct output.
+        # Also escape embedded double quotes: PowerShell 5.1's native-command
+        # argument passing breaks the argument at unescaped embedded quotes
+        # (a query containing "Fable 5" split mid-string and hermes read the
+        # remainder as a positional command, failing in ~1s).
+        if ($engine -eq "notebooklm" -and (-not $NotebookLmBin -or -not (Test-Path $NotebookLmBin))) {
+            $job = Start-Job -ScriptBlock {
+                "notebooklm CLI not found on this machine. Install it (pip install notebooklm-py), run 'notebooklm login', create/use a notebook, then re-run setup-local.ps1 so watcher.env.ps1 pins NotebookLmBin."
+            }
+        } elseif ($engine -eq "notebooklm") {
+            $job = Start-Job -ScriptBlock {
+                param($bin, $topic, $q)
+                [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+                $OutputEncoding = [System.Text.Encoding]::UTF8
+                $env:PYTHONIOENCODING = "utf-8"
+                $q = $q -replace '"', '\"'
+                $out = ""
+                if ($topic) {
+                    $topic = $topic -replace '"', '\"'
+                    $out += "### research pass (source add-research)`n"
+                    $out += (& $bin source add-research $topic --import-all 2>&1 | Out-String)
+                    $out += "`n### grounded answer (ask)`n"
+                }
+                $out += (& $bin ask $q 2>&1 | Out-String)
+                $out
+            } -ArgumentList $NotebookLmBin, $topic, $query
+        } else {
+            $job = Start-Job -ScriptBlock {
+                param($bin, $q)
+                [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+                $OutputEncoding = [System.Text.Encoding]::UTF8
+                $env:PYTHONIOENCODING = "utf-8"
+                $q = $q -replace '"', '\"'
+                & $bin -z $q --accept-hooks 2>&1 | Out-String
+            } -ArgumentList $HermesBin, $query
+        }
+
+        $launched += [pscustomobject]@{ Id = $id; File = $qfile; Job = $job; Start = Get-Date; Engine = $engine }
     }
 
     if ($launched.Count -gt 0) {
@@ -136,11 +182,11 @@ try {
             $status = "error (timeout)"
         }
         Remove-Job $l.Job -Force -ErrorAction SilentlyContinue
-        Log "finished $($l.Id): $status"
+        Log "finished $($l.Id) [$($l.Engine)]: $status"
 
         $dur = [int]((Get-Date) - $l.Start).TotalSeconds
         $ts = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-        $result = "---`nid: $($l.Id)`nstatus: $status`nexecuted_at: $ts`nduration_seconds: $dur`n---`n`n$output`n"
+        $result = "---`nid: $($l.Id)`nengine: $($l.Engine)`nstatus: $status`nexecuted_at: $ts`nduration_seconds: $dur`n---`n`n$output`n"
         $outPath = Join-Path $RelayDir "automation\results\$($l.Id).md"
         [IO.File]::WriteAllText($outPath, $result, (New-Object System.Text.UTF8Encoding($false)))
 

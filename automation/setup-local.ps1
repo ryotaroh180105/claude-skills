@@ -74,8 +74,21 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "!! Cannot push to the relay repo yet. A GitHub auth prompt (browser) is expected on first push. If it still fails, run 'git -C $RelayDir push origin $Branch' manually to see the error" -ForegroundColor Yellow
 }
 
-# 5. Watcher env file (Task Scheduler runs with a minimal PATH, so pin the hermes binary path)
-"`$HermesBin = `"$HermesPath`"" | Set-Content (Join-Path $RelayDir "watcher.env.ps1") -Encoding UTF8
+# 5. Watcher env file (Task Scheduler runs with a minimal PATH, so pin binary paths)
+$envLines = @("`$HermesBin = `"$HermesPath`"")
+$nbCmd = Get-Command notebooklm -ErrorAction SilentlyContinue
+if ($nbCmd) {
+    $envLines += "`$NotebookLmBin = `"$($nbCmd.Source)`""
+    Write-Host "-- notebooklm CLI found: $($nbCmd.Source) (web-research routing enabled)"
+    Write-Host "   If not yet authenticated, run once: notebooklm login"
+    Write-Host "   And select a notebook for research: notebooklm create relay-web ; notebooklm use <id>"
+} else {
+    Write-Host "-- notebooklm CLI not found: 'engine: notebooklm' queries will return an install hint."
+    Write-Host "   To enable web research: pip install notebooklm-py"
+    Write-Host "   then: notebooklm login / notebooklm create relay-web / notebooklm use <id>"
+    Write-Host "   and re-run this setup script."
+}
+$envLines -join "`r`n" | Set-Content (Join-Path $RelayDir "watcher.env.ps1") -Encoding UTF8
 
 # 6. Task Scheduler registration (every minute; overlapping runs are prevented
 #    by the watcher's own lock). Uses the ScheduledTasks module rather than
