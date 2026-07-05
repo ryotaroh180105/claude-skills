@@ -101,44 +101,96 @@ reported to kill the OAuth flow or the process mid-request. If a run fails in a
 remote/CI environment, retry from a physical machine's terminal before assuming
 the setup itself is broken.
 
-## Claude Code as query designer, local terminal as executor
+## Claude Code as query designer, local machine as executor
 
 **Do not try to run `hermes` yourself from inside a Claude Code remote/cloud
 session.** As established above, OAuth and long-running calls are unreliable
 there — the working setup (OAuth login, `x_search` access) lives on the user's
-local machine, not this session. Split the work instead:
+local machine, not this session. Claude Code designs queries and formats
+results; the local machine executes them.
 
-1. **Claude Code designs the query.** Turn the user's ask ("Xで◯◯の反応を見て")
-   into a single, self-contained `hermes -z` command. Fold the fixed output
-   shape from "Structuring output" below directly into the prompt text — the
-   local run is one-shot with no follow-up turn, so ask for the structure
-   up front rather than trying to reshape the answer afterward:
+### Automated relay (preferred — user does nothing per query)
 
-   ```bash
-   hermes -z "◯◯についての直近のXの投稿・反応を調べて、次の形式で出力して：
-   1. 今日見るべき話題 2. 元ポスト/スレッドのURL 3. 投稿に使える切り口
-   4. 未確認・断定できない点 5. 明日以降も追うべき項目" --accept-hooks
-   ```
+The repo's `hermes-relay` branch is a git-based message queue between Claude
+Code and a cron watcher on the user's machine. Once the user has run the
+one-time local setup (below), the full round trip is automatic: Claude Code
+pushes a query file, the local watcher executes it within ~1 minute, and
+pushes the result back. Expected end-to-end latency: **1–4 minutes**.
 
-   `--accept-hooks` registers any hooks in the user's Hermes config without an
-   interactive prompt; `-z` gives clean stdout with nothing else to parse. On
-   WSL2 the user runs it as `wsl -d Ubuntu -- hermes -z "..." --accept-hooks`.
+**One-time local setup** (the only thing the user ever runs by hand; includes
+one interactive OAuth browser login):
 
-2. **Hand the command to the user, not a tool call.** Tell them to run it in a
-   plain local terminal (not this session, not an editor-embedded terminal) and
-   paste back whatever it prints — including if it errors or times out.
+```bash
+curl -fsSL https://raw.githubusercontent.com/ryotaroh180105/claude-skills/hermes-relay/automation/setup-local.sh | bash
+```
 
-3. **Claude Code takes the raw pasted output and does the judgment/formatting
-   work**: separate confirmed facts (with source URLs) from unconfirmed
-   chatter, pull out post-worthy angles, and flag what still needs follow-up.
-   Don't just relay Hermes's raw text back to the user unchanged — that
-   formatting/judgment step is what this skill's remote side is actually for.
+**Per query, from the Claude Code session** — enqueue:
+
+```bash
+RELAY="$(mktemp -d)/relay"
+git clone -q --depth 1 --branch hermes-relay --single-branch \
+  https://github.com/ryotaroh180105/claude-skills "$RELAY"
+ID="$(date -u +%Y%m%dT%H%M%SZ)-<topic-slug>"
+cat > "$RELAY/automation/queries/pending/${ID}.md" <<'EOF'
+（hermes に渡すプロンプト全文。出力フォーマット指定込み — 下の
+「Structuring output」の形式をそのまま埋め込む。ワンショット実行で
+追加の対話ターンはないので、構造は最初から要求しておくこと）
+EOF
+git -C "$RELAY" add -A
+git -C "$RELAY" commit -qm "hermes-relay: query ${ID}"
+git -C "$RELAY" push -q origin hermes-relay
+```
+
+Then poll for the result **in a background Bash task** (foreground sleep is
+blocked in Claude Code sessions):
+
+```bash
+for i in $(seq 1 30); do
+  git -C "$RELAY" fetch -q origin hermes-relay
+  if git -C "$RELAY" cat-file -e "origin/hermes-relay:automation/results/${ID}.md" 2>/dev/null; then
+    git -C "$RELAY" show "origin/hermes-relay:automation/results/${ID}.md"
+    exit 0
+  fi
+  sleep 30
+done
+echo "TIMEOUT: no result after 15 min — check watcher.log on the local machine"
+exit 1
+```
+
+Result files carry a frontmatter header (`status: ok` / `status: error`,
+`executed_at`, `duration_seconds`) followed by Hermes's raw output. On
+`status: error` the body contains stderr — diagnose from that instead of
+re-queueing blindly.
+
+**Once the result arrives, Claude Code does the judgment/formatting work**:
+separate confirmed facts (with source URLs) from unconfirmed chatter, pull out
+post-worthy angles, and flag what needs follow-up. Don't relay Hermes's raw
+text unchanged — this formatting step is what the remote side is for.
+
+Relay privacy caveat: if this repo is public, queries and results are public
+too. Keep secrets and unpublished strategy out of query text, or point
+`HERMES_RELAY_REPO` at a private repo during setup.
+
+### Manual fallback (no relay set up, or watcher is down)
+
+Hand the user a single self-contained command to run in a plain local
+terminal, and have them paste back whatever it prints (including errors):
+
+```bash
+hermes -z "◯◯についての直近のXの投稿・反応を調べて、次の形式で出力して：
+1. 今日見るべき話題 2. 元ポスト/スレッドのURL 3. 投稿に使える切り口
+4. 未確認・断定できない点 5. 明日以降も追うべき項目" --accept-hooks
+```
+
+`--accept-hooks` registers any hooks in the user's Hermes config without an
+interactive prompt; `-z` gives clean stdout with nothing else to parse. On
+WSL2 the user runs it as `wsl -d Ubuntu -- hermes -z "..." --accept-hooks`.
 
 ## Usage patterns
 
 Hermes routes these kinds of asks to `x_search` automatically once enabled —
-use them as the natural-language core of the `hermes -z` prompt you hand to the
-user for local execution:
+use them as the natural-language core of the query you enqueue on the relay
+(or hand to the user in the manual fallback):
 
 - "この件についてXでどんな反応が出てるか調べて" → searches recent posts/threads
 - "◯◯さんの直近の投稿を要約して" → profile/timeline search

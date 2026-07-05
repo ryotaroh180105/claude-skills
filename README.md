@@ -53,7 +53,7 @@ claude-skills/
 |---|---|
 | `session-start-hook` | Claude Code on the web 向けの SessionStart フックを設計・実装するスキル |
 | `agent-reach` | Agent-Reach (Twitter/X・Reddit・YouTube・GitHub・LinkedIn・Instagram 等を横断検索する OSS CLI) の導入・設定・利用を支援するスキル |
-| `hermes-x-search` | Hermes Agent (NousResearch/hermes-agent) の `x_search` を使い、SuperGrok/X Premium+ 契約枠でX(Twitter)の投稿・スレッド・プロフィールを調査するスキル |
+| `hermes-x-search` | Hermes Agent (NousResearch/hermes-agent) の `x_search` を使い、手持ちのX/Grokサブスク枠でX(Twitter)の投稿・スレッド・プロフィールを調査するスキル。`hermes-relay` ブランチ経由の全自動リレー対応 |
 | `requirements-definition` | 曖昧な依頼からイシュー特定→MECE分解→ピラミッド構造化で要件定義書を作るスキル |
 | `work-approach-playbook` | 仕事の進め方プレイブック（作業前チェックリスト・報連相・完了報告・振り返り） |
 | `skill-creator` | このリポジトリでスキルを作成・改善・導入確認するメタスキル |
@@ -77,6 +77,18 @@ claude-skills/
 | `aws-exam-practice` | AWS 認定試験（SAA）の模試・演習・弱点復習 |
 
 今後の追加予定と優先順位は [ROADMAP.md](ROADMAP.md)、各スキルの要件定義は [docs/skill-requirements.md](docs/skill-requirements.md) を参照。
+
+### hermes-x-search の自動リレー
+
+Claude Code（リモート）と実機の Hermes Agent をつなぐメッセージキューが
+`hermes-relay` ブランチにあります。実機で以下を1回実行すれば、以後は
+Claude Code がクエリを push するだけで結果が自動で返ります：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ryotaroh180105/claude-skills/hermes-relay/automation/setup-local.sh | bash
+```
+
+詳細は `hermes-relay` ブランチの README と `plugins/hermes-x-search` の SKILL.md を参照。
 
 ## 新しいスキルを追加する
 
