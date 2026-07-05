@@ -27,9 +27,21 @@ automation/results/<id>.md   ◀───────      クエリは queries/
 
 ## 実機セットアップ（1回だけ）
 
+**Linux / macOS / WSL2:**
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ryotaroh180105/claude-skills/hermes-relay/automation/setup-local.sh | bash
 ```
+
+**Windows ネイティブ（WSL不要、PowerShellで実行）:**
+
+```powershell
+irm https://raw.githubusercontent.com/ryotaroh180105/claude-skills/hermes-relay/automation/setup-local.ps1 -OutFile "$env:TEMP\setup-local.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\setup-local.ps1"
+```
+
+Windows 版は cron の代わりにタスクスケジューラ（タスク名 `HermesRelayWatcher`）で毎分実行します。
+停止: `schtasks /Delete /TN HermesRelayWatcher /F`
 
 ## 注意
 
