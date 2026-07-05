@@ -44,7 +44,7 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 
 1. スキルを実際に使ってみる（Ryo が本物のタスクで使う）
 2. **壁打ちセッション**: 使用感を Claude と議論する — 発動しなかった／手順が曖昧だった／出力が期待と違った／もっとこうしたい
-3. フィードバックを SKILL.md に反映し、plugin.json の version を上げる（`skill-creator` スキルの練度向上ワークフローを使う）
+3. フィードバックを SKILL.md に反映し、plugin.json の version を上げる（`claude-skills-creator` スキルの練度向上ワークフローを使う）
 4. 1 に戻る
 
 外部サービス依存のスキルは「**Ryo が MCP / API キー等の必要情報を入力すれば即動く**」状態で納品し、壁打ちの最初の回でセットアップを一緒に済ませる。
@@ -62,7 +62,7 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 |---|---|---|
 | 🎉 | `requirements-definition` | 要件定義整理スキル（イシュー特定→MECE分解→ピラミッド構造） |
 | 🎉 | `work-approach-playbook` | 仕事の進め方スキル（作業前チェックリスト） |
-| 🎉 | `skill-creator` | スキル作成・練度向上スキル |
+| 🎉 | `claude-skills-creator` | スキル作成・練度向上スキル（公式skill-creatorと別物） |
 | 🎉 | `task-management` | タスク管理スキル |
 | ✅ | `loop-engineering` | 自律ループ設計スキル（Trigger/Doer/Verifier/Stop Rules/Memory/Skills） |
 
@@ -107,7 +107,7 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 
 ## バッチ計画
 
-1. **Batch 1（Tier1）**: requirements-definition / work-approach-playbook / skill-creator / task-management
+1. **Batch 1（Tier1）**: requirements-definition / work-approach-playbook / claude-skills-creator / task-management
 2. **Batch 2（Tier2 前半）**: hermes-agent-setup / voicememo-pipeline / sns-ops-team / model-switcher
 3. **Batch 3（Tier2 後半 + 副業）**: github-trends / code-review-adr / pr-review / lp-builder
 4. **Batch 4（副業）**: article-writer / owned-media / sns-auto-posting / twitter-intel
@@ -122,7 +122,7 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
    - `twitter-intel` / `github-trends` スキル自体がこの収集の実行部品になる（自分のためのスキルを自分で使う）。
 2. **候補化**: 収集した情報をこの ROADMAP の「候補リスト」（下記）に追記する。
 3. **採択判断**: ユーザー（Ryo）が候補を見て採択/見送りを判断する。勝手に実装まで進めない。
-4. **実装**: 採択されたものを `skill-creator` スキルの手順で 4個ずつ並列実装する。
+4. **実装**: 採択されたものを `claude-skills-creator` スキルの手順で 4個ずつ並列実装する。
 5. **導入確認**: `/plugin install` または `.skill` アップロードまで確認して 🎉 にする。
 
 ### 候補リスト（収集したスキルネタ置き場）
