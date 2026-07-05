@@ -20,6 +20,9 @@ $QueryTimeout = if ($env:HERMES_QUERY_TIMEOUT) { [int]$env:HERMES_QUERY_TIMEOUT 
 # tolerates more: HERMES_MAX_PARALLEL_HERMES, HERMES_MAX_PARALLEL_NOTEBOOKLM.
 $MaxParallelHermes = if ($env:HERMES_MAX_PARALLEL_HERMES) { [int]$env:HERMES_MAX_PARALLEL_HERMES } else { 5 }
 $MaxParallelNotebookLm = if ($env:HERMES_MAX_PARALLEL_NOTEBOOKLM) { [int]$env:HERMES_MAX_PARALLEL_NOTEBOOKLM } else { 1 }
+# How many same-topic notebooklm queries share a single research crawl (see
+# below). Bounded so one job can't hold the lock for too long.
+$MaxNotebookLmQueriesPerJob = if ($env:HERMES_MAX_NOTEBOOKLM_PER_JOB) { [int]$env:HERMES_MAX_NOTEBOOKLM_PER_JOB } else { 4 }
 
 # Task Scheduler runs with a minimal environment; watcher.env.ps1 pins the
 # hermes / notebooklm binary paths captured at setup time.
@@ -127,67 +130,96 @@ try {
     # branch below (an unrecognized engine value is treated as hermes, not
     # silently dropped) -- classify the same way here so such a query still
     # gets picked up rather than sitting in neither batch forever.
-    $notebooklmBatch = @($parsed | Where-Object { $_.Engine -eq "notebooklm" } | Select-Object -First $MaxParallelNotebookLm)
     $hermesBatch = @($parsed | Where-Object { $_.Engine -ne "notebooklm" } | Select-Object -First $MaxParallelHermes)
-    $batch = @($hermesBatch) + @($notebooklmBatch)
-    Log "launching $($hermesBatch.Count) hermes + $($notebooklmBatch.Count) notebooklm (caps: $MaxParallelHermes/$MaxParallelNotebookLm)"
+
+    # NotebookLM: `source add-research` (the web-crawl pass) is the expensive
+    # step, not `ask`. Concurrency stays capped at MaxParallelNotebookLm (1)
+    # for browser-profile safety, but multiple pending queries that share the
+    # exact same `topic:` line get bundled into ONE job -- one research crawl,
+    # then one `ask` per question -- instead of re-crawling the same topic
+    # once per question. This is the fix for research being the bottleneck:
+    # queue depth was growing because every notebooklm query paid the full
+    # crawl cost even when several questions were about the same topic.
+    $notebooklmPending = @($parsed | Where-Object { $_.Engine -eq "notebooklm" })
+    $notebooklmGroup = @()
+    if ($notebooklmPending.Count -gt 0) {
+        $firstTopic = $notebooklmPending[0].Topic
+        $notebooklmGroup = @($notebooklmPending | Where-Object { $_.Topic -eq $firstTopic } | Select-Object -First $MaxNotebookLmQueriesPerJob)
+    }
+    $batch = @($hermesBatch)
+    Log "launching $($hermesBatch.Count) hermes + $($notebooklmGroup.Count) notebooklm-in-1-job (topic-grouped) (caps: hermes=$MaxParallelHermes, notebooklm-concurrency=$MaxParallelNotebookLm, notebooklm-per-job=$MaxNotebookLmQueriesPerJob)"
 
     $launched = @()
     foreach ($item in $batch) {
         $qfile = $item.File
         $id = $qfile.BaseName
-        $engine = $item.Engine
-        $topic = $item.Topic
         $query = $item.Query
-        Log "starting $engine for ${id}"
+        Log "starting hermes for ${id}"
 
-        # Force UTF-8 for the child process's stdout/stderr. Both engines are
-        # Python CLIs that write UTF-8, but Start-Job spawns a fresh
-        # powershell.exe whose console encoding defaults to the system's
-        # legacy codepage (e.g. cp932 on Japanese Windows) unless told
-        # otherwise -- without this, multi-byte Japanese text gets captured
-        # as mojibake even though the tool itself produced correct output.
-        # Also escape embedded double quotes: PowerShell 5.1's native-command
-        # argument passing breaks the argument at unescaped embedded quotes
-        # (a query containing "Fable 5" split mid-string and hermes read the
-        # remainder as a positional command, failing in ~1s).
-        if ($engine -eq "notebooklm" -and (-not $NotebookLmBin -or -not (Test-Path $NotebookLmBin))) {
-            $job = Start-Job -ScriptBlock {
-                "notebooklm CLI not found on this machine. Install it (pip install notebooklm-py), run 'notebooklm login', create/use a notebook, then re-run setup-local.ps1 so watcher.env.ps1 pins NotebookLmBin."
-            }
-        } elseif ($engine -eq "notebooklm") {
-            $job = Start-Job -ScriptBlock {
-                param($bin, $topic, $q)
-                [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-                $OutputEncoding = [System.Text.Encoding]::UTF8
-                $env:PYTHONIOENCODING = "utf-8"
-                $q = $q -replace '"', '\"'
-                $out = ""
-                if ($topic) {
-                    $topic = $topic -replace '"', '\"'
-                    $out += "### research pass (source add-research)`n"
-                    $out += (& $bin source add-research $topic --import-all 2>&1 | Out-String)
-                    $out += "`n### grounded answer (ask)`n"
-                }
-                $out += (& $bin ask $q 2>&1 | Out-String)
-                $out
-            } -ArgumentList $NotebookLmBin, $topic, $query
-        } else {
-            $job = Start-Job -ScriptBlock {
-                param($bin, $q)
-                [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-                $OutputEncoding = [System.Text.Encoding]::UTF8
-                $env:PYTHONIOENCODING = "utf-8"
-                $q = $q -replace '"', '\"'
-                & $bin -z $q --accept-hooks 2>&1 | Out-String
-            } -ArgumentList $HermesBin, $query
-        }
+        # Force UTF-8 for the child process's stdout/stderr: hermes writes
+        # UTF-8, but Start-Job spawns a fresh powershell.exe whose console
+        # encoding defaults to the system's legacy codepage (e.g. cp932 on
+        # Japanese Windows) unless told otherwise -- without this, multi-byte
+        # Japanese text gets captured as mojibake even though hermes itself
+        # produced correct output. Also escape embedded double quotes:
+        # PowerShell 5.1's native-command argument passing breaks the
+        # argument at unescaped embedded quotes (a query containing "Fable 5"
+        # split mid-string and hermes read the remainder as a positional
+        # command, failing in ~1s).
+        $job = Start-Job -ScriptBlock {
+            param($bin, $q)
+            [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+            $OutputEncoding = [System.Text.Encoding]::UTF8
+            $env:PYTHONIOENCODING = "utf-8"
+            $q = $q -replace '"', '\"'
+            & $bin -z $q --accept-hooks 2>&1 | Out-String
+        } -ArgumentList $HermesBin, $query
 
-        $launched += [pscustomobject]@{ Id = $id; File = $qfile; Job = $job; Start = Get-Date; Engine = $engine }
+        $launched += [pscustomobject]@{ Id = $id; File = $qfile; Job = $job; Start = Get-Date; Engine = "hermes" }
     }
 
-    if ($launched.Count -gt 0) {
-        $null = Wait-Job -Job ($launched | ForEach-Object { $_.Job }) -Timeout $QueryTimeout
+    # NotebookLM: one job handles the whole topic-group -- a single research
+    # crawl followed by one `ask` per question -- so Wait-Job's shared
+    # deadline below still applies, but the expensive crawl only happens once
+    # per topic instead of once per question.
+    $nbJob = $null
+    $nbStart = $null
+    if ($notebooklmGroup.Count -gt 0) {
+        Log "starting notebooklm for $($notebooklmGroup.Count) quer(y/ies) sharing topic '$($notebooklmGroup[0].Topic)'"
+        $nbStart = Get-Date
+        if (-not $NotebookLmBin -or -not (Test-Path $NotebookLmBin)) {
+            $nbJob = Start-Job -ScriptBlock {
+                param($items)
+                $items | ForEach-Object {
+                    [pscustomobject]@{ Id = $_.Id; Output = "notebooklm CLI not found on this machine. Install it (pip install notebooklm-py), run 'notebooklm login', create/use a notebook, then re-run setup-local.ps1 so watcher.env.ps1 pins NotebookLmBin." }
+                }
+            } -ArgumentList @($notebooklmGroup | ForEach-Object { [pscustomobject]@{ Id = $_.File.BaseName } })
+        } else {
+            $nbJob = Start-Job -ScriptBlock {
+                param($bin, $topic, $items)
+                [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+                $OutputEncoding = [System.Text.Encoding]::UTF8
+                $env:PYTHONIOENCODING = "utf-8"
+                $researchLog = ""
+                if ($topic) {
+                    $t = $topic -replace '"', '\"'
+                    $researchLog = "### research pass (source add-research, shared across $($items.Count) question(s))`n"
+                    $researchLog += (& $bin source add-research $t --import-all 2>&1 | Out-String)
+                    $researchLog += "`n"
+                }
+                $items | ForEach-Object {
+                    $q = $_.Query -replace '"', '\"'
+                    $answer = (& $bin ask $q 2>&1 | Out-String)
+                    [pscustomobject]@{ Id = $_.Id; Output = "$researchLog### grounded answer (ask)`n$answer" }
+                }
+            } -ArgumentList $NotebookLmBin, $notebooklmGroup[0].Topic, @($notebooklmGroup | ForEach-Object { [pscustomobject]@{ Id = $_.File.BaseName; Query = $_.Query } })
+        }
+    }
+
+    $waitTargets = @($launched | ForEach-Object { $_.Job })
+    if ($nbJob) { $waitTargets += $nbJob }
+    if ($waitTargets.Count -gt 0) {
+        $null = Wait-Job -Job $waitTargets -Timeout $QueryTimeout
     }
 
     foreach ($l in $launched) {
@@ -212,6 +244,41 @@ try {
         git add -A
         git -c user.name=hermes-relay -c user.email=hermes-relay@local commit -q -m "hermes-relay: result for $($l.Id)"
         $processed = $true
+    }
+
+    if ($nbJob) {
+        $nbDur = [int]((Get-Date) - $nbStart).TotalSeconds
+        $ts = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+        if ($nbJob.State -eq "Completed") {
+            $results = @(Receive-Job $nbJob)
+            foreach ($item in $notebooklmGroup) {
+                $id = $item.File.BaseName
+                $r = $results | Where-Object { $_.Id -eq $id } | Select-Object -First 1
+                $output = if ($r) { $r.Output } else { "(no output returned for this id -- job may have partially failed)" }
+                $status = "ok"
+                Log "finished $id [notebooklm, grouped]: $status"
+                $result = "---`nid: $id`nengine: notebooklm`nstatus: $status`nexecuted_at: $ts`nduration_seconds: $nbDur`n---`n`n$output`n"
+                [IO.File]::WriteAllText((Join-Path $RelayDir "automation\results\$id.md"), $result, (New-Object System.Text.UTF8Encoding($false)))
+                Move-Item $item.File.FullName (Join-Path $RelayDir "automation\queries\done\$id.md") -Force
+                git add -A
+                git -c user.name=hermes-relay -c user.email=hermes-relay@local commit -q -m "hermes-relay: result for $id"
+                $processed = $true
+            }
+        } else {
+            Stop-Job $nbJob -ErrorAction SilentlyContinue
+            foreach ($item in $notebooklmGroup) {
+                $id = $item.File.BaseName
+                Log "finished $id [notebooklm, grouped]: error (timeout)"
+                $output = "(timed out or failed after ${QueryTimeout}s; job state: $($nbJob.State); shared research pass may not have completed)"
+                $result = "---`nid: $id`nengine: notebooklm`nstatus: error (timeout)`nexecuted_at: $ts`nduration_seconds: $nbDur`n---`n`n$output`n"
+                [IO.File]::WriteAllText((Join-Path $RelayDir "automation\results\$id.md"), $result, (New-Object System.Text.UTF8Encoding($false)))
+                Move-Item $item.File.FullName (Join-Path $RelayDir "automation\queries\done\$id.md") -Force
+                git add -A
+                git -c user.name=hermes-relay -c user.email=hermes-relay@local commit -q -m "hermes-relay: result for $id"
+                $processed = $true
+            }
+        }
+        Remove-Job $nbJob -Force -ErrorAction SilentlyContinue
     }
 
     if ($processed) {
