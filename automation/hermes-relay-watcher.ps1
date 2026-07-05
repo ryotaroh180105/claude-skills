@@ -10,6 +10,7 @@ $ErrorActionPreference = "Continue"
 $RelayDir = if ($env:HERMES_RELAY_DIR) { $env:HERMES_RELAY_DIR } else { Join-Path $env:USERPROFILE ".hermes-relay" }
 $Branch = "hermes-relay"
 $QueryTimeout = if ($env:HERMES_QUERY_TIMEOUT) { [int]$env:HERMES_QUERY_TIMEOUT } else { 900 }
+$MaxParallel = if ($env:HERMES_MAX_PARALLEL) { [int]$env:HERMES_MAX_PARALLEL } else { 3 }
 
 # Task Scheduler runs with a minimal environment; watcher.env.ps1 pins the
 # hermes binary path captured at setup time.
@@ -63,10 +64,18 @@ try {
     $processed = $false
     $pending = Get-ChildItem (Join-Path $RelayDir "automation\queries\pending") -Filter *.md -ErrorAction SilentlyContinue
     Log "found $($pending.Count) pending quer(y/ies)"
-    foreach ($qfile in $pending) {
+
+    # Parallel execution: launch up to MaxParallel hermes jobs at once, then
+    # collect them under one shared deadline (they all start together, so a
+    # single QueryTimeout window covers each of them individually). Queries
+    # beyond the cap stay pending and are picked up by the next run. Set
+    # HERMES_MAX_PARALLEL=1 to restore serial behavior if concurrent OAuth
+    # token refreshes ever start failing.
+    $batch = @($pending | Select-Object -First $MaxParallel)
+    $launched = @()
+    foreach ($qfile in $batch) {
         $id = $qfile.BaseName
         $query = [IO.File]::ReadAllText($qfile.FullName)
-        $start = Get-Date
         Log "starting hermes for ${id}"
 
         # Force UTF-8 for the child process's stdout/stderr. Hermes (a Python
@@ -83,26 +92,34 @@ try {
             & $bin -z $q --accept-hooks 2>&1 | Out-String
         } -ArgumentList $HermesBin, $query
 
-        if (Wait-Job $job -Timeout $QueryTimeout) {
-            $output = (Receive-Job $job | Out-String).Trim()
+        $launched += [pscustomobject]@{ Id = $id; File = $qfile; Job = $job; Start = Get-Date }
+    }
+
+    if ($launched.Count -gt 0) {
+        $null = Wait-Job -Job ($launched | ForEach-Object { $_.Job }) -Timeout $QueryTimeout
+    }
+
+    foreach ($l in $launched) {
+        if ($l.Job.State -eq "Completed") {
+            $output = (Receive-Job $l.Job | Out-String).Trim()
             $status = "ok"
         } else {
-            Stop-Job $job
-            $output = "(timed out after ${QueryTimeout}s)"
+            Stop-Job $l.Job -ErrorAction SilentlyContinue
+            $output = "(timed out or failed after ${QueryTimeout}s; job state: $($l.Job.State))"
             $status = "error (timeout)"
         }
-        Remove-Job $job -Force -ErrorAction SilentlyContinue
-        Log "finished ${id}: $status"
+        Remove-Job $l.Job -Force -ErrorAction SilentlyContinue
+        Log "finished $($l.Id): $status"
 
-        $dur = [int]((Get-Date) - $start).TotalSeconds
+        $dur = [int]((Get-Date) - $l.Start).TotalSeconds
         $ts = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-        $result = "---`nid: $id`nstatus: $status`nexecuted_at: $ts`nduration_seconds: $dur`n---`n`n$output`n"
-        $outPath = Join-Path $RelayDir "automation\results\$id.md"
+        $result = "---`nid: $($l.Id)`nstatus: $status`nexecuted_at: $ts`nduration_seconds: $dur`n---`n`n$output`n"
+        $outPath = Join-Path $RelayDir "automation\results\$($l.Id).md"
         [IO.File]::WriteAllText($outPath, $result, (New-Object System.Text.UTF8Encoding($false)))
 
-        Move-Item $qfile.FullName (Join-Path $RelayDir "automation\queries\done\$id.md") -Force
+        Move-Item $l.File.FullName (Join-Path $RelayDir "automation\queries\done\$($l.Id).md") -Force
         git add -A
-        git -c user.name=hermes-relay -c user.email=hermes-relay@local commit -q -m "hermes-relay: result for $id"
+        git -c user.name=hermes-relay -c user.email=hermes-relay@local commit -q -m "hermes-relay: result for $($l.Id)"
         $processed = $true
     }
 
