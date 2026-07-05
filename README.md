@@ -62,6 +62,7 @@ claude-skills/
 | `task-management` | TODO.md ベースのタスク管理（分解・優先順位付け・週次振り返り） |
 | `model-switcher` | タスク種別に応じた Claude モデルの選択・切り替え（コスト最適化） |
 | `loop-engineering` | 定型作業を Trigger/Doer/Verifier/Stop Rules/Memory/Skills の自律ループとして設計する |
+| `biz-ops-guard` | 導入・保守・運用・マーケティング・差別化の5観点でプロダクト成立性を設計する |
 
 ### Tier2: 高難易度スキル
 
