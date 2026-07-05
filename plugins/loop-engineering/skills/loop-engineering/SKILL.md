@@ -21,7 +21,7 @@ cronウォッチャー等の実行基盤の上で回るもの）。**このス�
   定期実行に乗せたいとき
 - 「暴走しそうで怖い」「コストが心配」など安全設計の相談
 
-似て非なるもの: 既存スキル1個をどう改善するかは `skill-creator`、テストケースを
+似て非なるもの: 既存スキル1個をどう改善するかは `claude-skills-creator`、テストケースを
 使った品質改善サイクルは
 [docs/skill-quality-loop.md](../../../../docs/skill-quality-loop.md) が担当する。
 loop-engineeringはそれらより広く、「何かを繰り返し自動で回す」設計全般を扱う。
@@ -106,7 +106,7 @@ Verifierが上限超過を検知したら強制終了する）で担保する。
 ### 7. Skills/Routines を明示する
 
 そのループが毎回参照すべき知識（CLAUDE.md、対象スキルのSKILL.md）を明記する。
-新しくSkillを作る必要がある場合は `skill-creator` に委譲する。
+新しくSkillを作る必要がある場合は `claude-skills-creator` に委譲する。
 
 ### 8. 失敗モードチェック
 
