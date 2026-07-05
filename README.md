@@ -2,6 +2,9 @@
 
 Claude Code / Claude.ai で使う Skill 集を管理するリポジトリ。
 
+**目的**: ①インターン業務の効率と質を上げる ②個人開発・副業（SNS運用・ウェブ系）で稼ぐ ③就活で話せる実績を作る。
+各スキルの要件定義・目的タグ（G1/G2/G3）は [docs/skill-requirements.md](docs/skill-requirements.md)、優先順位と運用方針は [ROADMAP.md](ROADMAP.md) を参照。
+
 ```
 claude-skills/
 ├── .claude-plugin/
@@ -27,7 +30,7 @@ claude-skills/
 
 ```bash
 /plugin marketplace add ryotaroh180105/claude-skills
-/plugin install session-start-hook@claude-skills
+/plugin install requirements-definition@claude-skills
 ```
 
 更新を取り込むとき：
@@ -36,7 +39,7 @@ claude-skills/
 /plugin marketplace update claude-skills
 ```
 
-インストール後は `/session-start-hook:session-start-hook` のようにプラグイン名で呼び出せる。
+インストール後は `/requirements-definition:requirements-definition` のようにプラグイン名で呼び出せる（多くはトリガー条件に合う依頼をするだけで自動発動する）。
 
 ### Claude.ai（web）
 
@@ -49,40 +52,71 @@ claude-skills/
 
 ## スキル一覧
 
+### Tier1: 基盤スキル（他のスキル・作業の土台）
+
 | Plugin | 説明 |
 |---|---|
-| `session-start-hook` | Claude Code on the web 向けの SessionStart フックを設計・実装するスキル |
-| `agent-reach` | Agent-Reach (Twitter/X・Reddit・YouTube・GitHub・LinkedIn・Instagram 等を横断検索する OSS CLI) の導入・設定・利用を支援するスキル |
-| `hermes-x-search` | Hermes Agent (NousResearch/hermes-agent) の `x_search` を使い、手持ちのX/Grokサブスク枠でX(Twitter)の投稿・スレッド・プロフィールを調査するスキル。`hermes-relay` ブランチ経由の全自動リレー対応 |
-| `requirements-definition` | 曖昧な依頼からイシュー特定→MECE分解→ピラミッド構造化で要件定義書を作るスキル |
+| `requirements-definition` | 曖昧な依頼からイシュー特定→MECE分解→ピラミッド構造化で要件定義書を作る |
 | `work-approach-playbook` | 仕事の進め方プレイブック（作業前チェックリスト・報連相・完了報告・振り返り） |
 | `skill-creator` | このリポジトリでスキルを作成・改善・導入確認するメタスキル |
 | `task-management` | TODO.md ベースのタスク管理（分解・優先順位付け・週次振り返り） |
 | `model-switcher` | タスク種別に応じた Claude モデルの選択・切り替え（コスト最適化） |
+
+### Tier2: 高難易度スキル
+
+| Plugin | 説明 |
+|---|---|
+| `hermes-agent-setup` | Hermes Agent + MCP + Grok/X Search の情報収集基盤セットアップ・運用 |
 | `voicememo-pipeline` | 録音→文字起こし→議事録+フィードバック→Drive/Slack 送信の自動パイプライン |
 | `sns-ops-team` | SNS運用のマルチエージェントオーケストレーション（企画・執筆・レビュー・キュー管理） |
-| `hermes-agent-setup` | Hermes Agent + MCP + Grok/X Search の情報収集基盤セットアップ・運用 |
 | `code-review-adr` | 観点別コードレビュー + アーキテクチャ判断の ADR 記録 |
 | `pr-review` | GitHub PR のレビュー実行（取得→レビュー→承認後にコメント投稿） |
 | `github-trends` | GitHub トレンドからスキルネタを収集し候補リスト化（採択はユーザー判断） |
+
+### Tier3: 目的直結スキル
+
+個人開発・副業:
+
+| Plugin | 説明 |
+|---|---|
 | `lp-builder` | LP制作副業（ヒアリング→構成→実装→デプロイ→修正対応） |
 | `article-writer` | note記事の企画・執筆・推敲（文体メモ運用付き） |
 | `owned-media` | SEO記事作成（KW選定→競合分析→執筆→E-E-A-Tチェック） |
 | `twitter-intel` | X からの情報収集・要約（収集経路の自動選択） |
 | `sns-auto-posting` | 投稿キューの approved 行を X に投稿（Instagram/TikTok は手動整形） |
+
+インターン業務:
+
+| Plugin | 説明 |
+|---|---|
 | `testcase-usecase` | ユースケース・テストケースの網羅的洗い出し（TSV納品対応） |
 | `document-creation` | 議事録・提案書・報告書・社外メールの型付き作成 |
-| `consulting-quiz` | コンサル・営業知識クイズ（出題・採点・弱点管理） |
 | `pickup-automation` | 条件抽出ピックアップ業務の自動化（定義ファイル運用） |
+
+学習・知識:
+
+| Plugin | 説明 |
+|---|---|
+| `consulting-quiz` | コンサル・営業知識クイズ（出題・採点・弱点管理） |
 | `aws-exam-practice` | AWS 認定試験（SAA）の模試・演習・弱点復習 |
 
-今後の追加予定と優先順位は [ROADMAP.md](ROADMAP.md)、各スキルの要件定義は [docs/skill-requirements.md](docs/skill-requirements.md) を参照。
+### その他
+
+| Plugin | 説明 |
+|---|---|
+| `session-start-hook` | Claude Code on the web 向けの SessionStart フックを設計・実装するスキル |
+| `agent-reach` | Agent-Reach (Twitter/X・Reddit・YouTube・GitHub・LinkedIn・Instagram 等を横断検索する OSS CLI) の導入・設定・利用を支援するスキル |
+| `hermes-x-search` | Hermes Agent (NousResearch/hermes-agent) の `x_search` を使い、手持ちのX/Grokサブスク枠でX(Twitter)の投稿・スレッド・プロフィールを調査するスキル |
+
+## 作って終わりにしない：壁打ち→ブラッシュアップの運用
+
+v1.0.0 のスキルは叩き台。実際のタスクで使い、Claude と壁打ちしてフィードバックを SKILL.md に反映し、version を上げていくサイクルで練度を上げる（詳細は `skill-creator` スキルと [ROADMAP.md](ROADMAP.md) の運用方針を参照）。
+
+X・GitHub トレンド等から新しいスキルネタを収集し（`twitter-intel` / `github-trends`）、[ROADMAP.md](ROADMAP.md) の候補リストに追記→ユーザーが採択判断→実装、というサイクルも継続する。
 
 ### hermes-x-search の自動リレー
 
-Claude Code（リモート）と実機の Hermes Agent をつなぐメッセージキューが
-`hermes-relay` ブランチにあります。実機で以下を1回実行すれば、以後は
-Claude Code がクエリを push するだけで結果が自動で返ります：
+Claude Code（リモート）と実機の Hermes Agent をつなぐメッセージキューが `hermes-relay` ブランチにある。実機で以下を1回実行すれば、以後は Claude Code がクエリを push するだけで結果が自動で返る：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ryotaroh180105/claude-skills/hermes-relay/automation/setup-local.sh | bash
