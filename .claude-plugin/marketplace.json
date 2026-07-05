@@ -38,7 +38,7 @@
     {
       "name": "task-management",
       "source": "./plugins/task-management",
-      "description": "インターン・副業・学習のタスクを TODO.md ベースで受付→分解→優先順位付け→進捗管理→週次振り返りするスキル。",
+      "description": "タスクや依頼を TODO.md で一元管理するスキル。規模の大きいものは着手前にゴール/ステップ/見積もりを出す設計ゲート付き。",
       "category": "productivity"
     },
     {
