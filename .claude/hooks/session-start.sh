@@ -1,6 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+
+# MISTAKES.md の再発防止ルールを毎セッションのコンテキストに注入する。
+# ローカル・リモート両方で実行する（skills コピーより前）。
+if [ -f "$PROJECT_DIR/MISTAKES.md" ]; then
+  sed -n '/<!-- rules:start -->/,/<!-- rules:end -->/p' "$PROJECT_DIR/MISTAKES.md"
+fi
+
 # Claude Code on the web (Cowork remote sessions) has no /plugin command, so
 # marketplace skills in plugins/*/skills/*/ never become invokable there.
 # This hook copies every skill directly into ~/.claude/skills/ so remote
@@ -10,7 +18,6 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
 
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 SKILLS_DIR="${HOME}/.claude/skills"
 mkdir -p "$SKILLS_DIR"
 
