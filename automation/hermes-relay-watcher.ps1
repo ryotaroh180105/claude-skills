@@ -89,6 +89,13 @@ try {
             [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
             $OutputEncoding = [System.Text.Encoding]::UTF8
             $env:PYTHONIOENCODING = "utf-8"
+            # Escape embedded double quotes: PowerShell 5.1's native-command
+            # argument passing breaks the argument at unescaped embedded
+            # quotes, so a query containing "Fable 5" splits mid-string and
+            # hermes sees the remainder as a positional command (fails in
+            # ~1s with 'invalid choice'). Backslash-escaping survives the
+            # MSVCRT command-line reparse.
+            $q = $q -replace '"', '\"'
             & $bin -z $q --accept-hooks 2>&1 | Out-String
         } -ArgumentList $HermesBin, $query
 
