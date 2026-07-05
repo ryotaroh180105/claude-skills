@@ -254,6 +254,38 @@ After the result returns, Claude Code still does the editorial pass (verify
 suspicious claims, reformat for the user's actual purpose) — reshaping the
 input does not replace judging the output.
 
+### Output schema (two layers — don't over-formalize the body)
+
+Result files have two parts with different reliability guarantees:
+
+**Envelope (machine-written by the watcher, safe to parse strictly):**
+
+```
+---
+id: <query filename without .md>
+status: ok | error (exit N) | error (timeout)
+executed_at: <UTC ISO8601>
+duration_seconds: <int>
+---
+```
+
+**Body (LLM-written by Hermes/Grok, parse leniently):** request these standard
+section headings in every research query so downstream skills (twitter-intel,
+sns-auto-posting, article-writer) can reference sections by name:
+
+1. `今日見るべき話題` — summary of what matters and why
+2. `元ポスト/スレッドのURL（根拠）` — source URLs, one per claim
+3. `投稿に使える切り口` — post-ready angles
+4. `未確認・断定できない点` — what NOT to state as fact
+5. `明日以降も追うべき項目` — follow-up watchlist
+
+Do NOT demand strict JSON from Hermes: `-z` output is LLM-generated and
+formatting compliance is loose, so a strict parser will intermittently break
+on otherwise-good results. The body's consumer is Claude (an LLM), which
+handles section-name drift fine. Only introduce a JSON body (with a lenient
+parser and raw-text fallback) if a non-LLM consumer ever needs to read
+results without Claude in the loop.
+
 ## Turning a working research flow into a reusable skill
 
 Once a research prompt/flow works well repeatedly, use Hermes's own `/learn` to
