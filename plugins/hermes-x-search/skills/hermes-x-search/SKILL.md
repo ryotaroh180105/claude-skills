@@ -249,6 +249,12 @@ turn to clarify or reshape, so everything must be in the prompt up front:
 5. **Keep it one question**: don't batch unrelated research topics into one
    query file; enqueue separate files so a failure or timeout costs one topic,
    not all of them.
+6. **No ASCII double quotes in query text** — write search hints as
+   `verifier prompt / judge prompt` or use 「」, never `"verifier prompt"`.
+   PowerShell 5.1 splits native-command arguments at embedded `"`, so a
+   quoted phrase breaks `hermes -z` mid-string and the query dies in ~1s
+   with a hermes usage error (hit twice in production). The watcher now
+   escapes quotes as a backstop, but don't rely on it.
 
 After the result returns, Claude Code still does the editorial pass (verify
 suspicious claims, reformat for the user's actual purpose) — reshaping the
