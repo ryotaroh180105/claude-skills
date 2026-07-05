@@ -10,7 +10,16 @@ $ErrorActionPreference = "Continue"
 $RelayDir = if ($env:HERMES_RELAY_DIR) { $env:HERMES_RELAY_DIR } else { Join-Path $env:USERPROFILE ".hermes-relay" }
 $Branch = "hermes-relay"
 $QueryTimeout = if ($env:HERMES_QUERY_TIMEOUT) { [int]$env:HERMES_QUERY_TIMEOUT } else { 900 }
-$MaxParallel = if ($env:HERMES_MAX_PARALLEL) { [int]$env:HERMES_MAX_PARALLEL } else { 3 }
+# Per-engine caps, not one shared number: Hermes calls are independent CLI
+# processes hitting a remote API, so concurrency mainly costs OAuth-refresh
+# risk (3 concurrent ran clean in testing) -- default a bit higher. NotebookLM
+# drives a single persistent Playwright/Chrome profile (~/.notebooklm/profiles),
+# which is not documented as safe for concurrent access and browser profiles
+# generally lock against a second process -- default to serial (1) until
+# proven otherwise. Override per engine if you've verified your machine
+# tolerates more: HERMES_MAX_PARALLEL_HERMES, HERMES_MAX_PARALLEL_NOTEBOOKLM.
+$MaxParallelHermes = if ($env:HERMES_MAX_PARALLEL_HERMES) { [int]$env:HERMES_MAX_PARALLEL_HERMES } else { 5 }
+$MaxParallelNotebookLm = if ($env:HERMES_MAX_PARALLEL_NOTEBOOKLM) { [int]$env:HERMES_MAX_PARALLEL_NOTEBOOKLM } else { 1 }
 
 # Task Scheduler runs with a minimal environment; watcher.env.ps1 pins the
 # hermes / notebooklm binary paths captured at setup time.
@@ -90,24 +99,10 @@ try {
     $pending = Get-ChildItem (Join-Path $RelayDir "automation\queries\pending") -Filter *.md -ErrorAction SilentlyContinue
     Log "found $($pending.Count) pending quer(y/ies)"
 
-    # Parallel execution: launch up to MaxParallel hermes jobs at once, then
-    # collect them under one shared deadline (they all start together, so a
-    # single QueryTimeout window covers each of them individually). Queries
-    # beyond the cap stay pending and are picked up by the next run. Set
-    # HERMES_MAX_PARALLEL=1 to restore serial behavior if concurrent OAuth
-    # token refreshes ever start failing.
-    $batch = @($pending | Select-Object -First $MaxParallel)
-    $launched = @()
-    foreach ($qfile in $batch) {
-        $id = $qfile.BaseName
+    # Parse engine/topic header for every pending file up front so batching
+    # can cap each engine independently in the same run.
+    $parsed = foreach ($qfile in $pending) {
         $raw = [IO.File]::ReadAllText($qfile.FullName)
-
-        # Engine routing. Optional header lines at the top of the query file:
-        #   engine: hermes | notebooklm      (default: hermes)
-        #   topic: <short research topic>    (notebooklm only; used for the
-        #                                     web Deep Research pass before
-        #                                     asking the full question)
-        # The remaining body is the prompt/question itself.
         $engine = "hermes"
         $topic = $null
         $query = $raw
@@ -121,6 +116,29 @@ try {
             }
             $query = ($rest -join "`n").Trim()
         }
+        [pscustomobject]@{ File = $qfile; Engine = $engine; Topic = $topic; Query = $query }
+    }
+
+    # Parallel execution: launch up to each engine's own cap at once (see caps
+    # above), then collect everything under one shared deadline (all jobs
+    # start together, so a single QueryTimeout window covers each of them
+    # individually). Queries beyond a cap stay pending for the next run.
+    # Anything other than "notebooklm" falls through to the hermes execution
+    # branch below (an unrecognized engine value is treated as hermes, not
+    # silently dropped) -- classify the same way here so such a query still
+    # gets picked up rather than sitting in neither batch forever.
+    $notebooklmBatch = @($parsed | Where-Object { $_.Engine -eq "notebooklm" } | Select-Object -First $MaxParallelNotebookLm)
+    $hermesBatch = @($parsed | Where-Object { $_.Engine -ne "notebooklm" } | Select-Object -First $MaxParallelHermes)
+    $batch = @($hermesBatch) + @($notebooklmBatch)
+    Log "launching $($hermesBatch.Count) hermes + $($notebooklmBatch.Count) notebooklm (caps: $MaxParallelHermes/$MaxParallelNotebookLm)"
+
+    $launched = @()
+    foreach ($item in $batch) {
+        $qfile = $item.File
+        $id = $qfile.BaseName
+        $engine = $item.Engine
+        $topic = $item.Topic
+        $query = $item.Query
         Log "starting $engine for ${id}"
 
         # Force UTF-8 for the child process's stdout/stderr. Both engines are
