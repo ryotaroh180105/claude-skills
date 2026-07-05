@@ -27,16 +27,28 @@ if (-not $HermesBin -or -not (Test-Path $HermesBin)) {
 
 Set-Location $RelayDir
 
+$LogFile = Join-Path $RelayDir "watcher.log"
+function Log($msg) {
+    "$((Get-Date).ToString('o')) $msg" | Add-Content -Path $LogFile -Encoding UTF8
+}
+
 # Single-instance lock. Directory creation is atomic; x_search runs can
 # exceed the 1-minute schedule, so overlapping invocations must bail out.
+# Stale-lock threshold is 20 min, not 60: QueryTimeout defaults to 900s (15
+# min), so a genuinely stuck run is done well before 60 min, and a shorter
+# threshold matters a lot at this 1-minute cadence -- a stale lock silently
+# no-ops every single run (exit 0, nothing processed, nothing logged) until
+# it ages out, which is exactly what happened in testing with the old 60 min
+# value.
 $LockDir = Join-Path $RelayDir ".watcher.lock.d"
 try {
     New-Item -ItemType Directory -Path $LockDir -ErrorAction Stop | Out-Null
 } catch {
     $existing = Get-Item $LockDir -ErrorAction SilentlyContinue
-    if ($existing -and ((Get-Date) - $existing.CreationTime).TotalMinutes -gt 60) {
+    if ($existing -and ((Get-Date) - $existing.CreationTime).TotalMinutes -gt 20) {
+        Log "breaking stale lock created at $($existing.CreationTime.ToString('o'))"
         Remove-Item $LockDir -Force -Recurse -ErrorAction SilentlyContinue
-        try { New-Item -ItemType Directory -Path $LockDir -ErrorAction Stop | Out-Null } catch { exit 0 }
+        try { New-Item -ItemType Directory -Path $LockDir -ErrorAction Stop | Out-Null } catch { Log "could not acquire lock after breaking stale one, skipping this run"; exit 0 }
     } else {
         exit 0
     }
@@ -44,16 +56,18 @@ try {
 
 try {
     git fetch -q origin $Branch
-    if ($LASTEXITCODE -ne 0) { exit 1 }
+    if ($LASTEXITCODE -ne 0) { Log "git fetch failed (exit $LASTEXITCODE)"; exit 1 }
     git checkout -q $Branch 2>$null
     git reset -q --hard "origin/$Branch"
 
     $processed = $false
     $pending = Get-ChildItem (Join-Path $RelayDir "automation\queries\pending") -Filter *.md -ErrorAction SilentlyContinue
+    Log "found $($pending.Count) pending quer(y/ies)"
     foreach ($qfile in $pending) {
         $id = $qfile.BaseName
         $query = [IO.File]::ReadAllText($qfile.FullName)
         $start = Get-Date
+        Log "starting hermes for ${id}"
 
         $job = Start-Job -ScriptBlock {
             param($bin, $q)
@@ -69,6 +83,7 @@ try {
             $status = "error (timeout)"
         }
         Remove-Job $job -Force -ErrorAction SilentlyContinue
+        Log "finished ${id}: $status"
 
         $dur = [int]((Get-Date) - $start).TotalSeconds
         $ts = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
