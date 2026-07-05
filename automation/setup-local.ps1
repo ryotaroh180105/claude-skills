@@ -77,14 +77,28 @@ if ($LASTEXITCODE -ne 0) {
 # 5. Watcher env file (Task Scheduler runs with a minimal PATH, so pin the hermes binary path)
 "`$HermesBin = `"$HermesPath`"" | Set-Content (Join-Path $RelayDir "watcher.env.ps1") -Encoding UTF8
 
-# 6. Task Scheduler registration (every minute; overlapping runs are prevented by the watcher's own lock)
+# 6. Task Scheduler registration (every minute; overlapping runs are prevented
+#    by the watcher's own lock). Uses the ScheduledTasks module rather than
+#    schtasks.exe: schtasks-created tasks default to "don't start on battery
+#    power" / "stop if going on battery", which silently prevents the task
+#    from EVER firing on a laptop that isn't plugged in -- it shows up as
+#    "Ready" with a valid next-run time forever, with LastRunTime stuck at
+#    the sentinel "never run" value. Explicitly disable those conditions.
 $WatcherPath = Join-Path $RelayDir "automation\hermes-relay-watcher.ps1"
-$TaskAction = "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$WatcherPath`""
-schtasks /Create /F /TN "HermesRelayWatcher" /SC MINUTE /MO 1 /TR $TaskAction | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "!! schtasks failed to register the task (exit $LASTEXITCODE). Try running this script from an elevated PowerShell" -ForegroundColor Red
-} else {
-    Write-Host "-- Task Scheduler job registered (runs every minute, task name: HermesRelayWatcher)"
+try {
+    $taskAction = New-ScheduledTaskAction -Execute "powershell.exe" `
+        -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$WatcherPath`""
+    $taskTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date) `
+        -RepetitionInterval (New-TimeSpan -Minutes 1)
+    $taskSettings = New-ScheduledTaskSettingsSet `
+        -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable `
+        -MultipleInstances IgnoreNew
+    Register-ScheduledTask -TaskName "HermesRelayWatcher" -Action $taskAction `
+        -Trigger $taskTrigger -Settings $taskSettings -Force | Out-Null
+    Write-Host "-- Task Scheduler job registered (runs every minute even on battery, task name: HermesRelayWatcher)"
+} catch {
+    Write-Host "!! Failed to register the Task Scheduler job: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "!! Try running this script from an elevated PowerShell" -ForegroundColor Red
 }
 
 # 7. Run once immediately (does nothing if the pending queue is empty)
