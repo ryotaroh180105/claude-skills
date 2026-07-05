@@ -14,8 +14,11 @@ def package_skill(skill_dir: Path, output_dir: Path) -> Path:
 
     with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for file_path in skill_dir.rglob("*"):
-            if file_path.is_file():
-                zf.write(file_path, file_path.relative_to(skill_dir))
+            if not file_path.is_file():
+                continue
+            if "__pycache__" in file_path.parts or file_path.suffix == ".pyc":
+                continue
+            zf.write(file_path, file_path.relative_to(skill_dir))
 
     return output_path
 
