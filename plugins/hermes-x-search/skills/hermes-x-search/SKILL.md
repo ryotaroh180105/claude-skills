@@ -286,6 +286,28 @@ handles section-name drift fine. Only introduce a JSON body (with a lenient
 parser and raw-text fallback) if a non-LLM consumer ever needs to read
 results without Claude in the loop.
 
+### Preserve source material, not just summaries (link-extraction queries)
+
+A summary alone destroys the source information — it can't be re-verified,
+re-quoted, or re-analyzed from a different angle later. Whenever the query
+has Hermes read linked content (note articles, blog posts, X Articles via
+`web_extract`/browser), require these additional sections in the output:
+
+1. `元ポストURL / リンク先URL` — both links, so the chain of custody from
+   tweet to article is preserved.
+2. `引用可能な原文抜粋` — key passages quoted **verbatim** in 「」, not
+   paraphrased. These are what the user can safely reuse in a quote-repost
+   or article without re-reading the source.
+3. `全文抽出（生テキスト）` — the full extracted text (or however much was
+   readable) appended raw at the end of the result, clearly marked as raw.
+   Result files are just text on a git branch; length is not a problem.
+
+Section 3 is the important one: when the user later wants the same article
+re-analyzed from a different angle, Claude re-reads the raw appendix from the
+existing result file — no re-query, no extra Hermes/Grok cost, no risk the
+page has changed or gone down. Also have Hermes state explicitly whether it
+read the full text or was cut off (paywall / member-only sections on note).
+
 ## Turning a working research flow into a reusable skill
 
 Once a research prompt/flow works well repeatedly, use Hermes's own `/learn` to
