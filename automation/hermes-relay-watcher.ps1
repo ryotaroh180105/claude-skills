@@ -35,25 +35,45 @@ function Log($msg) {
 
 # Single-instance lock. Directory creation is atomic; x_search runs can
 # exceed the 1-minute schedule, so overlapping invocations must bail out.
-# Stale-lock threshold is 20 min, not 60: QueryTimeout defaults to 900s (15
-# min), so a genuinely stuck run is done well before 60 min, and a shorter
-# threshold matters a lot at this 1-minute cadence -- a stale lock silently
-# no-ops every single run (exit 0, nothing processed, nothing logged) until
-# it ages out, which is exactly what happened in testing with the old 60 min
-# value.
+# A lock is only broken when BOTH conditions hold: it is older than 20 min
+# AND the process that created it (pid file inside the lock dir) is gone.
+# Age alone is not enough: a legitimate serial batch once ran 22 minutes,
+# a second watcher "broke" its live lock at the 20-minute mark, and the two
+# processes then raced git operations in the same working tree -- which is
+# how a stray .git\index.lock ended up wedging every subsequent run.
 $LockDir = Join-Path $RelayDir ".watcher.lock.d"
+$LockPidFile = Join-Path $LockDir "pid"
+
+function Test-LockHolderAlive {
+    if (-not (Test-Path $LockPidFile)) { return $false }
+    $lockPid = Get-Content $LockPidFile -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $lockPid) { return $false }
+    return [bool](Get-Process -Id $lockPid -ErrorAction SilentlyContinue)
+}
+
 try {
     New-Item -ItemType Directory -Path $LockDir -ErrorAction Stop | Out-Null
+    Set-Content -Path $LockPidFile -Value $PID
 } catch {
     $existing = Get-Item $LockDir -ErrorAction SilentlyContinue
-    if ($existing -and ((Get-Date) - $existing.CreationTime).TotalMinutes -gt 20) {
-        Log "breaking stale lock created at $($existing.CreationTime.ToString('o'))"
+    $isOld = $existing -and ((Get-Date) - $existing.CreationTime).TotalMinutes -gt 20
+    if ($isOld -and -not (Test-LockHolderAlive)) {
+        Log "breaking stale lock created at $($existing.CreationTime.ToString('o')) (holder process gone)"
         Remove-Item $LockDir -Force -Recurse -ErrorAction SilentlyContinue
-        try { New-Item -ItemType Directory -Path $LockDir -ErrorAction Stop | Out-Null } catch { Log "could not acquire lock after breaking stale one, skipping this run"; exit 0 }
+        try {
+            New-Item -ItemType Directory -Path $LockDir -ErrorAction Stop | Out-Null
+            Set-Content -Path $LockPidFile -Value $PID
+        } catch { Log "could not acquire lock after breaking stale one, skipping this run"; exit 0 }
     } else {
         exit 0
     }
 }
+
+# We hold the exclusive watcher lock, so no other watcher is mid-git-op.
+# A leftover .git\index.lock can only be debris from a crashed/killed run
+# (or the historical double-run race) -- clear it or every git command
+# below fails and the queue wedges permanently.
+Remove-Item (Join-Path $RelayDir ".git\index.lock") -Force -ErrorAction SilentlyContinue
 
 try {
     git fetch -q origin $Branch
