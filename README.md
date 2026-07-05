@@ -36,9 +36,11 @@ curl -fsSL https://raw.githubusercontent.com/ryotaroh180105/claude-skills/hermes
 **Windows ネイティブ（WSL不要、PowerShellで実行）:**
 
 ```powershell
-irm https://raw.githubusercontent.com/ryotaroh180105/claude-skills/hermes-relay/automation/setup-local.ps1 -OutFile "$env:TEMP\setup-local.ps1"
-powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\setup-local.ps1"
+git clone --branch hermes-relay --single-branch https://github.com/ryotaroh180105/claude-skills.git "$env:USERPROFILE\.hermes-relay"
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.hermes-relay\automation\setup-local.ps1"
 ```
+
+`irm ... -OutFile` 方式ではなく `git clone` を使うのは、`raw.githubusercontent.com` への名前解決がブロックされている環境（ISP/セキュリティソフトのDNSフィルタ）があるため。`git clone` は `github.com` だけを使うので回避できる。
 
 Windows 版は cron の代わりにタスクスケジューラ（タスク名 `HermesRelayWatcher`）で毎分実行します。
 停止: `schtasks /Delete /TN HermesRelayWatcher /F`
