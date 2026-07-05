@@ -232,6 +232,82 @@ x_search で◯◯についての直近の投稿・反応を調べてくださ�
 This keeps confirmed facts (with source URLs) separate from unconfirmed chatter,
 which matters before quote-reposting or citing something in a written post.
 
+### Query-design checklist (reshape the user's ask before enqueueing)
+
+The user sends a one-line ask; Claude Code's job is to expand it into the
+prompt Hermes actually receives. `-z` is one-shot — there is no follow-up
+turn to clarify or reshape, so everything must be in the prompt up front:
+
+1. **Concretize the scope**: name the specific angles the user implied
+   ("スキルを取得したい" → include tools/repos/skills as an explicit target).
+2. **Fix the output format**: numbered sections, as above. Always include a
+   「未確認・断定できない点」section — it's what makes results safe to quote.
+3. **Require source URLs** for every claim so the user can verify before
+   reposting or citing.
+4. **State the language** (日本語で) — Hermes otherwise follows the query's
+   language loosely.
+5. **Keep it one question**: don't batch unrelated research topics into one
+   query file; enqueue separate files so a failure or timeout costs one topic,
+   not all of them.
+
+After the result returns, Claude Code still does the editorial pass (verify
+suspicious claims, reformat for the user's actual purpose) — reshaping the
+input does not replace judging the output.
+
+### Output schema (two layers — don't over-formalize the body)
+
+Result files have two parts with different reliability guarantees:
+
+**Envelope (machine-written by the watcher, safe to parse strictly):**
+
+```
+---
+id: <query filename without .md>
+status: ok | error (exit N) | error (timeout)
+executed_at: <UTC ISO8601>
+duration_seconds: <int>
+---
+```
+
+**Body (LLM-written by Hermes/Grok, parse leniently):** request these standard
+section headings in every research query so downstream skills (twitter-intel,
+sns-auto-posting, article-writer) can reference sections by name:
+
+1. `今日見るべき話題` — summary of what matters and why
+2. `元ポスト/スレッドのURL（根拠）` — source URLs, one per claim
+3. `投稿に使える切り口` — post-ready angles
+4. `未確認・断定できない点` — what NOT to state as fact
+5. `明日以降も追うべき項目` — follow-up watchlist
+
+Do NOT demand strict JSON from Hermes: `-z` output is LLM-generated and
+formatting compliance is loose, so a strict parser will intermittently break
+on otherwise-good results. The body's consumer is Claude (an LLM), which
+handles section-name drift fine. Only introduce a JSON body (with a lenient
+parser and raw-text fallback) if a non-LLM consumer ever needs to read
+results without Claude in the loop.
+
+### Preserve source material, not just summaries (link-extraction queries)
+
+A summary alone destroys the source information — it can't be re-verified,
+re-quoted, or re-analyzed from a different angle later. Whenever the query
+has Hermes read linked content (note articles, blog posts, X Articles via
+`web_extract`/browser), require these additional sections in the output:
+
+1. `元ポストURL / リンク先URL` — both links, so the chain of custody from
+   tweet to article is preserved.
+2. `引用可能な原文抜粋` — key passages quoted **verbatim** in 「」, not
+   paraphrased. These are what the user can safely reuse in a quote-repost
+   or article without re-reading the source.
+3. `全文抽出（生テキスト）` — the full extracted text (or however much was
+   readable) appended raw at the end of the result, clearly marked as raw.
+   Result files are just text on a git branch; length is not a problem.
+
+Section 3 is the important one: when the user later wants the same article
+re-analyzed from a different angle, Claude re-reads the raw appendix from the
+existing result file — no re-query, no extra Hermes/Grok cost, no risk the
+page has changed or gone down. Also have Hermes state explicitly whether it
+read the full text or was cut off (paywall / member-only sections on note).
+
 ## Turning a working research flow into a reusable skill
 
 Once a research prompt/flow works well repeatedly, use Hermes's own `/learn` to
