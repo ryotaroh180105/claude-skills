@@ -1,7 +1,7 @@
 {
   "name": "hermes-x-search",
   "description": "Install and configure Hermes Agent (NousResearch/hermes-agent) and use its x_search tool to research X (Twitter) posts, threads, and profiles on a SuperGrok / X Premium+ subscription instead of paying per-call for the X API.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "ryotaroh180105"
   },

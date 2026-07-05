@@ -16,4 +16,4 @@
 - Skills/Routines: CLAUDE.md、対象 SKILL.md、docs/skill-quality-loop.md、skill-creator（修正の落とし込み）。
 - Human gate: 自動実行時の反映は PR 作成まで（マージは Ryo が承認）。
 - 失敗モードチェック: Blind（Verifier分離済み）/ Tangled（Doerは既存手順呼び出しのみ）/ Amnesiac（test-log.md）/ Manual（Routineで自動起動）いずれも該当なし。
-- 履歴: 2026-07-05 1周目完了（v1.2.0、fail 0）。
+- 履歴: 2026-07-05 1周目完了（v1.2.0、fail 0）。2026-07-05 2周目完了（実地適用、v1.3.0 + hermes-x-search v1.1.0、修正必須1件=実名プライバシー。卒業カウント0リセット）。

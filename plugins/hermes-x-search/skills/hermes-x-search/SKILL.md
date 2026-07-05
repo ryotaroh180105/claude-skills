@@ -320,6 +320,10 @@ sns-auto-posting, article-writer) can reference sections by name:
 4. `未確認・断定できない点` — what NOT to state as fact
 5. `明日以降も追うべき項目` — follow-up watchlist
 
+For non-SNS uses (market research for `biz-ops-guard`, technical research),
+rename headings 1/3/5 to fit the purpose. Only 2 (source URLs, one per claim)
+and 4 (未確認・断定できない点) are mandatory in every research query.
+
 Do NOT demand strict JSON from Hermes: `-z` output is LLM-generated and
 formatting compliance is loose, so a strict parser will intermittently break
 on otherwise-good results. The body's consumer is Claude (an LLM), which
