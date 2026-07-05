@@ -1,0 +1,8 @@
+{
+  "name": "voicememo-pipeline",
+  "description": "録音ファイルを文字起こしし、議事録と会話フィードバックを生成して Google Drive 保存・Slack 送信まで行う自動パイプライン。MTG録音の議事録化や商談同席の振り返りに使う。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}

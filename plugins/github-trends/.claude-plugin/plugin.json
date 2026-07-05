@@ -1,0 +1,8 @@
+{
+  "name": "github-trends",
+  "description": "GitHub トレンドとスキル系リポジトリを定期収集し、仕事に活かせそうなものを 3 行要約付きで ROADMAP の候補リストに整形するスキル。採択判断は必ずユーザーが行い、勝手に実装まで進めない。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}

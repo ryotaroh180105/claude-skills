@@ -54,6 +54,29 @@ claude-skills/
 | `session-start-hook` | Claude Code on the web 向けの SessionStart フックを設計・実装するスキル |
 | `agent-reach` | Agent-Reach (Twitter/X・Reddit・YouTube・GitHub・LinkedIn・Instagram 等を横断検索する OSS CLI) の導入・設定・利用を支援するスキル |
 | `hermes-x-search` | Hermes Agent (NousResearch/hermes-agent) の `x_search` を使い、SuperGrok/X Premium+ 契約枠でX(Twitter)の投稿・スレッド・プロフィールを調査するスキル |
+| `requirements-definition` | 曖昧な依頼からイシュー特定→MECE分解→ピラミッド構造化で要件定義書を作るスキル |
+| `work-approach-playbook` | 仕事の進め方プレイブック（作業前チェックリスト・報連相・完了報告・振り返り） |
+| `skill-creator` | このリポジトリでスキルを作成・改善・導入確認するメタスキル |
+| `task-management` | TODO.md ベースのタスク管理（分解・優先順位付け・週次振り返り） |
+| `model-switcher` | タスク種別に応じた Claude モデルの選択・切り替え（コスト最適化） |
+| `voicememo-pipeline` | 録音→文字起こし→議事録+フィードバック→Drive/Slack 送信の自動パイプライン |
+| `sns-ops-team` | SNS運用のマルチエージェントオーケストレーション（企画・執筆・レビュー・キュー管理） |
+| `hermes-agent-setup` | Hermes Agent + MCP + Grok/X Search の情報収集基盤セットアップ・運用 |
+| `code-review-adr` | 観点別コードレビュー + アーキテクチャ判断の ADR 記録 |
+| `pr-review` | GitHub PR のレビュー実行（取得→レビュー→承認後にコメント投稿） |
+| `github-trends` | GitHub トレンドからスキルネタを収集し候補リスト化（採択はユーザー判断） |
+| `lp-builder` | LP制作副業（ヒアリング→構成→実装→デプロイ→修正対応） |
+| `article-writer` | note記事の企画・執筆・推敲（文体メモ運用付き） |
+| `owned-media` | SEO記事作成（KW選定→競合分析→執筆→E-E-A-Tチェック） |
+| `twitter-intel` | X からの情報収集・要約（収集経路の自動選択） |
+| `sns-auto-posting` | 投稿キューの approved 行を X に投稿（Instagram/TikTok は手動整形） |
+| `testcase-usecase` | ユースケース・テストケースの網羅的洗い出し（TSV納品対応） |
+| `document-creation` | 議事録・提案書・報告書・社外メールの型付き作成 |
+| `consulting-quiz` | コンサル・営業知識クイズ（出題・採点・弱点管理） |
+| `pickup-automation` | 条件抽出ピックアップ業務の自動化（定義ファイル運用） |
+| `aws-exam-practice` | AWS 認定試験（SAA）の模試・演習・弱点復習 |
+
+今後の追加予定と優先順位は [ROADMAP.md](ROADMAP.md)、各スキルの要件定義は [docs/skill-requirements.md](docs/skill-requirements.md) を参照。
 
 ## 新しいスキルを追加する
 
@@ -102,10 +125,13 @@ EOF
 
 ```bash
 python3 scripts/validate_skills.py
-git add .
+git add plugins/<new-skill> .claude-plugin/marketplace.json README.md
 git commit -m "Add: <new-skill>"
 git push
 ```
+
+手順の詳細（description のトリガー設計・前提セットアップ節の書き方・練度向上の回し方）は
+`skill-creator` スキル（`plugins/skill-creator`）が正。ここは最小手順のみ。
 
 GitHub Actions（`.github/workflows/validate-skills.yml`）が push / PR のたびに
 `validate_skills.py` を実行し、`marketplace.json` に登録されたスキルの

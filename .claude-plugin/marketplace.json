@@ -18,6 +18,132 @@
       "category": "productivity"
     },
     {
+      "name": "requirements-definition",
+      "source": "./plugins/requirements-definition",
+      "description": "曖昧な依頼・アイデアからイシュー特定→MECE分解→ピラミッド構造化で構造化された要件定義書を作成するスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "work-approach-playbook",
+      "source": "./plugins/work-approach-playbook",
+      "description": "仕事の進め方プレイブック。作業前チェックリスト・報連相・完了報告・振り返りの型を提供するスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "skill-creator",
+      "source": "./plugins/skill-creator",
+      "description": "このリポジトリで新しいスキルを作成・改善・導入確認するためのメタスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "task-management",
+      "source": "./plugins/task-management",
+      "description": "インターン・副業・学習のタスクを TODO.md ベースで受付→分解→優先順位付け→進捗管理→週次振り返りするスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "model-switcher",
+      "source": "./plugins/model-switcher",
+      "description": "タスク種別に応じて Claude モデル（Fable/Opus/Sonnet/Haiku）を選択・切り替えてコスト効率を最適化するスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "voicememo-pipeline",
+      "source": "./plugins/voicememo-pipeline",
+      "description": "録音ファイルを文字起こし→議事録+会話フィードバック生成→Google Drive保存・Slack送信まで自動で行うパイプラインスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "sns-ops-team",
+      "source": "./plugins/sns-ops-team",
+      "description": "SNS運用を企画・リサーチ・執筆・レビュー・スケジュール管理のマルチエージェントで回すオーケストレーションスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "hermes-agent-setup",
+      "source": "./plugins/hermes-agent-setup",
+      "description": "Hermes Agent + MCP + xAI Grok の X/ウェブ検索を組み合わせた情報収集基盤のセットアップ・運用スキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "code-review-adr",
+      "source": "./plugins/code-review-adr",
+      "description": "観点別チェックリストでのコードレビューと、アーキテクチャ判断の ADR（docs/adr/）記録を一体で行うスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "pr-review",
+      "source": "./plugins/pr-review",
+      "description": "GitHub PR の情報取得→観点別レビュー→下書き提示→承認後のコメント投稿までを実行するスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "github-trends",
+      "source": "./plugins/github-trends",
+      "description": "GitHub トレンド・リポジトリ検索から仕事に活かせるスキルネタを収集し、ROADMAP の候補リストに追記するスキル（採択判断はユーザー）。",
+      "category": "productivity"
+    },
+    {
+      "name": "lp-builder",
+      "source": "./plugins/lp-builder",
+      "description": "LP制作の副業案件をヒアリング→構成設計→単一HTML実装→デプロイ→修正対応まで一気通貫で進めるスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "article-writer",
+      "source": "./plugins/article-writer",
+      "description": "note記事の企画・執筆・推敲スキル。切り口設計→タイトル案→構成→執筆（文体メモ運用）→推敲→公開設定提案。",
+      "category": "productivity"
+    },
+    {
+      "name": "owned-media",
+      "source": "./plugins/owned-media",
+      "description": "オウンドメディアのSEO記事作成スキル。キーワード選定→競合分析→アウトライン→執筆→E-E-A-T・メタ情報チェック。",
+      "category": "productivity"
+    },
+    {
+      "name": "twitter-intel",
+      "source": "./plugins/twitter-intel",
+      "description": "X（Twitter）から仕事に活かせる情報を収集・要約するスキル。xAI x_search / agent-reach / X API v2 から利用可能な経路を自動選択。",
+      "category": "productivity"
+    },
+    {
+      "name": "sns-auto-posting",
+      "source": "./plugins/sns-auto-posting",
+      "description": "投稿キュー（post-queue.md）の approved 行を X に投稿し、Instagram/TikTok は手動投稿用に整形出力する実行系スキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "testcase-usecase",
+      "source": "./plugins/testcase-usecase",
+      "description": "仕様・要件からユースケースとテストケースを網羅的に洗い出すスキル。正常系/異常系/境界値の展開とTSV納品まで。",
+      "category": "productivity"
+    },
+    {
+      "name": "document-creation",
+      "source": "./plugins/document-creation",
+      "description": "議事録・提案書・報告書・社外メールを型で素早く作るビジネス書類作成スキル。3段階のトーン調整対応。",
+      "category": "productivity"
+    },
+    {
+      "name": "consulting-quiz",
+      "source": "./plugins/consulting-quiz",
+      "description": "コンサル・営業知識（ロジカルシンキング/フレームワーク/会計/営業/ケース面接）のクイズ出題・採点・弱点管理スキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "pickup-automation",
+      "source": "./plugins/pickup-automation",
+      "description": "情報源から条件に合うものを抽出・整形して届けるピックアップ業務の自動化スキル。初回はヒアリングで定義ファイルを作成。",
+      "category": "productivity"
+    },
+    {
+      "name": "aws-exam-practice",
+      "source": "./plugins/aws-exam-practice",
+      "description": "AWS 認定試験（SAA-C03 デフォルト）の模試・演習スキル。シナリオ型4択、ドメイン別採点、弱点復習の学習ログ管理。",
+      "category": "productivity"
+    },
+    {
       "name": "hermes-x-search",
       "source": "./plugins/hermes-x-search",
       "description": "Install and configure Hermes Agent (NousResearch/hermes-agent) and use its x_search tool to research X (Twitter) posts, threads, and profiles on a SuperGrok / X Premium+ subscription instead of paying per-call for the X API.",

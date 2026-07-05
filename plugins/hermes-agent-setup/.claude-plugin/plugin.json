@@ -1,0 +1,8 @@
+{
+  "name": "hermes-agent-setup",
+  "description": "Hermes Agent + MCP + Grok/X Search を組み合わせた情報収集基盤のセットアップと運用。xAI API キーを入れれば X・ウェブから仕事に活かせる情報収集が即動く状態にする。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}

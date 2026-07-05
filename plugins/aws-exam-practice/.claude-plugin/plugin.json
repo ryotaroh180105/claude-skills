@@ -1,0 +1,8 @@
+{
+  "name": "aws-exam-practice",
+  "description": "AWS 認定試験（デフォルト SAA-C03、CLF 等にも対応）の模試・演習スキル。本番形式のシナリオ型問題を出題し、ドメイン別採点・誤答解説・学習ログ（aws-study-log.md）による弱点復習まで行う。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}

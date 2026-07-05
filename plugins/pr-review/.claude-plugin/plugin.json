@@ -1,0 +1,8 @@
+{
+  "name": "pr-review",
+  "description": "GitHub PR のレビュー実行スキル。PR の diff・関連コード・CI 状態を取得して観点別レビューを行い、下書きをユーザー承認のうえで PR にコメント投稿する。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "code-review-adr",
+  "description": "コードレビューと ADR（Architecture Decision Record）作成を一体で行うスキル。観点別チェックリストと重要度付き指摘フォーマットでレビューし、アーキテクチャ上の判断を検出したら docs/adr/ に連番で決定記録を残す。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}

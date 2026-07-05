@@ -1,0 +1,9 @@
+{
+  "name": "article-writer",
+  "description": "note記事の企画・執筆・推敲を一気通貫で支援するスキル。切り口設計、タイトル案出し、構成、文体メモに基づく執筆、推敲チェック、ハッシュタグ・導線提案まで対応。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  },
+  "category": "productivity"
+}

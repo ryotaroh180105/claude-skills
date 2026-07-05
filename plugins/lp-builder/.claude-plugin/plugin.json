@@ -1,0 +1,9 @@
+{
+  "name": "lp-builder",
+  "description": "LP（ランディングページ）制作の副業用スキル。クライアントヒアリングから構成設計（AIDA/PASONA/BEAF）、コピーライティング、単一HTMLでのレスポンシブ実装、無料枠デプロイ、納品後の修正対応までの全工程をカバーする。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  },
+  "category": "productivity"
+}

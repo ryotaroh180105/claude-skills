@@ -1,0 +1,18 @@
+{
+  "model": "grok-4",
+  "input": [
+    {
+      "role": "system",
+      "content": "あなたは情報収集アシスタント。X の投稿を検索し、事実と出典URLを必ずセットで報告する。見つからない場合は正直に「該当なし」と答える。"
+    },
+    {
+      "role": "user",
+      "content": "REPLACE_ME_QUERY"
+    }
+  ],
+  "tools": [
+    {
+      "type": "x_search"
+    }
+  ]
+}
