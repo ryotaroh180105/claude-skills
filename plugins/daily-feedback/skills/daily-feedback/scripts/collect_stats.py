@@ -67,6 +67,8 @@ def main():
                     e = json.loads(line)
                 except json.JSONDecodeError:
                     continue
+                if not isinstance(e, dict):
+                    continue
                 ts = e.get("timestamp", "")
                 if not ts:
                     continue
