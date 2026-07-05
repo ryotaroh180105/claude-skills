@@ -232,6 +232,28 @@ x_search で◯◯についての直近の投稿・反応を調べてくださ�
 This keeps confirmed facts (with source URLs) separate from unconfirmed chatter,
 which matters before quote-reposting or citing something in a written post.
 
+### Query-design checklist (reshape the user's ask before enqueueing)
+
+The user sends a one-line ask; Claude Code's job is to expand it into the
+prompt Hermes actually receives. `-z` is one-shot — there is no follow-up
+turn to clarify or reshape, so everything must be in the prompt up front:
+
+1. **Concretize the scope**: name the specific angles the user implied
+   ("スキルを取得したい" → include tools/repos/skills as an explicit target).
+2. **Fix the output format**: numbered sections, as above. Always include a
+   「未確認・断定できない点」section — it's what makes results safe to quote.
+3. **Require source URLs** for every claim so the user can verify before
+   reposting or citing.
+4. **State the language** (日本語で) — Hermes otherwise follows the query's
+   language loosely.
+5. **Keep it one question**: don't batch unrelated research topics into one
+   query file; enqueue separate files so a failure or timeout costs one topic,
+   not all of them.
+
+After the result returns, Claude Code still does the editorial pass (verify
+suspicious claims, reformat for the user's actual purpose) — reshaping the
+input does not replace judging the output.
+
 ## Turning a working research flow into a reusable skill
 
 Once a research prompt/flow works well repeatedly, use Hermes's own `/learn` to
