@@ -110,7 +110,7 @@ claude-skills/
 
 ## 作って終わりにしない：壁打ち→ブラッシュアップの運用
 
-v1.0.0 のスキルは叩き台。実際のタスクで使い、Claude と壁打ちしてフィードバックを SKILL.md に反映し、version を上げていくサイクルで練度を上げる（詳細は `skill-creator` スキルと [ROADMAP.md](ROADMAP.md) の運用方針を参照）。
+v1.0.0 のスキルは叩き台。実際のタスクで使い、Claude と壁打ちしてフィードバックを SKILL.md に反映し、version を上げていくサイクルで練度を上げる（詳細は `skill-creator` スキルと [ROADMAP.md](ROADMAP.md) の運用方針、テストケース生成〜採点の具体的なループは [docs/skill-quality-loop.md](docs/skill-quality-loop.md) を参照）。
 
 X・GitHub トレンド等から新しいスキルネタを収集し（`twitter-intel` / `github-trends`）、[ROADMAP.md](ROADMAP.md) の候補リストに追記→ユーザーが採択判断→実装、というサイクルも継続する。
 
