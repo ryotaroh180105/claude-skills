@@ -118,10 +118,19 @@ pushes a query file, the local watcher executes it within ~1 minute, and
 pushes the result back. Expected end-to-end latency: **1–4 minutes**.
 
 **One-time local setup** (the only thing the user ever runs by hand; includes
-one interactive OAuth browser login):
+one interactive OAuth browser login). Linux / macOS / WSL2:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ryotaroh180105/claude-skills/hermes-relay/automation/setup-local.sh | bash
+```
+
+Windows native (no WSL; uses Task Scheduler instead of cron — note that in
+PowerShell `curl` is an alias for Invoke-WebRequest, so don't hand the user
+the bash one-liner there):
+
+```powershell
+irm https://raw.githubusercontent.com/ryotaroh180105/claude-skills/hermes-relay/automation/setup-local.ps1 -OutFile "$env:TEMP\setup-local.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\setup-local.ps1"
 ```
 
 **Per query, from the Claude Code session** — enqueue:
