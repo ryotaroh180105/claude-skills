@@ -128,4 +128,4 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 
 | 追加日 | 候補 | ソース | 状態 |
 |---|---|---|---|
-| - | （まだなし） | - | - |
+| 2026-07-05 | `loop-engineering` — Trigger/Doer/Verifier(Maker-Checker)/Stop Rules/Memory(LOOPS.md)/Skillsの6要素でスキルの自動化ループ（sns-ops-team週次・pickup-automation日次・github-trends週次など）を設計するスキル。Loopy（Forward-Future/loopy, secretbuilds/loopy）等の実装例あり | X + WebSearch（hermes-agent-setup経由 + 本セッション調査） | 候補 |

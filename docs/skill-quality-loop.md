@@ -31,6 +31,21 @@
   **Verifierを実行層から完全に分離し、自分の出力を自分で採点させない**ことと、
   Stop Rulesを「成功条件」と「安全上限（イテレーション数・コスト）」の**二重**で
   持つことが、玩具レベルと実用レベルのループを分ける鍵とされている。
+- この原則は **Maker-Checker パターン**として Claude Code 公式ドキュメントでも
+  採用されている。「作業したエージェントに、作業が終わったか自己判定させない」。
+  Claude Code の `/goal` は、各ターン後に**別の・より軽量なモデル（既定 Haiku）**に
+  完了条件だけを判定させる。書いた本人が採点しない構造そのもの。
+  ([How the agent loop works, Claude Code Docs](https://code.claude.com/docs/en/agent-sdk/agent-loop))
+- コスト上限は**プロンプトの指示文（プローズ）ではなくコードで強制**しないと
+  意味がない。タスク達成に動機づけられたエージェントは、システムプロンプトに
+  書かれた「予算を守れ」を平気で無視する。Claude Agent SDK は `max_turns` /
+  `max_budget_usd` を実パラメータとして持つ（既定は無制限）。
+  ([The $47,000 Agent Loop, dev.to](https://dev.to/waxell/the-47000-agent-loop-why-token-budget-alerts-arent-budget-enforcement-389i))
+- `LOOPS.md` に「残しておきたいループ」を保存し次回セッションで再利用する運用が
+  Claude Code の公式パターンとして存在する。汎用の自動化ループ資産は `LOOPS.md`、
+  本ドキュメントが定義する**スキル固有のテスト履歴**は各スキルの `test-log.md`、
+  と役割を分ける（後述 Phase 6）。
+  ([AI Loop Engineering, sabrina.dev](https://www.sabrina.dev/p/loop-engineering-claude-code-goal-routines))
 
 ## ループの全体像
 
@@ -54,6 +69,8 @@ Phase 0 スコープ選定 → 1 ケース生成 → 2 実行 → 3 採点 → 4
   2. **安全上限**: 対象スキル 1〜2個・所要 30〜60分・Phase 1〜4 の往復は最大3周まで。
      3周しても収束しない（同じ症状が直らない）場合はループを止めて Ryo に相談する
      （「一貫して間違った修正」を繰り返すループが一番のリスクという教訓に対応）。
+     **この上限は指示文ではなく実際にループを打ち切る行動で守る**
+     （「あと1周だけ」を自分に許可しない）。
 
 ## Phase 1: テストケース生成（4軸で多様化する）
 
@@ -77,7 +94,7 @@ SKILL.md 作成時に列挙した5個以上のユースケースをベースに�
 各ケースを実際に Claude Code 上でスキルを発動させて走らせる（またはドライラン）。
 出力と、どのステップで詰まったかを記録する。
 
-## Phase 3: 採点（3層グレーダー、Verifierは実行層から分離する）
+## Phase 3: 採点（3層グレーダー、Maker-Checkerで分離する）
 
 1. **決定的チェック**: `validate_skills.py` 通過、スクリプトの構文・実行可否、
    参照ファイルパスの実在性など機械的に判定できるもの。
