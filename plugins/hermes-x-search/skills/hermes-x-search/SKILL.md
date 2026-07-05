@@ -126,12 +126,19 @@ curl -fsSL https://raw.githubusercontent.com/ryotaroh180105/claude-skills/hermes
 
 Windows native (no WSL; uses Task Scheduler instead of cron — note that in
 PowerShell `curl` is an alias for Invoke-WebRequest, so don't hand the user
-the bash one-liner there):
+the bash one-liner there). Use `git clone` rather than `irm ... -OutFile`:
+some networks (ISP or endpoint-security DNS filtering) block
+`raw.githubusercontent.com` specifically while `github.com` itself resolves
+fine, and `irm` against the blocked host fails with a bare "remote name
+could not be resolved" that's easy to misdiagnose as a Hermes problem:
 
 ```powershell
-irm https://raw.githubusercontent.com/ryotaroh180105/claude-skills/hermes-relay/automation/setup-local.ps1 -OutFile "$env:TEMP\setup-local.ps1"
-powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\setup-local.ps1"
+git clone --branch hermes-relay --single-branch https://github.com/ryotaroh180105/claude-skills.git "$env:USERPROFILE\.hermes-relay"
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.hermes-relay\automation\setup-local.ps1"
 ```
+
+If `git` itself isn't found, `winget install Git.Git` then open a *new*
+PowerShell window before retrying (PATH doesn't refresh in the same window).
 
 **Per query, from the Claude Code session** — enqueue:
 
@@ -247,6 +254,10 @@ APIキー・個人情報・未公開の戦略は含めないでください。
   `agent-reach`.
 - Never put `XAI_API_KEY` or OAuth tokens in chat/context; configure them via
   `hermes tools` / the credential store, not inline.
+- If editing the `.ps1` relay scripts: keep `Write-Host`/comment text ASCII-only.
+  Windows PowerShell 5.1 reads `.ps1` files with the system's legacy codepage
+  unless the file carries a UTF-8 BOM, so non-ASCII text (e.g. Japanese) reliably
+  produces mojibake and string-parsing errors on Japanese-locale Windows.
 - If the user wants zero-subscription-cost scraping instead (accepting slower,
   more fragile results), point them at this same repo's `agent-reach` skill,
   which reads X via browser cookies rather than any paid API or subscription.
