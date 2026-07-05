@@ -15,8 +15,13 @@
 # .ps1 files using the system's legacy codepage unless the file has a UTF-8
 # BOM, so non-ASCII text here reliably breaks string parsing on Japanese
 # Windows installs. Keep all Write-Host text ASCII-only.
-
-$ErrorActionPreference = "Stop"
+#
+# NOTE: deliberately NOT "Stop". git routinely writes non-error status
+# (e.g. "Everything up-to-date") to stderr, and PowerShell treats any native
+# command's stderr output as a terminating error when ErrorActionPreference
+# is "Stop" -- that killed a real run on a successful `git push --dry-run`.
+# Real failures below are caught explicitly via $LASTEXITCODE / Test-Path.
+$ErrorActionPreference = "Continue"
 
 $RepoUrl = if ($env:HERMES_RELAY_REPO) { $env:HERMES_RELAY_REPO } else { "https://github.com/ryotaroh180105/claude-skills.git" }
 $RelayDir = if ($env:HERMES_RELAY_DIR) { $env:HERMES_RELAY_DIR } else { Join-Path $env:USERPROFILE ".hermes-relay" }
@@ -76,7 +81,11 @@ if ($LASTEXITCODE -ne 0) {
 $WatcherPath = Join-Path $RelayDir "automation\hermes-relay-watcher.ps1"
 $TaskAction = "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$WatcherPath`""
 schtasks /Create /F /TN "HermesRelayWatcher" /SC MINUTE /MO 1 /TR $TaskAction | Out-Null
-Write-Host "-- Task Scheduler job registered (runs every minute, task name: HermesRelayWatcher)"
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "!! schtasks failed to register the task (exit $LASTEXITCODE). Try running this script from an elevated PowerShell" -ForegroundColor Red
+} else {
+    Write-Host "-- Task Scheduler job registered (runs every minute, task name: HermesRelayWatcher)"
+}
 
 # 7. Run once immediately (does nothing if the pending queue is empty)
 Write-Host "-- Running the watcher once now to verify..."
