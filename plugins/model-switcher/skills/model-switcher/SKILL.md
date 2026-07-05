@@ -1,6 +1,6 @@
 ---
 name: model-switcher
-description: タスクの難易度・種類に応じて使用する Claude モデル（Fable 5 / Opus 4.8 / Sonnet 5 / Haiku 4.5）を選択し、/model・settings.json・サブエージェントの model 指定で切り替えるスキル。セッション開始時やタスクが切り替わった時、大量のデータ整形・定型処理を頼まれた時、設計・要件定義・難デバッグなど難しい仕事を始める時、「どのモデルを使うべきか」「コストを下げたい」と聞かれた時、Fable 無料期間終了（2026-07-07）以降の構成相談を受けた時に使用する。
+description: タスクの難易度・種類に応じて使用する Claude モデル（Fable 5 / Opus 4.8 / Sonnet 5 / Haiku 4.5）を選択し、/model・settings.json・サブエージェントの model 指定で切り替えるスキル。セッション開始時やタスクが切り替わった時、大量のデータ整形・定型処理を頼まれた時、設計・要件定義・難デバッグなど難しい仕事を始める時、「どのモデルを使うべきか」「コストを下げたい」と聞かれた時、Fable 無料期間終了（2026-07-07）以降の構成相談を受けた時に使用する。Fable 5 / Opus 4.8 を開発タスクで使うと判定・確認した場合は token-saver・yagni-guard も自動で併用する。
 ---
 
 # Model Switcher
@@ -122,6 +122,21 @@ model: haiku
 委譲の目安: 「対象が 10 件以上」×「1 件ごとの手順が同じ」×「判断が要らない」が
 そろったら Haiku サブエージェントに出す。1 件でも判断が要る箇所が混ざるなら、
 その箇所だけメイン（上位モデル）で処理し、残りを委譲する。
+
+## Fable / Opus 使用時の自動適用: token-saver + yagni-guard
+
+**Fable 5 / Opus 4.8 を開発タスク（コーディング・設計・デバッグ・スキル作成等）で
+使う、または使うと確認が取れた時点で、ユーザーの追加指示を待たずに
+`token-saver`（full）と `yagni-guard`（full）を併用する。** 単価が最も高い
+モデルだからこそ、応答の無駄・過剰実装によるコスト増を一番避けたい場面のため。
+
+- `/model claude-fable-5` / `/model opus` に切り替えた、または現在のモデルが
+  Fable/Opus で開発作業を続ける、と判定した瞬間に両スキルを適用開始する。
+- Sonnet / Haiku に切り替えたら、この自動適用は終了してよい
+  （ユーザーが明示的に「caveman/ponytail 続けて」と言えば継続する）。
+- 適用中の具体的な振る舞いは各スキル本体を参照:
+  `plugins/token-saver/skills/token-saver/SKILL.md` /
+  `plugins/yagni-guard/skills/yagni-guard/SKILL.md`。
 
 ## 運用ルール
 
