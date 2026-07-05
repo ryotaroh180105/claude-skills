@@ -1,9 +1,9 @@
 ---
-name: claude-skills-creator
-description: claude-skills リポジトリ（ryotaroh180105/claude-skills）で新しいスキル/プラグインを作成・改善・導入確認するときに使うメタスキル。Anthropic公式の skill-creator（汎用スキル作成ツール）とは別物で、こちらはこのリポジトリ固有の構成（plugins/<name>/skills/<name>/, marketplace.json, ROADMAP.md）に特化する。「新しいスキルを作って」「スキルを追加したい」「SKILL.md を書いて/改善して」「スキルが発動しなかったので直したい」「ROADMAP のステータスを更新して」といった依頼で発動する。英語キーワード: create skill, new skill, add plugin, write SKILL.md, improve skill, skill not triggering, update roadmap, marketplace.json.
+name: repo-skill-creator
+description: claude-skills リポジトリ（ryotaroh180105/claude-skills）で新しいスキル/プラグインを作成・改善・導入確認するときに使うメタスキル。Anthropic公式の skill-creator（汎用スキル作成ツール）とは別物で、こちらはこのリポジトリ固有の構成（plugins以下の各スキルディレクトリ、marketplace.json、ROADMAP.md）に特化する。「新しいスキルを作って」「スキルを追加したい」「SKILL.md を書いて/改善して」「スキルが発動しなかったので直したい」「ROADMAP のステータスを更新して」といった依頼で発動する。英語キーワード: create skill, new skill, add plugin, write SKILL.md, improve skill, skill not triggering, update roadmap, marketplace.json.
 ---
 
-# claude-skills-creator — このリポジトリ専用のスキル作成・練度向上メタスキル
+# repo-skill-creator — このリポジトリ専用のスキル作成・練度向上メタスキル
 
 このリポジトリで新しいスキルを作成し、**実際に Claude Code / claude.ai に導入されるまで**を
 完遂するためのスキル。README の手順を体系化・強化したもの。外部サービス依存はない。

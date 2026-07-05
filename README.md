@@ -63,7 +63,7 @@ claude.ai の個人スキルアップロードには公開APIが無く、Setting
 |---|---|
 | `requirements-definition` | 曖昧な依頼からイシュー特定→MECE分解→ピラミッド構造化で要件定義書を作る |
 | `work-approach-playbook` | 仕事の進め方プレイブック（作業前チェックリスト・報連相・完了報告・振り返り） |
-| `claude-skills-creator` | このリポジトリでスキルを作成・改善・導入確認するメタスキル（公式skill-creatorと別物） |
+| `repo-skill-creator` | このリポジトリでスキルを作成・改善・導入確認するメタスキル（公式skill-creatorと別物） |
 | `task-management` | TODO.md ベースのタスク管理（分解・優先順位付け・週次振り返り） |
 | `model-switcher` | タスク種別に応じた Claude モデルの選択・切り替え（コスト最適化） |
 | `loop-engineering` | 定型作業を Trigger/Doer/Verifier/Stop Rules/Memory/Skills の自律ループとして設計する |
@@ -119,7 +119,7 @@ claude.ai の個人スキルアップロードには公開APIが無く、Setting
 
 ## 作って終わりにしない：壁打ち→ブラッシュアップの運用
 
-v1.0.0 のスキルは叩き台。実際のタスクで使い、Claude と壁打ちしてフィードバックを SKILL.md に反映し、version を上げていくサイクルで練度を上げる（詳細は `claude-skills-creator` スキルと [ROADMAP.md](ROADMAP.md) の運用方針、テストケース生成〜採点の具体的なループは [docs/skill-quality-loop.md](docs/skill-quality-loop.md) を参照）。
+v1.0.0 のスキルは叩き台。実際のタスクで使い、Claude と壁打ちしてフィードバックを SKILL.md に反映し、version を上げていくサイクルで練度を上げる（詳細は `repo-skill-creator` スキルと [ROADMAP.md](ROADMAP.md) の運用方針、テストケース生成〜採点の具体的なループは [docs/skill-quality-loop.md](docs/skill-quality-loop.md) を参照）。
 
 X・GitHub トレンド等から新しいスキルネタを収集し（`twitter-intel` / `github-trends`）、[ROADMAP.md](ROADMAP.md) の候補リストに追記→ユーザーが採択判断→実装、というサイクルも継続する。
 
@@ -186,7 +186,7 @@ git push
 ```
 
 手順の詳細（description のトリガー設計・前提セットアップ節の書き方・練度向上の回し方）は
-`claude-skills-creator` スキル（`plugins/claude-skills-creator`）が正。ここは最小手順のみ。
+`repo-skill-creator` スキル（`plugins/repo-skill-creator`）が正。ここは最小手順のみ。
 
 GitHub Actions（`.github/workflows/validate-skills.yml`）が push / PR のたびに
 `validate_skills.py` を実行し、`marketplace.json` に登録されたスキルの

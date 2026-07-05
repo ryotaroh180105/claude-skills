@@ -1,5 +1,5 @@
 {
-  "name": "claude-skills-creator",
+  "name": "repo-skill-creator",
   "description": "このリポジトリ（ryotaroh180105/claude-skills）で新しいスキルを作成・改善・導入確認するためのメタスキル。ディレクトリ構成・SKILL.md の書き方・marketplace.json 登録・検証・導入確認・通知・ROADMAP 更新までを体系化する。",
   "version": "1.1.0",
   "author": { "name": "ryotaroh180105" }
