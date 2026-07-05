@@ -102,6 +102,7 @@ claude-skills/
 | `aws-exam-practice` | AWS 認定試験（SAA）の模試・演習・弱点復習 |
 | `token-saver` | 応答・コンテキスト両面でトークン消費を削減する簡潔応答モードスキル |
 | `yagni-guard` | 実装前後にYAGNIの観点でチェックし、過剰設計・不要な抽象化を防ぐスキル |
+| `daily-feedback` | 一日のClaude/Claude Code利用を3軸（プロンプティング力・コスト・運用判断）で振り返るデイリーフィードバック |
 
 ### その他
 
