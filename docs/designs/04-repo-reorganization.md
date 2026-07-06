@@ -49,7 +49,7 @@
   リポジトリ URL + ブランチ名固定で毎分ポーリング）を壊すリスクがあり、既に隔離済みで整理不要
 - `docs/` 直下の旧形式設計書（hermes-web-engine-design.md, mistakes-db-design.md,
   skill-quality-loop.md, skill-requirements.md, global-rules.md, fable5-design-assets.md）の
-  `docs/designs/` への移動・改名 — MISTAKES.md 等から相対パスで参照されており、
+  `docs/designs/` への移動・改名 — MISTAKES.md と README.md から相対パスで参照されており、
   移動はリンク切れリスクのみでメリットなし（凍結扱い。00 設計書 §7 の「実装済みは凍結」と同じ）
 - 常駐の整理エージェント・定期レビュー Routine の新設 — YAGNI。CI 検査 +
   repo-skill-creator の観点で足りる。CI 検査が3ヶ月で3回以上逸脱を検出したら再検討
@@ -217,7 +217,7 @@ CI はコミット済みツリーを検査するため）。集合が ROOT_ALLOW
 | # | 失敗シナリオ | 早期警報サイン | 設計上の対策 |
 |---|---|---|---|
 | 1 | ディレクトリ移動でインストール済みスキル・hooks が壊れる（最頻・最重）— 実装者が「整理」の名目で plugins/ や docs/ を移動する | 移行 PR の diff に plugins/ 配下・marketplace.json のパス変更が含まれる | 移動を agent/ 削除の1件に限定（§5.2）。§2.2 で plugins/ 移動・docs 改名を明示禁止。§3 に /plugin update と28スキル enabled の実機確認を完成条件化 |
-| 2 | agent/ と .agents/ の削除対象を取り違え、外部スキル70個が読み込み不能になる | 削除コミット後、実機のスキル一覧から brainstorming 等が消える | 差分調査で `.agents/` が正（name: 補完済み）と確定済み。さらにタスク1 で削除前にユーザー実機確認、失敗時は §7 の中断ルール。復元は git revert 1発 |
+| 2 | agent/ と .agents/ の削除対象を取り違え、外部スキル70個が読み込み不能になる | 削除コミット後、実機のスキル一覧から brainstorming が消える | 差分調査で `.agents/` が正（name: 補完済み）と確定済み。さらにタスク1 で削除前にユーザー実機確認、失敗時は §7 の中断ルール。復元は git revert 1発 |
 | 3 | 規約が読まれず混在が再発する（アプリを plugins/ に作る、実データをコミットする） | ルート直下に許可リスト外のエントリが現れる / CI が fail する | validate_skills.py のルート検査で機械検出 + repo-skill-creator の配置レビュー観点で作成時に先回り。CLAUDE.md 非依存（肥大回避）で CI に寄せる |
 
 watcher 破壊は「hermes-relay に触らない」（§2.2）ため発生経路がないが、
