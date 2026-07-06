@@ -1,10 +1,37 @@
 #!/usr/bin/env python3
 """Validate that every skill referenced by the marketplace has a well-formed SKILL.md."""
 import json
+import subprocess
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+ROOT_ALLOWLIST = {
+    ".agents", ".claude", ".claude-plugin", ".github", ".gitignore",
+    "CLAUDE.md", "LOOPS.md", "MISTAKES.md", "README.md", "ROADMAP.md",
+    "AGENT_TEAM.md", "docs", "intel", "plugins", "scripts", "skills-lock.json",
+}
+
+
+def validate_root_layout(errors: list):
+    """Check that committed top-level entries are all in ROOT_ALLOWLIST."""
+    try:
+        out = subprocess.run(
+            ["git", "ls-files"], cwd=REPO_ROOT,
+            capture_output=True, text=True, check=True,
+        ).stdout
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("WARN: git ls-files unavailable, skipping root layout check")
+        return
+    top = {line.split("/", 1)[0] for line in out.splitlines() if line}
+    stray = sorted(top - ROOT_ALLOWLIST)
+    if stray:
+        for path in stray:
+            errors.append(f"root layout: unexpected top-level entry '{path}' "
+                          f"(add to ROOT_ALLOWLIST + README tree if intended)")
+    else:
+        print("root layout OK")
 
 
 def load_plugin_entries():
@@ -38,11 +65,12 @@ def validate_skill_md(skill_dir: Path, label: str, errors: list):
 
 def main():
     errors = []
+    validate_root_layout(errors)
     plugins = load_plugin_entries()
 
     if not plugins:
         print("No plugins declared in marketplace.json")
-        return 0
+        return 1 if errors else 0
 
     for plugin in plugins:
         plugin_id = plugin.get("name", "<unnamed>")
