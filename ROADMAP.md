@@ -104,6 +104,7 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 |---|---|---|
 | 🎉 | `consulting-quiz` | コンサル・営業知識クイズ |
 | 🎉 | `aws-exam-practice` | AWS模試スキル |
+| ✅ | `daily-feedback` | Claude/Claude Code利用の3軸デイリーフィードバック |
 
 ## バッチ計画
 
