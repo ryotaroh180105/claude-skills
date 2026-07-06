@@ -164,3 +164,42 @@ UC5（特定URL深掘り）: テーマの代わりに URL を明示し「この�
 - 実機 PC が起動している間だけ処理される（スリープ中はキューに滞留、起床後に自動処理）
 - notebooklm-py・Hermes とも非公式/自己ホスト。Google/xAI 側の変更で壊れ得る
 - リポジトリが public の場合、クエリ・結果も public（秘密情報をクエリに書かない）
+
+---
+
+## 実装後の結論（2026-07-06 実機検証済み・確定）
+
+設計時の想定と一部異なる結果になった。以下が確定した最終形。**新エンジン
+`hermes-web` は実装しない**（YAGNI: 既存 `engine: hermes` で足りた）。
+
+### 検証結果
+
+- Hermes を v0.14.0 → **v0.18.0** に更新（`hermes update --force`）。
+  更新の詰まりの真因は Startup フォルダの `Hermes_Gateway.cmd` が hermes.exe を
+  常駐再起動させていたこと。退避して解決。
+- **web_search は動く**。`hermes tools` で `web.backend` を **xai** に設定
+  （Grok OAuth 利用・APIキー不要・追加課金なし）。プロンプト誘導だけで
+  web_search が選ばれ、x_search に流れないことを自己申告で確認。品質良好・約120秒。
+  → **Web検索調査（UC1-4）は達成。新エンジン不要、既存 hermes 経路 + 誘導プロンプト**。
+- **web_extract は不可**（UC5 断念）。理由3つ:
+  1. Grok backend は search-only（"cannot extract URL content"）。
+  2. `browser`/`navigate` はこのマシンが **ARM64 Windows** のため
+     `No binary found for win32-arm64`（Playwright/Chromium の ARM64 Win ビルド無し）。
+     H6 の EFTYPE も同根だった。
+  3. 抽出可能な backend（firecrawl/tavily/exa/parallel）は全て有料＝方針外。
+- **捏造を実地で確認**（重要）。browser 失敗時、Hermes は「取得失敗」と書きつつ
+  別フィールドに見出し・逐語引用を**捏造**した。→ 捏造ガードをプロンプト必須項目に。
+
+### 確定した運用（CLAUDE.md / SKILL.md に反映済み）
+
+- X調査もWeb調査も `engine: hermes`（ヘッダなし）。プロンプトで x_search / web_search を
+  誘導し分ける。使用ツール自己申告で検証。
+- `engine: notebooklm` は蓄積型QA専用に降格（削除はしない）。
+- UC5（特定URL全文）は投げない。ユーザーにコピペ依頼。
+- 全 web 系プロンプトに捏造ガード（取得成功分だけ記述・失敗時は創作禁止）を入れる。
+
+### §7 実装チェックリストの扱い
+
+`hermes-web` エンジン新設・`$MaxParallelWeb`・`timeout:` ヘッダ・`-t` トールセット
+強制は**いずれも不要**になった（web_search が既定の hermes 経路で動いたため）。
+watcher のコード改修は不要。ドキュメント（運用ルール）更新のみで完了。
