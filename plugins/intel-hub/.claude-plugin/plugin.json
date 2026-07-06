@@ -1,0 +1,9 @@
+{
+  "name": "intel-hub",
+  "description": "hermes-relay経由の調査結果を intel/ 配下のMarkdown+YAML frontmatterレコード（原則DB・SNS投稿DB）に正規化して蓄積し、Grepベースで再検索するスキル。Phase 1（収集→保存→検索）のみ実装済み。",
+  "version": "0.1.0",
+  "author": {
+    "name": "ryotaroh180105"
+  },
+  "category": "productivity"
+}
