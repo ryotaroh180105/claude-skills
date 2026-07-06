@@ -297,5 +297,8 @@ daily-feedback の SKILL.md 本体で使う採点基準。TOJETのタスク定�
   https://x.com/zephyr_z9/status/2041855450166259963 、 https://x.com/i/status/2073649148688306394 、
   https://x.com/gensou_ai_/status/2073770131625574499 、 https://x.com/eng_khairallah1/status/2048696032473522638
 
-**注記**: `cc-cost-ops-web.md`（NotebookLM, Web全般の運用コスト調査）はエラー
-スタブのため本リファレンスでは未使用。再実行・統合は後工程。
+**注記**: `cc-cost-ops-web.md`（NotebookLM, Web全般の運用コスト調査）は初回・再実行
+（v2, 2026-07-06実行）とも実機の NotebookLM 認証切れ（`notebooklm login` 要再認証）
+によりエラースタブのため本リファレンスでは未使用。統合内容自体は X 由来の
+`cc-cost-x-tips.md`（本ファイル ②コスト最適化節に反映済み）でカバーされているため、
+NotebookLM 側の再実行は必須ではない。実機で再認証済みなら追加裏取りとして歓迎。
