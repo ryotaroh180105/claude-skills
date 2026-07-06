@@ -168,6 +168,12 @@
       "category": "productivity"
     },
     {
+      "name": "skill-design-rigor",
+      "source": "./plugins/skill-design-rigor",
+      "description": "設計・指示出し前に計画ゲートを強制し、書いた指示を自己反証＋刈り込みするスキル（Fable-Sonnet運用ブリッジ）。",
+      "category": "productivity"
+    },
+    {
       "name": "loop-engineering",
       "source": "./plugins/loop-engineering",
       "description": "Trigger/Doer/Verifier(Maker-Checker)/Stop Rules/Memory/Skillsの6要素で、定型作業を安全な自律ループとして設計するスキル。",
