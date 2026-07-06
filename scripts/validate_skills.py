@@ -8,7 +8,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 ROOT_ALLOWLIST = {
-    ".agents", ".claude", ".claude-plugin", ".github", ".gitignore",
+    ".agents", "agent", ".claude", ".claude-plugin", ".github", ".gitignore",
     "CLAUDE.md", "LOOPS.md", "MISTAKES.md", "README.md", "ROADMAP.md",
     "AGENT_TEAM.md", "docs", "intel", "plugins", "scripts", "skills-lock.json",
 }
