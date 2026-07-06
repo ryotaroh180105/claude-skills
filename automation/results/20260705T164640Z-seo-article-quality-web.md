@@ -1,0 +1,32 @@
+---
+id: 20260705T164640Z-seo-article-quality-web
+engine: notebooklm
+status: ok
+executed_at: 2026-07-06T06:27:02Z
+duration_seconds: 5
+---
+
+### research pass (source add-research, shared across 1 question(s))
+notebooklm.exe : Unexpected error: Authentication expired or invalid. Redirected to: https://accounts.google.com/<redac
+ted>
+発生場所 行:10 文字:38
++ ... searchLog += (& $bin source add-research $t --import-all 2>&1 | Out-S ...
++                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Unexpected erro....com/<redacted>:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Run 'notebooklm login' to re-authenticate.
+This may be a bug. Please report at https://github.com/teng-lin/notebooklm-py/issues
+
+### grounded answer (ask)
+notebooklm.exe : Unexpected error: Authentication expired or invalid. Redirected to: https://accounts.google.com/<redac
+ted>
+発生場所 行:15 文字:32
++                     $answer = (& $bin ask $q 2>&1 | Out-String)
++                                ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Unexpected erro....com/<redacted>:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Run 'notebooklm login' to re-authenticate.
+This may be a bug. Please report at https://github.com/teng-lin/notebooklm-py/issues
+
