@@ -243,6 +243,16 @@ bookmarked_at: 2026-07-14      # 不明なら collected_at と同値
 
 ### 6.4 Kindle/書籍取り込み（Phase 3-B）
 
+**【設計整合メモ・実装前に必読】** 本節は執筆時点（並列設計中）で
+`docs/designs/14-app-kindle-summarizer.md` の存在を検知できず独自に書いた案。
+14 は Kindle 入力の**正式な詳細設計**（My Clippings.txt パーサ方式を採用、
+read.amazon.co.jp 貼り付け方式は法的リスクで却下）であり、本節の案A/B とは
+入力方式が異なる。**実装は 14 を正とし、本節の案A/Bはその前段階の構想として
+参考にとどめる**（14 §5 のパーサ・スキーマ定義を優先し、下記の inbox 貼り付け
+前提は採用しない）。矛盾点: 本節はread.amazon.co.jp/notebookからの貼り付け
+（inbox/kindle-*.md）を前提にしているが、14はこれをブラウザ拡張と同様に
+ToS/保守コストの観点で却下し、My Clippings.txt（端末エクスポート）を選定している。
+
 **案A（疑問即調査）**:
 1. 入力「Kindle: <書名> <疑問文>」。
 2. エンジン選択: 事実性の疑問（用語定義・事実確認）→ `engine: notebooklm` + `topic:`。実践知・評判・比較 → `engine: hermes-web`。
