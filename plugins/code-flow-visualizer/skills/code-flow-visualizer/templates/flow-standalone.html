@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>処理フロー: <エントリポイント名></title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --border: #d0d0d0;
+    --accent: #4a5568;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1a1a1a; --fg: #e8e8e8; --border: #444444; --accent: #a0aec0; }
+  }
+  :root[data-theme="dark"] { --bg: #1a1a1a; --fg: #e8e8e8; --border: #444444; --accent: #a0aec0; }
+  :root[data-theme="light"] { --bg: #ffffff; --fg: #1a1a1a; --border: #d0d0d0; --accent: #4a5568; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, "Hiragino Sans", "Segoe UI", sans-serif;
+    line-height: 1.6;
+    max-width: 960px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+  h1 { font-size: 1.4rem; }
+  .meta { color: var(--accent); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .diagram-container {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  .diagram-container svg { max-width: none; height: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  th, td { border: 1px solid var(--border); padding: 0.4rem 0.6rem; text-align: left; font-size: 0.9rem; }
+  .legend { font-size: 0.85rem; color: var(--accent); }
+</style>
+</head>
+<body>
+<h1>処理フロー: <エントリポイント名></h1>
+<p class="meta">
+  対象: <ファイルパス:行 / 関数名 / APIパス> / 粒度: <control-flow | sequence> /
+  生成日: YYYY-MM-DD<br>
+  注記: この図は静的読解に基づく。実行時の分岐確率・データ内容は反映しない。
+</p>
+
+<div class="diagram-container">
+<!--
+  MERMAID_RENDER_TARGET:
+  生成時に以下いずれか1つの方式で、この位置に図を埋め込む（外部ホストへのリクエストは一切発生させない）。
+
+  方式A（Mermaid ランタイムをインライン同梱できる場合）:
+    <script>...Mermaid UMD ビルドの中身をそのまま貼り付け...</script>
+    <div class="mermaid">
+    flowchart TD
+      ...
+    </div>
+    <script>mermaid.initialize({startOnLoad:true, theme: "neutral"}); </script>
+
+  方式B（ランタイム取得不可の場合。既定はこちら）:
+    レンダリング済みの SVG をそのままこの位置にインライン貼り付けする
+    （<svg ...>...</svg>。外部 <image>/<use xlink:href> 参照は使わない）。
+-->
+</div>
+
+<h2>登場要素の対応表</h2>
+<table>
+  <thead><tr><th>ノード</th><th>実体（file:line）</th><th>役割</th></tr></thead>
+  <tbody>
+    <tr><td>A</td><td>src/...</td><td>...</td></tr>
+  </tbody>
+</table>
+
+<h2>読み方</h2>
+<p class="legend">
+  菱形 = 分岐、二重枠 = 外部I/O（DB/API/ファイル）、破線 = 別図に続く（本図の範囲外）
+</p>
+</body>
+</html>

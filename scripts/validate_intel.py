@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Validate intel/ records (principles, sns-post, book-note) against the
-schema defined in intel/README.md and docs/designs/03-intel-hub.md §5.
+"""Validate intel/ records (principles, sns-post, book-note, bookmark) against
+the schema defined in intel/README.md and docs/designs/03-intel-hub.md /
+18-intel-hub-phase2-3.md §5.
 
-Scans only intel/principles/, intel/sns/ (excluding sns/reports/), and
-intel/books/. Does not scan intel/ root files, intel/inbox/, or
-intel/sns/reports/ (those are not per-record files).
+Scans only intel/principles/, intel/sns/ (excluding sns/reports/),
+intel/books/, and intel/bookmarks/. Does not scan intel/ root files,
+intel/inbox/, or intel/sns/reports/ (those are not per-record files).
 """
 import sys
 from pathlib import Path
@@ -18,6 +19,7 @@ DIR_TYPE = {
     "principles": "principle",
     "sns": "sns-post",
     "books": "book-note",
+    "bookmarks": "bookmark",
 }
 
 COMMON_REQUIRED = [
@@ -120,6 +122,14 @@ def validate_record(dirname: str, path: Path, errors: list):
             errors.append(f"{label}: principle レコードに 'claim' が無い")
         elif len(claim) > 100:
             errors.append(f"{label}: claim が100文字を超えている（{len(claim)}文字）")
+
+    if expected_type == "bookmark":
+        if not data.get("original_platform"):
+            errors.append(f"{label}: bookmark レコードに 'original_platform' が無い")
+
+    if expected_type == "book-note":
+        if not data.get("book_title"):
+            errors.append(f"{label}: book-note レコードに 'book_title' が無い")
 
 
 def main():

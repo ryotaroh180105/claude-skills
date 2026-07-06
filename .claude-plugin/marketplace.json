@@ -202,6 +202,12 @@
       "source": "./plugins/loop-engineering",
       "description": "Trigger/Doer/Verifier(Maker-Checker)/Stop Rules/Memory/Skillsの6要素で、定型作業を安全な自律ループとして設計するスキル。",
       "category": "productivity"
+    },
+    {
+      "name": "daily-feedback",
+      "source": "./plugins/daily-feedback",
+      "description": "一日のClaude/Claude Codeの使い方を3軸（プロンプティング力・コスト最適化・運用判断力）で振り返るデイリーフィードバックスキル。",
+      "category": "productivity"
     }
   ]
 }

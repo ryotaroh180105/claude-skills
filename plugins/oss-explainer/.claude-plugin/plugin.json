@@ -1,0 +1,9 @@
+{
+  "name": "oss-explainer",
+  "description": "GitHubでバズっているOSS/指定リポジトリの仕様・設計思想を中級IT理解者向けに読み解き、事実裏取り済みの解説骨子（explainer-brief）を抽出してarticle-writerに引き継ぐスキル。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  },
+  "category": "productivity"
+}
