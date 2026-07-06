@@ -41,16 +41,22 @@
 
 ## 調査は hermes-relay で実行する（リモートセッションでも）— Claude は整形のみ
 
+**NotebookLM は使わない**（Google認証切れが常態化し不安定だったため廃止）。
+Web全般の調査も含め、**すべての調査は Hermes Agent 1本**（X検索の x_search +
+一般Web検索の web_search）で行う。エンジン切り替えのヘッダは不要。
+
 調査依頼が来たとき、このリポジトリに push できるセッションなら**プラグイン
 未導入でも実行できる**。ユーザーのローカルPCでタスクスケジューラ常駐の
-watcher が `hermes-relay` ブランチを毎分監視し、エンジンに振り分ける:
+watcher が `hermes-relay` ブランチを毎分監視し実行する:
 
-- **X(Twitter)の調査** → ヘッダなし（デフォルト）= Hermes Agent の x_search
-- **Web全般の調査**（記事・ドキュメント・比較など）→ クエリ先頭に
-  `engine: notebooklm` + `topic: <短い調査トピック>` を付ける = NotebookLM の
-  Deep Research + 出典付き回答
+- **X(Twitter)の調査もWeb全般の調査も同じ経路**（ヘッダなし）。Hermes Agent が
+  クエリ内容から x_search（X投稿・スレッド・プロフィール）と web_search（記事・
+  ドキュメント・比較記事等の一般Web）を自動選択する。日本語の自然文で
+  「Xで〜を調べて」「〜についてWebで調べて」のように書けば自動で振り分けられる。
 - **Claude の役割はクエリ整形と結果整形のみ**。Claude 自身の WebSearch を
-  ユーザーの調査に使わない（パイプラインのデバッグ等のメタ用途のみ可）
+  ユーザーの調査に使わない（パイプラインのデバッグ等のメタ用途のみ可）。
+  ただし watcher が長時間詰まっている・エラーが続く等の障害時は、ユーザーの
+  明示的な許可を得たうえで一時的に Claude 自身の WebSearch に切り替えてよい。
 
 手順（詳細は `plugins/hermes-x-search/skills/hermes-x-search/SKILL.md` が正）:
 
@@ -60,5 +66,10 @@ watcher が `hermes-relay` ブランチを毎分監視し、エンジンに振�
 2. 1〜4分後に `automation/results/<同名>.md` が返る（frontmatter に engine/status、
    本文はセクション化された Markdown）
 
-「このセッションからは Hermes/NotebookLM を使えない」と答えるのは誤り。使えない
-のは `/plugin` のスキル読み込みであって、リレー経由の実行は git push さえできれば可能。
+「このセッションからは Hermes を使えない」と答えるのは誤り。使えないのは
+`/plugin` のスキル読み込みであって、リレー経由の実行は git push さえできれば可能。
+
+**注意**: `web_extract`（リンク先ページの全文抽出）は現状 xAI Web Search
+（Grok）バックエンドが search-only のため失敗する。全文抽出が必要な依頼では
+この制約をユーザーに伝え、web_search で得られる検索結果・スニペットの範囲で
+回答する。

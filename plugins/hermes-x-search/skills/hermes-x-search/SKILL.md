@@ -1,15 +1,26 @@
 ---
 name: hermes-x-search
-description: Install, configure, and use Hermes Agent (github.com/NousResearch/hermes-agent) to research X (Twitter) posts, threads, and profiles via its x_search tool, run against the user's existing X/Grok subscription (tier requirements are inconsistently enforced — try before assuming a paid tier is needed) instead of per-call X API charges. Use when the user wants daily X research, trend/competitor monitoring, or quote-repost source verification without paying for the X API.
+description: Install, configure, and use Hermes Agent (github.com/NousResearch/hermes-agent) to research X (Twitter) posts/threads/profiles via its x_search tool, and general web content (articles, docs, comparisons) via its web_search tool, both run against the user's existing X/Grok subscription (tier requirements are inconsistently enforced — try before assuming a paid tier is needed) instead of per-call API charges. Use when the user wants daily X research, general web research, trend/competitor monitoring, or quote-repost source verification without paying for the X API. NotebookLM is retired — all research (X and general web) now routes through this single Hermes path.
 ---
 
-# Hermes x_search
+# Hermes research — X search + general web search
 
 Hermes Agent is NousResearch's self-hosted, MIT-licensed AI agent
-(`github.com/NousResearch/hermes-agent`). It bundles `x_search`, a tool backed by
-xAI's Grok Responses API that searches X (Twitter) posts, threads, and profiles
-directly from chat. Grok runs the search server-side and returns synthesized
-results with citations — no scraping, no separate X API key.
+(`github.com/NousResearch/hermes-agent`). It bundles two research tools usable
+directly from chat:
+
+- **`x_search`** — backed by xAI's Grok Responses API, searches X (Twitter)
+  posts, threads, and profiles. Grok runs the search server-side and returns
+  synthesized results with citations — no scraping, no separate X API key.
+- **`web_search`** — general web search (articles, docs, comparisons, blogs).
+  Same backend family as `x_search`; enabled the same way via `hermes tools`.
+
+Both tools are selected automatically by Hermes based on the natural-language
+query — there is no engine header or manual switch to set. **NotebookLM is
+retired** (its Google-account OAuth expired repeatedly and made it unreliable
+as a background pipeline); do not route queries to it or reference it as an
+option. All general web research that used to go to NotebookLM now goes to
+`web_search` on this same Hermes path.
 
 ## Cost reality — read this before promising "free"
 
@@ -63,13 +74,14 @@ terminal tab (it needs a POSIX PTY Windows doesn't provide) — irrelevant for
 `x_search` usage from the CLI. Don't tell the user WSL2 is a prerequisite unless
 they specifically want that dashboard tab.
 
-## Enabling x_search
+## Enabling x_search and web_search
 
-`x_search` is disabled by default. Enable it interactively:
+Both tools are disabled by default. Enable them interactively:
 
 ```bash
 hermes tools
-# select "🐦 X (Twitter) Search"
+# select "🐦 X (Twitter) Search" for x_search
+# select the general web search entry for web_search
 ```
 
 Authenticate via browser OAuth against whatever X/Grok subscription the user
@@ -256,44 +268,46 @@ turn to clarify or reshape, so everything must be in the prompt up front:
    with a hermes usage error (hit twice in production). The watcher now
    escapes quotes as a backstop, but don't rely on it.
 
-### Engine routing: Hermes for X, NotebookLM for the web
+### Single engine: Hermes handles both X and general web research
 
-The relay supports two engines, selected by an optional header at the top of
-the query file (before the prompt body):
+The relay no longer needs an engine header. Every query file (no `engine:`
+line, or `engine: hermes` if one is present from an older template) runs
+through `hermes -z` on the local machine. Hermes itself picks `x_search` vs
+`web_search` per query based on the natural-language content — write the
+prompt so the intent is obvious:
 
-```
-engine: notebooklm
-topic: ループエンジニアリング Verifier 設計
-（以下、通常のプロンプト本文）
-```
+- "Xで〜の反応を調べて" / "◯◯さんの投稿を追って" → routes to `x_search`
+- "〜について調べて" / "◯◯の比較記事を探して" (no X-specific wording) →
+  routes to `web_search`
 
-- **No header / `engine: hermes`** → `hermes -z` with x_search. Use for
-  anything about X (Twitter) posts, threads, profiles, reactions.
-- **`engine: notebooklm`** → notebooklm-py on the local machine runs a web
-  Deep Research pass (`source add-research "<topic>" --import-all`) and then
-  answers the prompt body grounded in the gathered sources (`ask`), with
-  citations. Use for **all general web research** — docs, blogs, articles,
-  comparisons. The `topic:` line is the short research topic for source
-  gathering; the body is the full structured question.
-- Result frontmatter carries `engine:` so downstream consumers can tell
-  which path produced it.
+Result frontmatter carries `engine: hermes` regardless of which internal tool
+Hermes used — the body states which tool it called (see "Structuring output"
+below for the standard section to request this in).
 
 **Policy: Claude does not do the researching.** When the user asks for
-research, route X queries to hermes and web queries to notebooklm via the
-relay, then do only query design and result formatting. Claude's own
-WebSearch is for meta-purposes (debugging this pipeline, checking tool
-availability), not for answering the user's research questions.
-
-NotebookLM caveats: notebooklm-py is an unofficial client of undocumented
-Google APIs and can break without notice; per-notebook source caps depend on
-the Google account tier (start a fresh notebook when hitting caps); one-time
-`notebooklm login` (browser) is required on the local machine before first
-use, plus `notebooklm create` / `notebooklm use` to pick the research
-notebook.
+research (X or general web), route it through hermes-relay, then do only
+query design and result formatting. Claude's own WebSearch is for
+meta-purposes (debugging this pipeline, checking tool availability) or for
+a user-authorized fallback when the relay is stalled/erroring — not the
+default path for answering the user's research questions.
 
 After the result returns, Claude Code still does the editorial pass (verify
 suspicious claims, reformat for the user's actual purpose) — reshaping the
 input does not replace judging the output.
+
+### web_extract limitation (full-text extraction of linked pages)
+
+Hermes also exposes a `web_extract` tool for pulling the full text of a
+specific URL (used by the "Preserve source material" pattern below). As of
+2026-07, when the configured backend is xAI Web Search (Grok), `web_extract`
+**fails outright** — that backend is search-only and cannot extract page
+content (error: "xAI Web Search (Grok) is a search-only backend and cannot
+extract URL content. Set web.extract_backend to firecrawl, tavily, exa, or
+parallel."). Until the user configures one of those alternate extract
+backends, treat full-text extraction of linked articles as unavailable: rely
+on `web_search`'s own summary/snippets, and tell the user explicitly that the
+full body text could not be pulled rather than presenting a partial result as
+complete.
 
 ### Output schema (two layers — don't over-formalize the body)
 
@@ -371,6 +385,9 @@ APIキー・個人情報・未公開の戦略は含めないでください。
   `agent-reach`.
 - Never put `XAI_API_KEY` or OAuth tokens in chat/context; configure them via
   `hermes tools` / the credential store, not inline.
+- `web_extract` fails on the default xAI backend (search-only) — see the
+  "web_extract limitation" section above. Don't promise full-text extraction
+  of a linked page until the user has configured an alternate `web.extract_backend`.
 - If editing the `.ps1` relay scripts: keep `Write-Host`/comment text ASCII-only.
   Windows PowerShell 5.1 reads `.ps1` files with the system's legacy codepage
   unless the file carries a UTF-8 BOM, so non-ASCII text (e.g. Japanese) reliably
