@@ -174,6 +174,30 @@
       "category": "productivity"
     },
     {
+      "name": "personal-growth-strategy-engine",
+      "source": "./plugins/personal-growth-strategy-engine",
+      "description": "評価軸のズレ診断・技術成果のROI翻訳・ティア別アクションリスト生成を行う成長戦略エンジン。蓄積したフィードバックと制作物記録から業務改善・評価最大化アクションを立案する。",
+      "category": "productivity"
+    },
+    {
+      "name": "biz-analysis",
+      "source": "./plugins/biz-analysis",
+      "description": "市場分析・競合分析・競合ボトルネック分析を「ヒアリング→調査クエリ設計→hermes-relay調査→分析→レポート」の固定工程で行うスキル。3C・TAM/SAM/SOM・PEST・機能価格比較表・ポジショニングマップ・バリューチェーン弱点変換表の6フレームワークと、社内向け/副業向け軽量版の2出力形式に対応。",
+      "category": "productivity"
+    },
+    {
+      "name": "affiliate-monetization",
+      "source": "./plugins/affiliate-monetization",
+      "description": "X（集客）→ note無料記事（受け皿）→ ASPアフィリエイトリンク（収益点）という収益化ファネルを設計・運用するスキル。ジャンル定義、リンク台帳管理、PR表記（景表法ステマ規制対応）の強制、週次KPIレビューによる継続/調整/撤退判断を行う。",
+      "category": "productivity"
+    },
+    {
+      "name": "intel-hub",
+      "source": "./plugins/intel-hub",
+      "description": "hermes-relay経由の調査結果を intel/ 配下のMarkdown+YAML frontmatterレコード（原則DB・SNS投稿DB）に正規化して蓄積し、Grepベースで再検索するスキル。Phase 1（収集→保存→検索）のみ実装済み。",
+      "category": "productivity"
+    },
+    {
       "name": "loop-engineering",
       "source": "./plugins/loop-engineering",
       "description": "Trigger/Doer/Verifier(Maker-Checker)/Stop Rules/Memory/Skillsの6要素で、定型作業を安全な自律ループとして設計するスキル。",
