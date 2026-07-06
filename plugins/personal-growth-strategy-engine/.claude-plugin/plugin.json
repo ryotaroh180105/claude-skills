@@ -1,0 +1,8 @@
+{
+  "name": "personal-growth-strategy-engine",
+  "description": "評価軸のズレ診断・技術成果のROI翻訳・ティア別アクションリスト生成を行う成長戦略エンジン。蓄積したフィードバックと制作物記録から業務改善・評価最大化アクションを立案する。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}
