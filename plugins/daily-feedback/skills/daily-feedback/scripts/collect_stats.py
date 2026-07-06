@@ -42,6 +42,12 @@ def text_of(content):
 
 def main():
     target = sys.argv[1] if len(sys.argv) > 1 else datetime.now().strftime("%Y-%m-%d")
+    try:
+        target = datetime.strptime(target, "%Y-%m-%d").strftime("%Y-%m-%d")
+    except ValueError:
+        print(json.dumps({"error": f"日付は YYYY-MM-DD 形式で指定すること（受け取った値: {target!r}）。"},
+                         ensure_ascii=False))
+        return 1
     root = Path.home() / ".claude" / "projects"
     if not root.is_dir():
         print(json.dumps({"error": f"{root} が存在しない。Claude Code を使う実機で実行すること。"},
@@ -69,20 +75,24 @@ def main():
                     continue
                 if not isinstance(e, dict):
                     continue
+                etype = e.get("type")
+                if etype == "summary":
+                    # summary 行は timestamp を持たないため、当日フィルタより先に処理する
+                    compactions += 1
+                    continue
+
                 ts = e.get("timestamp", "")
                 if not ts:
                     continue
                 try:
-                    local_day = datetime.fromisoformat(ts.replace("Z", "+00:00")) \
-                        .astimezone().strftime("%Y-%m-%d")
+                    local_dt = datetime.fromisoformat(ts.replace("Z", "+00:00")).astimezone()
                 except ValueError:
                     continue
-                if local_day != target:
+                if local_dt.strftime("%Y-%m-%d") != target:
                     continue
 
-                etype = e.get("type")
                 msg = e.get("message") or {}
-                if etype == "summary" or e.get("isCompactSummary"):
+                if e.get("isCompactSummary"):
                     compactions += 1
                     continue
                 if etype not in ("user", "assistant"):
@@ -91,7 +101,7 @@ def main():
                 sessions.add(e.get("sessionId", path.stem))
                 projects[project] = projects.get(project, 0) + 1
 
-                if etype == "user" and not e.get("isMeta"):
+                if etype == "user" and not e.get("isMeta") and not e.get("isSidechain"):
                     text = text_of(msg.get("content")).strip()
                     if not text:
                         continue
@@ -100,7 +110,7 @@ def main():
                         continue
                     if text.startswith("<") or text.startswith("Caveat:"):
                         continue  # システム注入・ラッパーは除外
-                    hhmm = ts[11:16]
+                    hhmm = local_dt.strftime("%H:%M")
                     prompts.append({"time": hhmm, "project": project,
                                     "text": text[:PROMPT_MAX_CHARS]})
 
