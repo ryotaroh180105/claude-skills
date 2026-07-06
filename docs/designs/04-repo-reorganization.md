@@ -2,7 +2,7 @@
 
 | 項目 | 値 |
 |---|---|
-| ステータス | 実装完了（ユーザー実機確認3件のみ残: .agents認識・/plugin update・hermes-relay疎通） |
+| ステータス | 一部撤回（agent/削除はユーザー指示でrevert・保留。配置規約とCI検査は実装済み。MISTAKES M-002参照） |
 | 種別 | ドキュメント + スクリプト改修 + スキル改修 |
 | 優先度 | Tier F-5 |
 | 実装モデル | Sonnet 5（推奨 effort: high） |
