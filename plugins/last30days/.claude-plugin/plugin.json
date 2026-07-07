@@ -1,0 +1,9 @@
+{
+  "name": "last30days",
+  "description": "Reddit・X・YouTube・TikTok・Hacker News・Polymarket・GitHub など10種以上のソースを横断し、直近30日の実際のエンゲージメント（アップボート・いいね・賭け金）でランキングして特定トピックの「今何が語られているか」を調べる last30days（mvanhorn/last30days-skill）の導入ガイド。実体は本家マーケットプレイスからインストールする。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  },
+  "category": "productivity"
+}

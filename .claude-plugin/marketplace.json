@@ -178,6 +178,24 @@
       "source": "./plugins/daily-feedback",
       "description": "一日のClaude/Claude Codeの使い方を3軸（プロンプティング力・コスト最適化・運用判断力）で振り返るデイリーフィードバックスキル。",
       "category": "productivity"
+    },
+    {
+      "name": "fable-distill",
+      "source": "./plugins/fable-distill",
+      "description": "Fable 5 の思考様式（難タスク分解・自己検証・次の一手）を蒸留したプレイブック。Opus 4.8 / Sonnet 5 の難タスクで読み込んで適用する。",
+      "category": "productivity"
+    },
+    {
+      "name": "last30days",
+      "source": "./plugins/last30days",
+      "description": "Reddit・X・YouTube・HN・Polymarket等を横断し直近30日の実エンゲージメントでランキングする last30days（mvanhorn/last30days-skill）の導入・実行ガイド。",
+      "category": "productivity"
+    },
+    {
+      "name": "claude-design-review",
+      "source": "./plugins/claude-design-review",
+      "description": "HTML/UI生成物をAIっぽさ・アクセシビリティ・階層/余白/リズム・仕上げの4観点でレビューする品質ゲートスキル。",
+      "category": "productivity"
     }
   ]
 }
