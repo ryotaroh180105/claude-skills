@@ -1,6 +1,6 @@
 ---
 name: sns-auto-posting
-description: sns-ops-team が生成した投稿キュー（post-queue.md）の approved 行を実際に投稿する実行系スキル。X へは同梱スクリプト（API v2 + OAuth 1.0a）で投稿し、Instagram/TikTok は手動投稿用テキストに整形出力する。「承認済みの投稿を流して」「post-queue.md の approved を投稿して」「これをXに投稿して」「投稿キューを消化して」「Xに今すぐポストして」といった依頼で使う。draft は絶対に投稿せず、成功した行だけを posted に更新する。
+description: sns-ops-team が生成した投稿キュー（post-queue.md）の approved 行を実際に投稿する実行系スキル。X へは同梱スクリプト（API v2 + OAuth 1.0a）で投稿し、Instagram/TikTok は手動投稿用テキストに整形出力する。ショート動画の素材が必要な場合は台本からナレーション音声(VOICEVOX)と動画ファイル(Remotion)を生成する工程も担う。「承認済みの投稿を流して」「post-queue.md の approved を投稿して」「これをXに投稿して」「投稿キューを消化して」「Xに今すぐポストして」「台本から動画を作って」といった依頼で使う。draft は絶対に投稿せず、成功した行だけを posted に更新する。
 ---
 
 # SNS Auto Posting
@@ -24,6 +24,12 @@ sns-ops-team が作った投稿キュー（`post-queue.md`）の **approved 行�
 | `X_ACCESS_TOKEN_SECRET` | X投稿に必須 | Access Token Secret |
 | Meta Graph API（`IG_USER_ID` / `IG_ACCESS_TOKEN`） | 将来拡張 | v1 では未実装。Instagram は手動投稿テキスト出力のみ |
 | TikTok Content Posting API（`TIKTOK_ACCESS_TOKEN`） | 将来拡張 | v1 では未実装。TikTok は手動投稿テキスト出力のみ |
+| VOICEVOX エンジン | 動画素材生成に必須 | 未起動なら `https://voicevox.hiroshiba.jp/` の手順でエンジンを起動（デフォルト `http://localhost:50021`）してから依頼するよう案内し、停止する |
+| Remotion（npm パッケージ） | 動画素材生成に必須 | 未導入なら `npm install remotion @remotion/cli` を対象プロジェクトで実行するよう案内し、停止する |
+
+VOICEVOX/Remotion が未設定のまま動画生成を依頼されたら、**代替手段に自走せず**上表の
+セットアップ手順を提示してユーザーに確認する。台本（テキスト）の作成自体は
+`sns-ops-team` の担当なので、台本が無ければそちらに誘導する。
 
 X キーの取得手順: developer.x.com でアプリを作成 → App permissions を
 **Read and Write** に変更 → Keys and tokens で4つのキーを発行（権限変更後は
@@ -32,6 +38,41 @@ Access Token の**再発行**が必要。Read のみのトークンでは 401 �
 **キー未設定でも動く範囲**: `--dry-run` でのリクエスト内容確認と、手動投稿用
 テキストの整形出力はキーなしで可能。未設定のまま投稿を頼まれたら、この
 フォールバックに切り替えたうえで上の取得手順を案内する。
+
+## 動画素材生成（台本 → ナレーション → 動画ファイル）
+
+`post-queue.md` の行にショート動画（Instagram Reels/TikTok想定）を添付したいが
+メディア列が空、または「台本から動画を作って」と直接依頼されたときに行う工程。
+**投稿そのものはこの後も④の手動投稿フローに従う**（動画のAPI投稿は未実装のため）。
+
+### 入力
+
+- 台本（ナレーションのテキスト）: `sns-ops-team` が作成したものを想定。無ければ
+  台本作成をそちらに依頼するよう案内する。
+- 素材画像・クリップ: `sns/<アカウント名>/media/raw/<連番>.png` のように
+  **連番で管理する**（どの素材がどのシーンに対応するか台本側で連番を指定してもらう）。
+
+### 手順
+
+1. **ナレーション音声生成**: VOICEVOX エンジンの HTTP API
+   （`POST /audio_query` → `POST /synthesis`）で台本を音声化し、
+   `sns/<アカウント名>/media/<id>_voice.wav` に保存する。
+2. **動画合成**: Remotion で音声・素材画像・字幕を合成する。
+   出力解像度は **1080×1920（縦型）** を既定にする（他の指定があれば従う）。
+   出力先は `sns/<アカウント名>/media/<id>.mp4`。
+3. **post-queue.md への反映**: 対象行のメディア列を生成した動画パスに更新する。
+   ステータスは変更しない（承認プロセスは通常どおり Ryo が行う）。
+4. 生成した動画は必ず**再生時間と解像度を報告**し、台本の意図どおりの長さに
+   収まっているか確認を求める（自動判定はしない）。
+
+### エッジケースの扱い
+
+| 状況 | 対応 |
+|---|---|
+| 台本が無い | `sns-ops-team` に台本作成を依頼するよう案内し、停止する |
+| 素材画像が連番で揃っていない | 欠番を報告し、埋めるかそのシーンを省略するか確認する |
+| VOICEVOX/Remotion 未設定 | 上記「前提セットアップ」の手順を提示して停止する |
+| 生成した動画が長すぎる/短すぎる（目安60秒超 or 5秒未満） | 警告した上でユーザーに続行可否を確認する |
 
 ## ワークフロー（キュー一括投稿）
 

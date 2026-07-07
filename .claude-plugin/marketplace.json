@@ -110,7 +110,7 @@
     {
       "name": "sns-auto-posting",
       "source": "./plugins/sns-auto-posting",
-      "description": "投稿キュー（post-queue.md）の approved 行を X に投稿し、Instagram/TikTok は手動投稿用に整形出力する実行系スキル。",
+      "description": "投稿キュー（post-queue.md）の approved 行を X に投稿し、Instagram/TikTok は手動投稿用に整形出力する実行系スキル。台本からVOICEVOX+Remotionでショート動画素材を生成する工程も担う。",
       "category": "productivity"
     },
     {
@@ -177,6 +177,18 @@
       "name": "daily-feedback",
       "source": "./plugins/daily-feedback",
       "description": "一日のClaude/Claude Codeの使い方を3軸（プロンプティング力・コスト最適化・運用判断力）で振り返るデイリーフィードバックスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "context-handoff",
+      "source": "./plugins/context-handoff",
+      "description": "長い会話やモデル切り替えの前に、チャットにしか残っていない成果物・決定事項を回収し、次のモデル/次回セッションに引き継ぐ書類を作るスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "structured-task-execution",
+      "source": "./plugins/structured-task-execution",
+      "description": "正解のある検証可能なタスクの手戻りを減らすため、着手前に完了条件を固定し、観測を根拠に、最もリスクが高い箇所から着手する4フェーズ実行メソッドスキル。",
       "category": "productivity"
     }
   ]

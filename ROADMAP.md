@@ -126,8 +126,20 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 4. **実装**: 採択されたものを `repo-skill-creator` スキルの手順で 4個ずつ並列実装する。
 5. **導入確認**: `/plugin install` または `.skill` アップロードまで確認して 🎉 にする。
 
+### パターン観測ログ（繰り返し手作業の検出 → 3回で候補化）
+
+既存スキルでカバーされていない複数ステップの手順を完了するたびに記録する。
+同一パターンは回数を +1。3回に達したら候補リストへ転記する（運用ルールは
+`repo-skill-creator` スキルの「パターン観測 → スキル候補化」節が正）。
+
+| 初回日 | パターン（1行） | 回数 | 直近日 | 状態 |
+|---|---|---|---|---|
+| 2026-07-07 | X投稿の保存ファイル（docx等）から本文抽出→投稿単位で構造化→実装候補の仕分け | 1 | 2026-07-07 | 観測中 |
+
 ### 候補リスト（収集したスキルネタ置き場）
 
 | 追加日 | 候補 | ソース | 状態 |
 |---|---|---|---|
-| - | （まだなし） | - | - |
+| 2026-07-07 | taste-skill（AI生成UIの"安っぽさ"防止。`npx skills add Leonxlnx/taste-skill --skill design-taste-frontend`） | https://github.com/leonxlnx/taste-skill | 候補（第三者npxパッケージの実行を伴うため導入前にユーザー確認必須） |
+| 2026-07-07 | claude-video（動画のコマ単位分解・バズ動画構造抽出、約3K Star・未検証） | https://github.com/bradautomates/claude-video | 候補 |
+| 2026-07-07 | agmsg（Fable/Opus/Codex/Grokの役割分業デスクトップアプリ。`brew install --cask agmsg`、macOS専用） | https://github.com/fujibee/agmsg | 候補（macOSのユーザー自身の端末でのみ動作、このリモート環境では検証不可） |
