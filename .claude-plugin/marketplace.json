@@ -196,6 +196,12 @@
       "source": "./plugins/claude-design-review",
       "description": "HTML/UI生成物をAIっぽさ・アクセシビリティ・階層/余白/リズム・仕上げの4観点でレビューする品質ゲートスキル。",
       "category": "productivity"
+    },
+    {
+      "name": "media-convert",
+      "source": "./plugins/media-convert",
+      "description": "動画ファイル・動画URLを mp3/wav/m4a に変換する ffmpeg ラッパーの小型ユーティリティ。voicememo-pipeline の前処理にも使う。",
+      "category": "productivity"
     }
   ]
 }
