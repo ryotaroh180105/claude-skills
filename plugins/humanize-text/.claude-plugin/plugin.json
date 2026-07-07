@@ -1,0 +1,6 @@
+{
+  "name": "humanize-text",
+  "description": "AI生成文の「AIっぽさ」を、内容・事実・文字数レンジを変えずに除去する推敲専用スキル。",
+  "version": "1.0.0",
+  "author": { "name": "ryotaroh180105" }
+}

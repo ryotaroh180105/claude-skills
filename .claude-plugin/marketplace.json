@@ -202,6 +202,12 @@
       "source": "./plugins/media-convert",
       "description": "動画ファイル・動画URLを mp3/wav/m4a に変換する ffmpeg ラッパーの小型ユーティリティ。voicememo-pipeline の前処理にも使う。",
       "category": "productivity"
+    },
+    {
+      "name": "humanize-text",
+      "source": "./plugins/humanize-text",
+      "description": "AI生成文の「AIっぽさ」を内容・事実を変えずに除去する推敲専用スキル。症状診断→該当変換のみ適用→仕上げパスの2段構成。",
+      "category": "productivity"
     }
   ]
 }
