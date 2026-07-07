@@ -102,6 +102,10 @@ article-writer スキルで note 解説記事を作成してください。ネ�
 <explainer-brief 全文を貼付>
 ```
 
+公開設定の前に affiliate-monetization の link-registry を確認し、この記事のテーマに
+合致する登録済みリンク（link_id）があれば PR 表記付きで挿入を検討してください。
+台帳が空・未整備なら挿入せずそのまま公開してよい（リンクなし公開を止めない）。
+
 ### Step 6 — 引き継ぎ後
 
 記事本文・タイトル・推敲の品質は article-writer が担保する。本スキルは
