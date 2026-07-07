@@ -214,6 +214,18 @@
       "source": "./plugins/screenshot-to-app",
       "description": "UIスクリーンショットから見た目と機能を忠実に再現した単一HTMLの動くプロトタイプを作るスキル。再現度の自己採点と推測箇所の申告つき。",
       "category": "productivity"
+    },
+    {
+      "name": "claude-env-audit",
+      "source": "./plugins/claude-env-audit",
+      "description": ".claude/skills・plugins・settings・CLAUDE.md を重複/矛盾/死文/肥大化/機密混入の5観点で棚卸しし、AUDIT.md に整備計画を出す環境監査スキル。診断/整備の2モード制。",
+      "category": "productivity"
+    },
+    {
+      "name": "ios-hig-prototype",
+      "source": "./plugins/ios-hig-prototype",
+      "description": "アプリ情報から Apple HIG 準拠・iPhoneフレーム付き・実際に操作できる単一HTMLプロトタイプを生成するスキル。ヒアリング→生成→全遷移検証の3工程。",
+      "category": "productivity"
     }
   ]
 }
