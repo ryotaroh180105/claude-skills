@@ -65,6 +65,8 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 | 🎉 | `repo-skill-creator` | スキル作成・練度向上スキル（公式skill-creatorと別物） |
 | 🎉 | `task-management` | タスク管理スキル |
 | ✅ | `loop-engineering` | 自律ループ設計スキル（Trigger/Doer/Verifier/Stop Rules/Memory/Skills） |
+| 🎉 | `context-handoff` | 会話成果物の回収→L1-L4整合性チェック→引き継ぎ書化（モデル切替・セッション区切り用） |
+| 🎉 | `structured-task-execution` | 完了条件固定→観測ベース→リスク先行のPhase 0-3実行メソッド |
 
 ### Tier2: 高難易度スキル（7/7までに実装）
 
