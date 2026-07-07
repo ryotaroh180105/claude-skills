@@ -130,4 +130,6 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 
 | 追加日 | 候補 | ソース | 状態 |
 |---|---|---|---|
-| - | （まだなし） | - | - |
+| 2026-07-07 | taste-skill（AI生成UIの"安っぽさ"防止。`npx skills add Leonxlnx/taste-skill --skill design-taste-frontend`） | https://github.com/leonxlnx/taste-skill | 候補（第三者npxパッケージの実行を伴うため導入前にユーザー確認必須） |
+| 2026-07-07 | claude-video（動画のコマ単位分解・バズ動画構造抽出、約3K Star・未検証） | https://github.com/bradautomates/claude-video | 候補 |
+| 2026-07-07 | agmsg（Fable/Opus/Codex/Grokの役割分業デスクトップアプリ。`brew install --cask agmsg`、macOS専用） | https://github.com/fujibee/agmsg | 候補（macOSのユーザー自身の端末でのみ動作、このリモート環境では検証不可） |
