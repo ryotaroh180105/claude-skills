@@ -2,7 +2,7 @@
 
 | 項目 | 値 |
 |---|---|
-| ステータス | 設計完了 |
+| ステータス | 実装完了。Kindle/書籍取り込み（§6.4）は docs/designs/14-app-kindle-summarizer.md が正としてそちらの方式（My Clippings.txt パーサ）で実装済み |
 | 種別 | スキル拡張 + スクリプト拡張（既存 intel-hub への後方互換追加） |
 | 優先度 | Tier F-4 |
 | 実装モデル | Sonnet 5（推奨 effort: high） |

@@ -194,7 +194,25 @@
     {
       "name": "intel-hub",
       "source": "./plugins/intel-hub",
-      "description": "hermes-relay経由の調査結果を intel/ 配下のMarkdown+YAML frontmatterレコード（原則DB・SNS投稿DB）に正規化して蓄積し、Grepベースで再検索するスキル。Phase 1（収集→保存→検索）のみ実装済み。",
+      "description": "hermes-relay経由の調査結果を intel/ 配下のMarkdown+YAML frontmatterレコード（原則DB・SNS投稿DB・ブックマーク・Kindle書籍DB）に正規化して蓄積し、Grepベースで再検索するスキル。Phase 1〜3（収集/検索・週次分析/矛盾検出・ブックマーク/Kindle取り込み）実装済み。",
+      "category": "productivity"
+    },
+    {
+      "name": "code-flow-visualizer",
+      "source": "./plugins/code-flow-visualizer",
+      "description": "指定エントリポイント（関数・APIエンドポイント・CLIコマンド）を起点にコードを静的解析し、処理フローをMermaid入りMarkdownまたは単一HTMLとして可視化するスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "dev-catchup",
+      "source": "./plugins/dev-catchup",
+      "description": "未知の・引き継ぐコードベースやエージェント開発プロジェクトに素早くキャッチアップし、固定7セクションの引き継ぎサマリーを生成するスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "oss-explainer",
+      "source": "./plugins/oss-explainer",
+      "description": "GitHubでバズっているOSSの仕様・設計思想を中級IT理解者向けに読み解き、事実裏取り済みの解説骨子を抽出するスキル。note記事化はarticle-writerに委譲。",
       "category": "productivity"
     },
     {

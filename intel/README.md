@@ -1,8 +1,8 @@
 # intel/ — 情報集約リサーチDB
 
-設計書: `docs/designs/03-intel-hub.md`。実装済みは **Phase 1（収集→保存→検索）のみ**。
-Phase 2（週次分析・矛盾検出）/ Phase 3（ブックマーク・Kindle）はスキーマ・ディレクトリのみ
-用意されており、処理は未実装。
+設計書: `docs/designs/03-intel-hub.md`（Phase 1）、`docs/designs/18-intel-hub-phase2-3.md`
+（Phase 2/3 詳細）、`docs/designs/14-app-kindle-summarizer.md`（Kindle 入力層。Kindle は
+18 ではなくこちらが正）。Phase 1〜3 すべて実装済み。
 
 DB の実体はこのリポジトリの `intel/` 配下の Markdown + YAML frontmatter。SQLite 等は
 使わない（数千レコード規模なら Grep で足りる。理由は設計書 §4）。
@@ -12,13 +12,15 @@ DB の実体はこのリポジトリの `intel/` 配下の Markdown + YAML front
 ```
 intel/
 ├── README.md                       # 本ファイル
-├── contradictions.md               # 矛盾台帳（Phase 2、現状は空）
-├── inbox/                          # コネクタ投入口（Phase 3、現状未使用）
-│   └── done/                       # 取り込み済み inbox ファイルの移動先（Phase 3）
+├── contradictions.md               # 矛盾台帳（Phase 2）
+├── inbox/                          # コネクタ投入口（Phase 3）
+│   ├── kindle-questions.md          # 読書中疑問の quick-capture（kind: kindle-questions）
+│   └── done/                       # 取り込み済み inbox ファイルの移動先
 ├── principles/<YYYY-MM>/<id>.md    # システムR レコード（原則）
 ├── sns/<YYYY-MM>/<id>.md           # システムG レコード（SNS投稿）
-├── sns/reports/<account>-<YYYY-Www>.md  # 週次分析レポート（Phase 2、現状未使用）
-└── books/<YYYY-MM>/<id>.md         # Kindle/書籍レコード（Phase 3、現状未使用）
+├── sns/reports/<account>-<YYYY-Www>.md  # 週次分析レポート（Phase 2）
+├── books/<YYYY-MM>/<id>.md         # Kindle/書籍レコード（Phase 3）
+└── bookmarks/<YYYY-MM>/<id>.md     # ブックマーク/URL取り込みレコード（Phase 3）
 ```
 
 ## 共通 frontmatter（全レコード必須）
@@ -78,7 +80,7 @@ metrics_as_of: 2026-07-06                  # metrics 取得日。全 null なら
 
 本文セクション: `## 投稿本文（逐語）` `## 伸びた/伸びない要因の仮説` `## 未確認・断定できない点`。
 
-## type: book-note 追加フィールド（Phase 3、現状未使用）
+## type: book-note 追加フィールド（Phase 3）
 
 ```yaml
 book_title: "…"
@@ -89,19 +91,31 @@ question: "読書中に出た疑問の原文" | null   # 疑問起点でない�
 
 本文セクション: `## 回答/要約` `## 引用（逐語）` `## 未確認・断定できない点`。
 
-## type: bookmark 追加フィールド（Phase 3、現状未使用）
+## type: bookmark 追加フィールド（Phase 3）
 
 ```yaml
 bookmarked_at: 2026-07-14                  # 不明なら collected_at と同値
 original_platform: x | web                 # enum 固定
 ```
 
+配置先は `intel/bookmarks/<YYYY-MM>/<id>.md`（`books/` とは別ディレクトリ。
+`type` とディレクトリの整合を validate_intel.py が検査するため）。
 本文セクション: `## 要点` `## 引用（逐語）` `## 未確認・断定できない点`。
 
-## inbox ファイル（Phase 3、現状未使用）
+## inbox ファイル（Phase 3）
 
-`intel/inbox/<YYYY-MM-DD>-<slug>.md`。URL 1行1件（最大10件/ファイル）。
-URL 行の直後に `> メモ` 行を置いてよい。
+2種類のファイル名でパーサが分岐する。
+
+**URLリスト型**（`intel/inbox/<YYYY-MM-DD>-<slug>.md`）: URL 1行1件（最大10件/ファイル）。
+URL 行の直後に `> メモ` 行を置いてよい。bookmark レコード（+ 任意で principle）を生成する。
+
+**Kindle ハイライト型**（`intel/inbox/kindle-<書名slug>.md`、`kind: kindle-highlights`）:
+`scripts/parse_kindle_clippings.py` が My Clippings.txt から生成、または
+read.amazon.co.jp/notebook からの手動貼り付け。book-note レコードを生成する。
+詳細フォーマットは `docs/designs/14-app-kindle-summarizer.md` §5.2 が正。
+
+**Kindle 疑問キャプチャ**（`intel/inbox/kindle-questions.md`、`kind: kindle-questions`）:
+読書中に湧いた疑問を1行ずつ追記する常設ファイル。行ごとに book-note（question 入り）化する。
 
 ## 運用ルール（Phase 1 で有効なもの）
 

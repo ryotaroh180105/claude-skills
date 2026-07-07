@@ -2,7 +2,7 @@
 
 | 項目 | 値 |
 |---|---|
-| ステータス | 実装完了（Phase 1）。Phase 2（週次分析・矛盾検出）/ Phase 3（ブックマーク・Kindle）は本書の計画のみで未実装 |
+| ステータス | 実装完了（Phase 1〜3）。Phase 2/3 の詳細化は docs/designs/18-intel-hub-phase2-3.md、Kindle 入力層は docs/designs/14-app-kindle-summarizer.md が正 |
 | 種別 | スキル + データベース（Markdown） + パイプライン |
 | 優先度 | Tier F-4 |
 | 実装モデル | Sonnet 5（推奨 effort: high） |
