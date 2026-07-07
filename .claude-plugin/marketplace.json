@@ -208,6 +208,12 @@
       "source": "./plugins/humanize-text",
       "description": "AI生成文の「AIっぽさ」を内容・事実を変えずに除去する推敲専用スキル。症状診断→該当変換のみ適用→仕上げパスの2段構成。",
       "category": "productivity"
+    },
+    {
+      "name": "screenshot-to-app",
+      "source": "./plugins/screenshot-to-app",
+      "description": "UIスクリーンショットから見た目と機能を忠実に再現した単一HTMLの動くプロトタイプを作るスキル。再現度の自己採点と推測箇所の申告つき。",
+      "category": "productivity"
     }
   ]
 }
