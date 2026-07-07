@@ -333,6 +333,9 @@ sns-auto-posting, article-writer) can reference sections by name:
 3. `投稿に使える切り口` — post-ready angles
 4. `未確認・断定できない点` — what NOT to state as fact
 5. `明日以降も追うべき項目` — follow-up watchlist
+6. `使用ツール` — which internal tool Hermes actually used (x_search /
+   web_search / web_extract), so downstream consumers can tell the search
+   path without guessing from the content
 
 Do NOT demand strict JSON from Hermes: `-z` output is LLM-generated and
 formatting compliance is loose, so a strict parser will intermittently break
