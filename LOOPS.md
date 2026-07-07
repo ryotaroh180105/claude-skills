@@ -23,6 +23,7 @@
 - ゴール: 再発防止ルールが「効いているか」を月1で棚卸しし、ルール行が20行上限内で高密度に保たれること（昇格・統合・廃止の判断が滞留しないこと）。
 - Trigger: タイマー。Claude Code Remote の Routine（毎月1日 09:00 JST、新規セッション起動、trigger_id: `trig_015S7ZVaajbca8vmZygMFoYE`）。
 - Doer: 起動されたセッションが docs/mistakes-db-design.md の UC6 手順を実行（validate_mistakes.py → 集計 → 昇格/統合/廃止の提案 → レビュー履歴追記 → PR 作成）。
+  - 冒頭ゲート: 前回レビュー以降の新規/再発 M-NNN が0件かつルール行が20行以内なら、「変更なし」PR も作らずレビュー履歴1行の追記のみで即終了する（空回り防止。設計17の唯一の採択差分をここに吸収）。
 - Verifier: 2層。(1) `scripts/validate_mistakes.py`（CI でも毎 push 実行）がスキーマ・20行上限・ID整合を機械判定 (2) 提案の採否は Ryo が PR レビューで判断（Doer に自己マージさせない）。
 - Stop Rules:
   - 成功条件: レビュー履歴の追記と PR 作成まで（提案ゼロの月は「変更なし」PR）。
