@@ -1,7 +1,7 @@
 {
   "name": "context-handoff",
   "description": "長い会話やモデル切り替えの前に、チャットにしか残っていない成果物・決定事項を回収し、次のモデル/次回セッションに引き継ぐ書類を作るスキル。",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": {
     "name": "ryotaroh180105"
   }
