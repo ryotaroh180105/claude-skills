@@ -151,18 +151,19 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 
 採択判断: Ryo（「全部実装したい」の明示指示）。設計: Fable 5（docs/new-skills-design.md）、
 実装: Sonnet 5 サブエージェント（10-80-10 采配の実践）。
+全9本 2026-07-08 に実機インストール確認済み（/plugin install → /reload-plugins で 39 plugins 反映）。
 
 | Status | スキル | 内容 |
 |---|---|---|
-| ✅ | `fable-distill` | Fable 5 の思考様式（タスク分解・自己検証・次の一手）の蒸留プレイブック |
-| ✅ | `last30days` | mvanhorn/last30days-skill（MIT）の Wrapper 導入ガイド |
-| ✅ | `claude-design-review` | Trystan-SA/claude-design-system-prompt（MIT）を4観点チェックリストに再構成 |
-| ✅ | `humanize-text` | AI臭除去の推敲専用スキル（症状診断→該当変換のみ適用） |
-| ✅ | `media-convert` | 動画→音声変換の ffmpeg ラッパー |
-| ✅ | `claude-env-audit` | .claude 資産の5観点監査＋AUDIT.md 出力（診断/整備2モード） |
-| ✅ | `screenshot-to-app` | スクショ→動く単一HTML再現（自己採点・推測箇所申告つき） |
-| ✅ | `ios-hig-prototype` | Apple HIG 準拠 iPhone プロトタイプ生成（プロンプト原文は references/） |
-| ✅ | `academic-research` | Imbad0202/academic-research-skills（CC-BY-NC 4.0）の Wrapper。非商用限定 |
+| 🎉 | `fable-distill` | Fable 5 の思考様式（タスク分解・自己検証・次の一手）の蒸留プレイブック |
+| 🎉 | `last30days` | mvanhorn/last30days-skill（MIT）の Wrapper 導入ガイド |
+| 🎉 | `claude-design-review` | Trystan-SA/claude-design-system-prompt（MIT）を4観点チェックリストに再構成 |
+| 🎉 | `humanize-text` | AI臭除去の推敲専用スキル（症状診断→該当変換のみ適用） |
+| 🎉 | `media-convert` | 動画→音声変換の ffmpeg ラッパー |
+| 🎉 | `claude-env-audit` | .claude 資産の5観点監査＋AUDIT.md 出力（診断/整備2モード） |
+| 🎉 | `screenshot-to-app` | スクショ→動く単一HTML再現（自己採点・推測箇所申告つき） |
+| 🎉 | `ios-hig-prototype` | Apple HIG 準拠 iPhone プロトタイプ生成（プロンプト原文は references/） |
+| 🎉 | `academic-research` | Imbad0202/academic-research-skills（CC-BY-NC 4.0）の Wrapper。非商用限定 |
 
 既存スキル拡張（同バッチ）: token-saver / model-switcher / repo-skill-creator /
 article-writer / sns-ops-team / owned-media を v1.1.0〜1.2.0 に更新、CLAUDE.md に
