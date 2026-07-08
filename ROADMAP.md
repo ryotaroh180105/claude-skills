@@ -142,6 +142,6 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 
 | 追加日 | 候補 | ソース | 状態 |
 |---|---|---|---|
-| 2026-07-07 | taste-skill（AI生成UIの"安っぽさ"防止。`npx skills add Leonxlnx/taste-skill --skill design-taste-frontend`） | https://github.com/leonxlnx/taste-skill | 候補（第三者npxパッケージの実行を伴うため導入前にユーザー確認必須） |
-| 2026-07-07 | claude-video（動画のコマ単位分解・バズ動画構造抽出、約3K Star・未検証） | https://github.com/bradautomates/claude-video | 候補 |
-| 2026-07-07 | agmsg（Fable/Opus/Codex/Grokの役割分業デスクトップアプリ。`brew install --cask agmsg`、macOS専用） | https://github.com/fujibee/agmsg | 候補（macOSのユーザー自身の端末でのみ動作、このリモート環境では検証不可） |
+| 2026-07-07 | taste-skill（AI生成UIの"安っぽさ"防止。`npx skills add Leonxlnx/taste-skill --skill design-taste-frontend`） | https://github.com/leonxlnx/taste-skill | 採択済み・導入結果の確認待ち（Ryoの端末でnpx実行、出力未確認） |
+| 2026-07-07 | claude-video（実体は「Claudeに動画を見せる」ツール。プラグインIDは`watch`。要ffmpeg/yt-dlp） | https://github.com/bradautomates/claude-video | 🎉 導入済み（`watch@claude-video`、2026-07-08確認。ffmpeg/yt-dlpの導入は継続中） |
+| 2026-07-07 | agmsg（実体は複数CLIエージェント間のローカルSQLiteメッセージング基盤。Win/Linuxはbest-effort対応） | https://github.com/fujibee/agmsg | 採択済み・導入中（Ryoの端末はWindows ARM64のためbest-effort領域） |
