@@ -270,44 +270,58 @@ turn to clarify or reshape, so everything must be in the prompt up front:
 
 ### Single engine: Hermes handles both X and general web research
 
-The relay no longer needs an engine header. Every query file (no `engine:`
-line, or `engine: hermes` if one is present from an older template) runs
-through `hermes -z` on the local machine. Hermes itself picks `x_search` vs
-`web_search` per query based on the natural-language content — write the
-prompt so the intent is obvious:
+Web research is done by Hermes itself (v0.18+), not by a separate engine.
+**NotebookLM is fully retired** (repeated Google OAuth expiry made it
+unreliable as a background pipeline) — do not write `engine: notebooklm`
+headers; a query file needs no header at all. The user's local Hermes has
+`web.backend: xai`, so `web_search` runs through the same xAI Grok OAuth as
+x_search — agentic web search (search → read → synthesize), no extra API
+key, no per-call charge beyond the existing subscription. Verified working:
+a `web_search`-steered query returned source-URL-backed, quote-bearing
+results in ~120s.
 
-- "Xで〜の反応を調べて" / "◯◯さんの投稿を追って" → routes to `x_search`
-- "〜について調べて" / "◯◯の比較記事を探して" (no X-specific wording) →
-  routes to `web_search`
+Every query file runs through `hermes -z` on the local machine. Which tool
+Hermes uses is driven by the prompt:
 
-Result frontmatter carries `engine: hermes` regardless of which internal tool
-Hermes used — the body states which tool it called (see "Structuring output"
-below for the standard section to request this in).
+- X (Twitter) posts/threads/profiles → let it use `x_search` (default for
+  X-flavored asks like "Xで〜の反応を調べて").
+- General web (docs, blogs, articles, comparisons) → steer it explicitly:
+  open the prompt with "web_search（Web検索）を使って調べてください。
+  x_search は使わないでください。回答末尾に使用ツール名を列挙してください。"
+  The tool self-report lets Claude confirm web_search (not x_search) ran.
 
-**Policy: Claude does not do the researching.** When the user asks for
-research (X or general web), route it through hermes-relay, then do only
-query design and result formatting. Claude's own WebSearch is for
-meta-purposes (debugging this pipeline, checking tool availability) or for
-a user-authorized fallback when the relay is stalled/erroring — not the
-default path for answering the user's research questions.
+**web_extract (specific-URL full-text extraction) is NOT available** on this
+setup and must not be attempted:
+- Grok's web backend is **search-only** — `web_extract` errors with "xAI Web
+  Search (Grok) is a search-only backend and cannot extract URL content."
+- `browser`/`navigate` fails on this machine: it is **ARM64 Windows**
+  (`No binary found for win32-arm64` — Playwright/Chromium has no ARM64
+  Windows build). This also explains the earlier `spawn EFTYPE`.
+- The paid extract backends (firecrawl/tavily/exa/parallel) are out of scope
+  (no-paid-API policy).
+- **Consequence**: for "read this specific URL" (UC5), do NOT enqueue a
+  web_extract/browser query — it will fail. Ask the user to paste the page
+  content instead.
+
+**Hallucination guard (critical).** In the browser test, Hermes reported the
+fetch as failed in one field yet **fabricated plausible headings and verbatim
+quotes** in the others. So when a web/extract path can fail, the prompt MUST
+say: 「取得に成功したソースの内容だけを書くこと。取得できなかった場合は
+見出し・要約・引用を推測や創作で埋めず、『取得失敗』とだけ書くこと。」 And
+Claude MUST cross-check the tool self-report against the body: if the report
+says a fetch failed but the body contains quotes, treat those quotes as
+fabricated and discard them.
+
+**Policy: Claude does not do the researching.** Route research through the
+relay (X and web both via `hermes`), then do only query design and result
+formatting. Claude's own WebSearch is for meta-purposes (debugging this
+pipeline, checking tool availability) or for a user-authorized fallback when
+the relay is stalled/erroring — not the default path for answering the
+user's research questions.
 
 After the result returns, Claude Code still does the editorial pass (verify
 suspicious claims, reformat for the user's actual purpose) — reshaping the
 input does not replace judging the output.
-
-### web_extract limitation (full-text extraction of linked pages)
-
-Hermes also exposes a `web_extract` tool for pulling the full text of a
-specific URL (used by the "Preserve source material" pattern below). As of
-2026-07, when the configured backend is xAI Web Search (Grok), `web_extract`
-**fails outright** — that backend is search-only and cannot extract page
-content (error: "xAI Web Search (Grok) is a search-only backend and cannot
-extract URL content. Set web.extract_backend to firecrawl, tavily, exa, or
-parallel."). Until the user configures one of those alternate extract
-backends, treat full-text extraction of linked articles as unavailable: rely
-on `web_search`'s own summary/snippets, and tell the user explicitly that the
-full body text could not be pulled rather than presenting a partial result as
-complete.
 
 ### Output schema (two layers — don't over-formalize the body)
 
@@ -337,6 +351,10 @@ sns-auto-posting, article-writer) can reference sections by name:
    web_search / web_extract), so downstream consumers can tell the search
    path without guessing from the content
 
+For non-SNS uses (market research for `biz-ops-guard`, technical research),
+rename headings 1/3/5 to fit the purpose. Only 2 (source URLs, one per claim)
+and 4 (未確認・断定できない点) are mandatory in every research query.
+
 Do NOT demand strict JSON from Hermes: `-z` output is LLM-generated and
 formatting compliance is loose, so a strict parser will intermittently break
 on otherwise-good results. The body's consumer is Claude (an LLM), which
@@ -345,6 +363,11 @@ parser and raw-text fallback) if a non-LLM consumer ever needs to read
 results without Claude in the loop.
 
 ### Preserve source material, not just summaries (link-extraction queries)
+
+**Currently inapplicable on this setup** — link extraction requires
+`web_extract` or `browser`, both unavailable (see "web_extract … is NOT
+available" above). Keep this pattern for the day an extract backend is
+configured; until then ask the user to paste page content instead.
 
 A summary alone destroys the source information — it can't be re-verified,
 re-quoted, or re-analyzed from a different angle later. Whenever the query
@@ -388,9 +411,10 @@ APIキー・個人情報・未公開の戦略は含めないでください。
   `agent-reach`.
 - Never put `XAI_API_KEY` or OAuth tokens in chat/context; configure them via
   `hermes tools` / the credential store, not inline.
-- `web_extract` fails on the default xAI backend (search-only) — see the
-  "web_extract limitation" section above. Don't promise full-text extraction
-  of a linked page until the user has configured an alternate `web.extract_backend`.
+- `web_extract` fails on the xAI backend (search-only) and `browser` has no
+  ARM64 Windows binary — see the "web_extract … is NOT available" block in
+  the engine section above. Don't promise full-text extraction of a linked
+  page; ask the user to paste page content instead.
 - If editing the `.ps1` relay scripts: keep `Write-Host`/comment text ASCII-only.
   Windows PowerShell 5.1 reads `.ps1` files with the system's legacy codepage
   unless the file carries a UTF-8 BOM, so non-ASCII text (e.g. Japanese) reliably

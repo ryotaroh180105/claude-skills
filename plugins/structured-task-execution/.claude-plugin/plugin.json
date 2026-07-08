@@ -1,0 +1,8 @@
+{
+  "name": "structured-task-execution",
+  "description": "正解のある検証可能なタスクの手戻りを減らすため、着手前に完了条件を固定し、観測を根拠に、最もリスクが高い箇所から着手する4フェーズ実行メソッドスキル。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}

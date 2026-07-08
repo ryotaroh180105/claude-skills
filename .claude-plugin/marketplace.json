@@ -30,9 +30,9 @@
       "category": "productivity"
     },
     {
-      "name": "skill-creator",
-      "source": "./plugins/skill-creator",
-      "description": "このリポジトリで新しいスキルを作成・改善・導入確認するためのメタスキル。",
+      "name": "repo-skill-creator",
+      "source": "./plugins/repo-skill-creator",
+      "description": "このリポジトリで新しいスキルを作成・改善・導入確認するためのメタスキル（Anthropic公式skill-creatorとの名前衝突回避のためリネーム）。",
       "category": "productivity"
     },
     {
@@ -110,7 +110,7 @@
     {
       "name": "sns-auto-posting",
       "source": "./plugins/sns-auto-posting",
-      "description": "投稿キュー（post-queue.md）の approved 行を X に投稿し、Instagram/TikTok は手動投稿用に整形出力する実行系スキル。",
+      "description": "投稿キュー（post-queue.md）の approved 行を X に投稿し、Instagram/TikTok は手動投稿用に整形出力する実行系スキル。台本からVOICEVOX+Remotionでショート動画素材を生成する工程も担う。",
       "category": "productivity"
     },
     {
@@ -171,6 +171,78 @@
       "name": "loop-engineering",
       "source": "./plugins/loop-engineering",
       "description": "Trigger/Doer/Verifier(Maker-Checker)/Stop Rules/Memory/Skillsの6要素で、定型作業を安全な自律ループとして設計するスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "daily-feedback",
+      "source": "./plugins/daily-feedback",
+      "description": "一日のClaude/Claude Codeの使い方を3軸（プロンプティング力・コスト最適化・運用判断力）で振り返るデイリーフィードバックスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "fable-distill",
+      "source": "./plugins/fable-distill",
+      "description": "Fable 5 の思考様式（難タスク分解・自己検証・次の一手）を蒸留したプレイブック。Opus 4.8 / Sonnet 5 の難タスクで読み込んで適用する。",
+      "category": "productivity"
+    },
+    {
+      "name": "last30days",
+      "source": "./plugins/last30days",
+      "description": "Reddit・X・YouTube・HN・Polymarket等を横断し直近30日の実エンゲージメントでランキングする last30days（mvanhorn/last30days-skill）の導入・実行ガイド。",
+      "category": "productivity"
+    },
+    {
+      "name": "claude-design-review",
+      "source": "./plugins/claude-design-review",
+      "description": "HTML/UI生成物をAIっぽさ・アクセシビリティ・階層/余白/リズム・仕上げの4観点でレビューする品質ゲートスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "media-convert",
+      "source": "./plugins/media-convert",
+      "description": "動画ファイル・動画URLを mp3/wav/m4a に変換する ffmpeg ラッパーの小型ユーティリティ。voicememo-pipeline の前処理にも使う。",
+      "category": "productivity"
+    },
+    {
+      "name": "humanize-text",
+      "source": "./plugins/humanize-text",
+      "description": "AI生成文の「AIっぽさ」を内容・事実を変えずに除去する推敲専用スキル。症状診断→該当変換のみ適用→仕上げパスの2段構成。",
+      "category": "productivity"
+    },
+    {
+      "name": "screenshot-to-app",
+      "source": "./plugins/screenshot-to-app",
+      "description": "UIスクリーンショットから見た目と機能を忠実に再現した単一HTMLの動くプロトタイプを作るスキル。再現度の自己採点と推測箇所の申告つき。",
+      "category": "productivity"
+    },
+    {
+      "name": "claude-env-audit",
+      "source": "./plugins/claude-env-audit",
+      "description": ".claude/skills・plugins・settings・CLAUDE.md を重複/矛盾/死文/肥大化/機密混入の5観点で棚卸しし、AUDIT.md に整備計画を出す環境監査スキル。診断/整備の2モード制。",
+      "category": "productivity"
+    },
+    {
+      "name": "ios-hig-prototype",
+      "source": "./plugins/ios-hig-prototype",
+      "description": "アプリ情報から Apple HIG 準拠・iPhoneフレーム付き・実際に操作できる単一HTMLプロトタイプを生成するスキル。ヒアリング→生成→全遷移検証の3工程。",
+      "category": "productivity"
+    },
+    {
+      "name": "academic-research",
+      "source": "./plugins/academic-research",
+      "description": "学術研究の文献調査→執筆→査読→改稿パイプライン（Imbad0202/academic-research-skills）の導入・実行ガイド。CC-BY-NC 4.0のため非商用限定。",
+      "category": "productivity"
+    },
+    {
+      "name": "context-handoff",
+      "source": "./plugins/context-handoff",
+      "description": "長い会話やモデル切り替えの前に、チャットにしか残っていない成果物・決定事項を回収し、次のモデル/次回セッションに引き継ぐ書類を作るスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "structured-task-execution",
+      "source": "./plugins/structured-task-execution",
+      "description": "正解のある検証可能なタスクの手戻りを減らすため、着手前に完了条件を固定し、観測を根拠に、最もリスクが高い箇所から着手する4フェーズ実行メソッドスキル。",
       "category": "productivity"
     }
   ]

@@ -1,11 +1,11 @@
 # スキル品質ループ（Skill Quality Loop）
 
-「いろんなユースケースでテストして改善する」ためのループ定義。`skill-creator` の
-[練度向上ワークフロー](../plugins/skill-creator/skills/skill-creator/SKILL.md)（症状特定→修正→version up、の内側のループ）を
+「いろんなユースケースでテストして改善する」ためのループ定義。`repo-skill-creator` の
+[練度向上ワークフロー](../plugins/repo-skill-creator/skills/repo-skill-creator/SKILL.md)（症状特定→修正→version up、の内側のループ）を
 **いつ・何を素材にして回すか**を決める、外側のループ。両者は役割分担であり、内容を重複させない：
 
 - **このドキュメント**: テストケースをどう作り、どう採点し、いつ次に回すか
-- **skill-creator**: 見つかった症状をどう SKILL.md の修正に落とすか
+- **repo-skill-creator**: 見つかった症状をどう SKILL.md の修正に落とすか
 - **`loop-engineering` スキル**: このドキュメントより一段広く、「スキルの品質改善」に
   限らない自律ループ全般（週次のSNS投稿、日次のピックアップ収集など）の設計を扱う。
   Trigger/Doer/Verifier/Stop Rules/Memory/Skillsの6要素はそちらで定義しており、
@@ -66,7 +66,7 @@ Phase 0 スコープ選定 → 1 ケース生成 → 2 実行 → 3 採点 → 4
 ## Phase 0: スコープ選定 + Stop Rules（二重の停止条件）
 
 - 対象は ROADMAP.md の優先順位（Tier1→2→3）か、直近で実際に使ったスキルを優先する。
-- 「このスキルを壁打ちしたい」と Ryo が言ったとき、または `skill-creator` 側で
+- 「このスキルを壁打ちしたい」と Ryo が言ったとき、または `repo-skill-creator` 側で
   version を上げた直後の確認として起動する。
 - **開始前に Stop Rules を2種類とも決める**:
   1. **成功条件**: 何件合格したら、または Ryo の一言でこのループ回を終えるか
@@ -115,10 +115,10 @@ SKILL.md 作成時に列挙した5個以上のユースケースをベースに�
 コスト最適化: Verifier役は `model-switcher` の基準で軽量モデル（Haiku）に
 委譲してよい。判断が難しいケースだけ Doer 側と同等のモデルを使う。
 
-## Phase 4: 診断 → skill-creator へ
+## Phase 4: 診断 → repo-skill-creator へ
 
 不合格・違和感のあったケースは、**原因を1つに特定してから**
-`skill-creator` の練度向上ワークフロー（4パターン: 発動しない/手順曖昧/
+`repo-skill-creator` の練度向上ワークフロー（4パターン: 発動しない/手順曖昧/
 出力違い/誤発動）に渡して修正する。「勘で直さない」— 原因不明のまま
 SKILL.md をいじらない。
 

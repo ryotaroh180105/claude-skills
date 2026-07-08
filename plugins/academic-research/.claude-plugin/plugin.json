@@ -1,0 +1,6 @@
+{
+  "name": "academic-research",
+  "description": "学術研究の文献調査→執筆→査読→改稿を通しでこなす Academic Research Skills（Imbad0202、CC-BY-NC 4.0）の導入・実行ガイド。非商用限定。実体は本家マーケットプレイスからインストールする Wrapper。",
+  "version": "1.0.0",
+  "author": { "name": "ryotaroh180105" }
+}

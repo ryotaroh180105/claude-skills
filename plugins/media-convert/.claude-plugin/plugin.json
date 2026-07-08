@@ -1,0 +1,8 @@
+{
+  "name": "media-convert",
+  "description": "ffmpeg を使って動画ファイル・URLを mp3/wav/m4a 等の音声に変換する小型ユーティリティ。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}

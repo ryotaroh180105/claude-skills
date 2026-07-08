@@ -41,7 +41,12 @@ claude-skills/
 
 インストール後は `/requirements-definition:requirements-definition` のようにプラグイン名で呼び出せる（多くはトリガー条件に合う依頼をするだけで自動発動する）。
 
-### Claude.ai（web）
+### Claude.ai（web・モバイル）
+
+claude.ai の個人スキルアップロードには公開APIが無く、Settings > Capabilities > Skills
+からの手動アップロードが必須（自動化不可）。Claude Code セッションでは
+`.skill` ファイルの生成・配布まで代行し、ユーザーの作業はドラッグ&ドロップの
+アップロードだけに絞る。
 
 1. `scripts/sync_to_claude_ai.sh` を実行して `dist/*.skill` を生成
 2. claude.ai の Settings > Capabilities > Skills から該当の `.skill` ファイルをアップロード
@@ -58,7 +63,7 @@ claude-skills/
 |---|---|
 | `requirements-definition` | 曖昧な依頼からイシュー特定→MECE分解→ピラミッド構造化で要件定義書を作る |
 | `work-approach-playbook` | 仕事の進め方プレイブック（作業前チェックリスト・報連相・完了報告・振り返り） |
-| `skill-creator` | このリポジトリでスキルを作成・改善・導入確認するメタスキル |
+| `repo-skill-creator` | このリポジトリでスキルを作成・改善・導入確認するメタスキル（公式skill-creatorと別物） |
 | `task-management` | TODO.md ベースのタスク管理（分解・優先順位付け・週次振り返り） |
 | `model-switcher` | タスク種別に応じた Claude モデルの選択・切り替え（コスト最適化） |
 | `loop-engineering` | 定型作業を Trigger/Doer/Verifier/Stop Rules/Memory/Skills の自律ループとして設計する |
@@ -103,6 +108,7 @@ claude-skills/
 | `aws-exam-practice` | AWS 認定試験（SAA）の模試・演習・弱点復習 |
 | `token-saver` | 応答・コンテキスト両面でトークン消費を削減する簡潔応答モードスキル |
 | `yagni-guard` | 実装前後にYAGNIの観点でチェックし、過剰設計・不要な抽象化を防ぐスキル |
+| `daily-feedback` | 一日のClaude/Claude Code利用を3軸（プロンプティング力・コスト・運用判断）で振り返るデイリーフィードバック |
 
 ### その他
 
@@ -114,7 +120,7 @@ claude-skills/
 
 ## 作って終わりにしない：壁打ち→ブラッシュアップの運用
 
-v1.0.0 のスキルは叩き台。実際のタスクで使い、Claude と壁打ちしてフィードバックを SKILL.md に反映し、version を上げていくサイクルで練度を上げる（詳細は `skill-creator` スキルと [ROADMAP.md](ROADMAP.md) の運用方針、テストケース生成〜採点の具体的なループは [docs/skill-quality-loop.md](docs/skill-quality-loop.md) を参照）。
+v1.0.0 のスキルは叩き台。実際のタスクで使い、Claude と壁打ちしてフィードバックを SKILL.md に反映し、version を上げていくサイクルで練度を上げる（詳細は `repo-skill-creator` スキルと [ROADMAP.md](ROADMAP.md) の運用方針、テストケース生成〜採点の具体的なループは [docs/skill-quality-loop.md](docs/skill-quality-loop.md) を参照）。
 
 X・GitHub トレンド等から新しいスキルネタを収集し（`twitter-intel` / `github-trends`）、[ROADMAP.md](ROADMAP.md) の候補リストに追記→ユーザーが採択判断→実装、というサイクルも継続する。
 
@@ -181,7 +187,7 @@ git push
 ```
 
 手順の詳細（description のトリガー設計・前提セットアップ節の書き方・練度向上の回し方）は
-`skill-creator` スキル（`plugins/skill-creator`）が正。ここは最小手順のみ。
+`repo-skill-creator` スキル（`plugins/repo-skill-creator`）が正。ここは最小手順のみ。
 
 GitHub Actions（`.github/workflows/validate-skills.yml`）が push / PR のたびに
 `validate_skills.py` を実行し、`marketplace.json` に登録されたスキルの
