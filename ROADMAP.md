@@ -65,6 +65,8 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 | 🎉 | `repo-skill-creator` | スキル作成・練度向上スキル（公式skill-creatorと別物） |
 | 🎉 | `task-management` | タスク管理スキル |
 | ✅ | `loop-engineering` | 自律ループ設計スキル（Trigger/Doer/Verifier/Stop Rules/Memory/Skills） |
+| 🎉 | `context-handoff` | 会話成果物の回収→L1-L4整合性チェック→引き継ぎ書化（モデル切替・セッション区切り用） |
+| 🎉 | `structured-task-execution` | 完了条件固定→観測ベース→リスク先行のPhase 0-3実行メソッド |
 
 ### Tier2: 高難易度スキル（7/7までに実装）
 
@@ -126,11 +128,24 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 4. **実装**: 採択されたものを `repo-skill-creator` スキルの手順で 4個ずつ並列実装する。
 5. **導入確認**: `/plugin install` または `.skill` アップロードまで確認して 🎉 にする。
 
+### パターン観測ログ（繰り返し手作業の検出 → 3回で候補化）
+
+既存スキルでカバーされていない複数ステップの手順を完了するたびに記録する。
+同一パターンは回数を +1。3回に達したら候補リストへ転記する（運用ルールは
+`repo-skill-creator` スキルの「パターン観測 → スキル候補化」節が正）。
+
+| 初回日 | パターン（1行） | 回数 | 直近日 | 状態 |
+|---|---|---|---|---|
+| 2026-07-07 | X投稿の保存ファイル（docx等）から本文抽出→投稿単位で構造化→実装候補の仕分け | 1 | 2026-07-07 | 観測中 |
+
 ### 候補リスト（収集したスキルネタ置き場）
 
 | 追加日 | 候補 | ソース | 状態 |
 |---|---|---|---|
 | 2026-07-07 | Xブックマーク一括取り込み（詳細は docs/x-posts-inventory.md） | Ryo提供のX投稿群 | 採択済み・Batch 7 で実装 |
+| 2026-07-07 | taste-skill（AI生成UIの"安っぽさ"防止。`npx skills add Leonxlnx/taste-skill --skill design-taste-frontend`） | https://github.com/leonxlnx/taste-skill | 採択済み・導入結果の確認待ち（Ryoの端末でnpx実行、出力未確認） |
+| 2026-07-07 | claude-video（実体は「Claudeに動画を見せる」ツール。プラグインIDは`watch`。要ffmpeg/yt-dlp） | https://github.com/bradautomates/claude-video | 🎉 導入済み（`watch@claude-video`、2026-07-08確認。ffmpeg/yt-dlpの導入は継続中） |
+| 2026-07-07 | agmsg（実体は複数CLIエージェント間のローカルSQLiteメッセージング基盤。Win/Linuxはbest-effort対応） | https://github.com/fujibee/agmsg | 採択済み・導入中（Ryoの端末はWindows ARM64のためbest-effort領域） |
 
 ## Batch 7（Xブックマーク由来・2026-07-07〜08 実装）
 

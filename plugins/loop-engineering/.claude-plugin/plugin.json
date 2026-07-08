@@ -1,6 +1,8 @@
 {
   "name": "loop-engineering",
   "description": "Trigger/Doer/Verifier(Maker-Checker)/Stop Rules/Memory/Skillsの6要素で、定型作業・監視・繰り返しタスクをClaude Codeの自律ループとして安全に設計するスキル。",
-  "version": "1.0.0",
-  "author": { "name": "ryotaroh180105" }
+  "version": "1.1.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
 }
