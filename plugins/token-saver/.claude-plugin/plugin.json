@@ -1,6 +1,6 @@
 {
   "name": "token-saver",
   "description": "出力・コンテキスト両面でトークン消費を削減する簡潔応答モードスキル。",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": { "name": "ryotaroh180105" }
 }

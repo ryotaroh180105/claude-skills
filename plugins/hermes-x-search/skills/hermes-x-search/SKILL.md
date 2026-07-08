@@ -256,40 +256,57 @@ turn to clarify or reshape, so everything must be in the prompt up front:
    with a hermes usage error (hit twice in production). The watcher now
    escapes quotes as a backstop, but don't rely on it.
 
-### Engine routing: Hermes for X, NotebookLM for the web
+### Engine routing: X → x_search, general web → Grok web_search
 
-The relay supports two engines, selected by an optional header at the top of
-the query file (before the prompt body):
+Web research is done by Hermes itself (v0.18+), not by a separate engine.
+The user's local Hermes has `web.backend: xai`, so `web_search` runs through
+the same xAI Grok OAuth as x_search — agentic web search (search → read →
+synthesize), no extra API key, no per-call charge beyond the existing
+subscription. Verified working: a `web_search`-steered query returned
+source-URL-backed, quote-bearing results in ~120s.
 
-```
-engine: notebooklm
-topic: ループエンジニアリング Verifier 設計
-（以下、通常のプロンプト本文）
-```
+Routing (optional `engine:` header at the top of the query file):
 
-- **No header / `engine: hermes`** → `hermes -z` with x_search. Use for
-  anything about X (Twitter) posts, threads, profiles, reactions.
-- **`engine: notebooklm`** → notebooklm-py on the local machine runs a web
-  Deep Research pass (`source add-research "<topic>" --import-all`) and then
-  answers the prompt body grounded in the gathered sources (`ask`), with
-  citations. Use for **all general web research** — docs, blogs, articles,
-  comparisons. The `topic:` line is the short research topic for source
-  gathering; the body is the full structured question.
-- Result frontmatter carries `engine:` so downstream consumers can tell
-  which path produced it.
+- **No header / `engine: hermes`** → `hermes -z`. This is now the path for
+  **both X research and general web research** — which one Hermes uses is
+  driven by the prompt, not a separate engine:
+  - X (Twitter) posts/threads/profiles → let it use `x_search` (default).
+  - General web (docs, blogs, articles, comparisons) → steer it explicitly:
+    open the prompt with "web_search（Web検索）を使って調べてください。
+    x_search は使わないでください。回答末尾に使用ツール名を列挙してください。"
+    The tool self-report lets Claude confirm web_search (not x_search) ran.
+- **`engine: notebooklm`** → retained only for **accumulate-then-ask** work
+  (build a source set once, ask it many questions). Not the default for
+  one-off web research anymore — Grok web_search is faster to set up and
+  needs no browser/profile. Keep it for the narrow case it's good at.
 
-**Policy: Claude does not do the researching.** When the user asks for
-research, route X queries to hermes and web queries to notebooklm via the
-relay, then do only query design and result formatting. Claude's own
-WebSearch is for meta-purposes (debugging this pipeline, checking tool
-availability), not for answering the user's research questions.
+**web_extract (specific-URL full-text extraction) is NOT available** on this
+setup and must not be attempted:
+- Grok's web backend is **search-only** — `web_extract` errors with "xAI Web
+  Search (Grok) is a search-only backend and cannot extract URL content."
+- `browser`/`navigate` fails on this machine: it is **ARM64 Windows**
+  (`No binary found for win32-arm64` — Playwright/Chromium has no ARM64
+  Windows build). This also explains the earlier `spawn EFTYPE`.
+- The paid extract backends (firecrawl/tavily/exa/parallel) are out of scope
+  (no-paid-API policy).
+- **Consequence**: for "read this specific URL" (UC5), do NOT enqueue a
+  web_extract/browser query — it will fail. Ask the user to paste the page
+  content instead.
 
-NotebookLM caveats: notebooklm-py is an unofficial client of undocumented
-Google APIs and can break without notice; per-notebook source caps depend on
-the Google account tier (start a fresh notebook when hitting caps); one-time
-`notebooklm login` (browser) is required on the local machine before first
-use, plus `notebooklm create` / `notebooklm use` to pick the research
-notebook.
+**Hallucination guard (critical).** In the browser test, Hermes reported the
+fetch as failed in one field yet **fabricated plausible headings and verbatim
+quotes** in the others. So when a web/extract path can fail, the prompt MUST
+say: 「取得に成功したソースの内容だけを書くこと。取得できなかった場合は
+見出し・要約・引用を推測や創作で埋めず、『取得失敗』とだけ書くこと。」 And
+Claude MUST cross-check the tool self-report against the body: if the report
+says a fetch failed but the body contains quotes, treat those quotes as
+fabricated and discard them.
+
+**Policy: Claude does not do the researching.** Route research through the
+relay (X and web both via `hermes`), then do only query design and result
+formatting. Claude's own WebSearch is for meta-purposes (debugging this
+pipeline, checking tool availability), not for answering the user's research
+questions.
 
 After the result returns, Claude Code still does the editorial pass (verify
 suspicious claims, reformat for the user's actual purpose) — reshaping the

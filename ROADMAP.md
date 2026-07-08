@@ -65,6 +65,8 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 | 🎉 | `repo-skill-creator` | スキル作成・練度向上スキル（公式skill-creatorと別物） |
 | 🎉 | `task-management` | タスク管理スキル |
 | ✅ | `loop-engineering` | 自律ループ設計スキル（Trigger/Doer/Verifier/Stop Rules/Memory/Skills） |
+| 🎉 | `context-handoff` | 会話成果物の回収→L1-L4整合性チェック→引き継ぎ書化（モデル切替・セッション区切り用） |
+| 🎉 | `structured-task-execution` | 完了条件固定→観測ベース→リスク先行のPhase 0-3実行メソッド |
 
 ### Tier2: 高難易度スキル（7/7までに実装）
 
@@ -126,8 +128,46 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 4. **実装**: 採択されたものを `repo-skill-creator` スキルの手順で 4個ずつ並列実装する。
 5. **導入確認**: `/plugin install` または `.skill` アップロードまで確認して 🎉 にする。
 
+### パターン観測ログ（繰り返し手作業の検出 → 3回で候補化）
+
+既存スキルでカバーされていない複数ステップの手順を完了するたびに記録する。
+同一パターンは回数を +1。3回に達したら候補リストへ転記する（運用ルールは
+`repo-skill-creator` スキルの「パターン観測 → スキル候補化」節が正）。
+
+| 初回日 | パターン（1行） | 回数 | 直近日 | 状態 |
+|---|---|---|---|---|
+| 2026-07-07 | X投稿の保存ファイル（docx等）から本文抽出→投稿単位で構造化→実装候補の仕分け | 1 | 2026-07-07 | 観測中 |
+
 ### 候補リスト（収集したスキルネタ置き場）
 
 | 追加日 | 候補 | ソース | 状態 |
 |---|---|---|---|
-| 2026-07-05 | [Fable 5 戦略的設計資産一覧](docs/fable5-design-assets.md)（personal-growth-strategy-engine、情報集約エージェント、Kindle AI VPN、レポジトリ整理エージェント、マルチエージェント・チーム設計 等、詳細はリンク先） | ユーザー提示（Fable 5 セッション） | 未採択（詳細ドキュメントのみ保存） |
+| 2026-07-05 | [Fable 5 戦略的設計資産一覧](docs/fable5-design-assets.md)（personal-growth-strategy-engine、情報集約エージェント、Kindle AI VPN、レポジトリ整理エージェント、マルチエージェント・チーム設計 等、詳細はリンク先） | ユーザー提示（Fable 5 セッション） | 一部実装済み（設計08〜21参照）・アプリ系は各設計書の実装ゲート待ち |
+| 2026-07-07 | Xブックマーク一括取り込み（詳細は docs/x-posts-inventory.md） | Ryo提供のX投稿群 | 採択済み・Batch 7 で実装 |
+| 2026-07-07 | taste-skill（AI生成UIの"安っぽさ"防止。`npx skills add Leonxlnx/taste-skill --skill design-taste-frontend`） | https://github.com/leonxlnx/taste-skill | 採択済み・導入結果の確認待ち（Ryoの端末でnpx実行、出力未確認） |
+| 2026-07-07 | claude-video（実体は「Claudeに動画を見せる」ツール。プラグインIDは`watch`。要ffmpeg/yt-dlp） | https://github.com/bradautomates/claude-video | 🎉 導入済み（`watch@claude-video`、2026-07-08確認。ffmpeg/yt-dlpの導入は継続中） |
+| 2026-07-07 | agmsg（実体は複数CLIエージェント間のローカルSQLiteメッセージング基盤。Win/Linuxはbest-effort対応） | https://github.com/fujibee/agmsg | 採択済み・導入中（Ryoの端末はWindows ARM64のためbest-effort領域） |
+
+## Batch 7（Xブックマーク由来・2026-07-07〜08 実装）
+
+採択判断: Ryo（「全部実装したい」の明示指示）。設計: Fable 5（docs/new-skills-design.md）、
+実装: Sonnet 5 サブエージェント（10-80-10 采配の実践）。
+全9本 2026-07-08 に実機インストール確認済み（/plugin install → /reload-plugins で 39 plugins 反映）。
+
+| Status | スキル | 内容 |
+|---|---|---|
+| 🎉 | `fable-distill` | Fable 5 の思考様式（タスク分解・自己検証・次の一手）の蒸留プレイブック |
+| 🎉 | `last30days` | mvanhorn/last30days-skill（MIT）の Wrapper 導入ガイド |
+| 🎉 | `claude-design-review` | Trystan-SA/claude-design-system-prompt（MIT）を4観点チェックリストに再構成 |
+| 🎉 | `humanize-text` | AI臭除去の推敲専用スキル（症状診断→該当変換のみ適用） |
+| 🎉 | `media-convert` | 動画→音声変換の ffmpeg ラッパー |
+| 🎉 | `claude-env-audit` | .claude 資産の5観点監査＋AUDIT.md 出力（診断/整備2モード） |
+| 🎉 | `screenshot-to-app` | スクショ→動く単一HTML再現（自己採点・推測箇所申告つき） |
+| 🎉 | `ios-hig-prototype` | Apple HIG 準拠 iPhone プロトタイプ生成（プロンプト原文は references/） |
+| 🎉 | `academic-research` | Imbad0202/academic-research-skills（CC-BY-NC 4.0）の Wrapper。非商用限定 |
+
+既存スキル拡張（同バッチ）: token-saver / model-switcher / repo-skill-creator /
+article-writer / sns-ops-team / owned-media を v1.1.0〜1.2.0 に更新、CLAUDE.md に
+「完成の定義」「Epistemia対策」を追加。見送り: compliance-checker の独立化（owned-media と
+sns-ops-team に組込済みのため）、RuView / CloakBrowser / openhuman / ViMax / bun
+（理由は docs/x-posts-inventory.md §1 参照）。

@@ -1,0 +1,6 @@
+{
+  "name": "claude-design-review",
+  "description": "HTML/UI生成物をAIっぽさ・アクセシビリティ・階層/余白/リズムの観点でレビューする品質ゲートスキル。",
+  "version": "1.0.0",
+  "author": { "name": "ryotaroh180105" }
+}

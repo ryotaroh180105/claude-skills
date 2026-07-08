@@ -1,0 +1,9 @@
+{
+  "name": "ios-hig-prototype",
+  "description": "アプリ情報を渡すと Apple HIG 準拠・iPhoneフレーム付きで、タップ/遷移が実際に動く単一HTMLプロトタイプを生成するスキル。ヒアリング→生成→検証の3工程。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  },
+  "category": "productivity"
+}

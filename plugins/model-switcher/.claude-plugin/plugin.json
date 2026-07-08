@@ -1,7 +1,7 @@
 {
   "name": "model-switcher",
   "description": "タスク種別に応じて使う Claude モデル（Fable 5 / Opus 4.8 / Sonnet 5 / Haiku 4.5）を判断・切り替えるスキル。良いモデルは難しい仕事にだけ使い、定型処理は安いモデルに委譲してコスト効率を最大化する。",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "ryotaroh180105"
   }
