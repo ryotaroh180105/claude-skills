@@ -1,0 +1,6 @@
+{
+  "name": "claude-env-audit",
+  "description": "Claude 環境（.claude/skills, plugins/, settings, CLAUDE.md）と過去セッションを監査し、重複・矛盾・死文・肥大化・機密混入を検出して整備計画を出すスキル。",
+  "version": "1.0.0",
+  "author": { "name": "ryotaroh180105" }
+}

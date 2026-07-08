@@ -1,0 +1,9 @@
+{
+  "name": "screenshot-to-app",
+  "description": "UIスクリーンショット1枚から、見た目と機能を忠実に再現した単一HTMLの動くプロトタイプを作るスキル。読み取り→実装→自己採点報告の3工程。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  },
+  "category": "productivity"
+}

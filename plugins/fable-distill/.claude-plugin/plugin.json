@@ -1,0 +1,6 @@
+{
+  "name": "fable-distill",
+  "description": "Fable 5 の思考様式（難タスク分解・自己検証・次の一手）を蒸留したプレイブック。Opus 4.8 / Sonnet 5 での設計・難デバッグ・長時間自律作業時に読み込んで適用する。",
+  "version": "1.0.0",
+  "author": { "name": "ryotaroh180105" }
+}

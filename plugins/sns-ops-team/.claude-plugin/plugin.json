@@ -1,7 +1,7 @@
 {
   "name": "sns-ops-team",
   "description": "SNS運用（X中心、Instagram/TikTokも対応）を企画・リサーチ・執筆・レビュー・スケジュール管理のマルチエージェントで回すオーケストレーションスキル。運用代行と自分のアカウント育成の両方に使える。投稿実行は sns-auto-posting に委譲。",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "ryotaroh180105"
   },
