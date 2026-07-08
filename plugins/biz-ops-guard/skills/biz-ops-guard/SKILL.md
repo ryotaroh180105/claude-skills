@@ -87,8 +87,9 @@ No がある項目は、①設計を直して Yes にする、②「学習目的
 シートを埋めるための調査は、Claude 自身の WebSearch ではなく **hermes-relay** で実行する
 （CLAUDE.md の方針。手順は `plugins/hermes-x-search/skills/hermes-x-search/SKILL.md` が正）:
 
-- 競合・代替手段・既存ツールの比較、記事/ドキュメント調査 → `engine: notebooklm` + `topic:`
-- X 上の需要・不満・「今どう解決しているか」の生の声 → ヘッダなし（x_search）
+- 競合・代替手段・既存ツールの比較、記事/ドキュメント調査も、X 上の需要・不満・
+  「今どう解決しているか」の生の声も、**同じ経路（ヘッダなし）**。Hermes Agent が
+  クエリ内容から web_search / x_search を自動選択する（NotebookLM は廃止済み）。
 
 調べるのは3点だけ。それ以上の市場調査はやりすぎ:
 
