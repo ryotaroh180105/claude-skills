@@ -17,7 +17,7 @@
 | 2 | `github.com/Trystan-SA/claude-design-system-prompt` | Claude Design の設計思想を逆算した 20章 system prompt + 14 Design Skill（Claude向け/Codex向け、アクセシビリティ監査、AIっぽさ検査、階層/余白/リズムレビュー、polish pass）。紫グラデ・絵文字まみれ・ガラスカード等の「AIっぽいUI」回避 | 📦 |
 | 3 | `github.com/colbymchenry/codegraph`（推定） | コードベース全体を事前に「地図化」して AI コーディングエージェントへの指示を軽くする。100%ローカル | 📦 |
 | 4 | `github.com/tinyhumansai/openhuman`（推定） | メモリ・ノートを手元保存する自分専用AIアシスタント基盤。Gmail/Notion/Slack 等118+連携 | 📦 検討 |
-| 5 | `github.com/Imbad0202/academic-research-skills`（推定） | 研究→執筆→レビュー→改稿→仕上げを通しでこなす Claude Code 向けスキル集。長文ライティング全般に応用可 | 📦 |
+| 5 | `github.com/Imbad0202/academic-research-skills`（実在確認済み） | 研究→執筆→レビュー→改稿→仕上げを通しでこなす Claude Code 向けスキル集。**CC-BY-NC 4.0（非営利限定）のため商用案件では使用不可** | ✅ `academic-research` として Wrapper 導入済み |
 | 6 | `github.com/ruvnet/RuView` | WiFi電波だけで人の存在・呼吸・心拍をリアルタイム検知。カメラ不要 | ❌（用途外） |
 | 7 | `github.com/rohitg00/agentmemory`（推定） | AIコーディングエージェントにセッション横断の長期記憶を持たせる | 📦 検討 |
 | 8 | `github.com/supertone-inc/supertonic`（推定） | 端末単体で動く高速・多言語TTS（31言語、クラウド送信なし） | 📦 検討（voicememo-pipeline 関連） |
