@@ -226,6 +226,12 @@
       "source": "./plugins/ios-hig-prototype",
       "description": "アプリ情報から Apple HIG 準拠・iPhoneフレーム付き・実際に操作できる単一HTMLプロトタイプを生成するスキル。ヒアリング→生成→全遷移検証の3工程。",
       "category": "productivity"
+    },
+    {
+      "name": "academic-research",
+      "source": "./plugins/academic-research",
+      "description": "学術研究の文献調査→執筆→査読→改稿パイプライン（Imbad0202/academic-research-skills）の導入・実行ガイド。CC-BY-NC 4.0のため非商用限定。",
+      "category": "productivity"
     }
   ]
 }
