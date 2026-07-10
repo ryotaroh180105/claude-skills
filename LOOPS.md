@@ -33,3 +33,23 @@
 - Human gate: マージは Ryo のみ。ルールの廃止・CLAUDE.md 昇格は必ず PR 経由。
 - 失敗モードチェック: Blind（validate_mistakes.py + PR レビューで分離）/ Tangled（Doer は既存手順の実行のみ）/ Amnesiac（レビュー履歴に永続化）/ Manual（Routine で自動起動）いずれも該当なし。
 - 履歴: 2026-07-05 設計・Routine 作成。初回実行は 2026-08-01。
+
+## ループ設計: SNS週次 配信→反応分析→次バッチループ
+
+- ゴール: X運用が「作って終わり」にならず、毎週「前週の数値分析 → 学びの還流 → 今週分のdraft作成」が人手ゼロで回ること。勝ちパターンが3回再現するたびに x-post-quality.md が実データで更新され続けること。
+- Trigger: タイマー。Claude Code Remote の Routine（毎週月曜 09:00 JST = cron `0 0 * * 1` UTC、新規セッション起動、trigger_id: `trig_01RUM6ujkzYZuNkhFjMMHD8T`）。
+- Doer: 起動されたセッションが sns-ops-team スキルの「配信→反応分析ループ」→「週次バッチ」を順に実行する。
+  - 冒頭ゲート: `sns/<アカウント>/sns-strategy.md` が1つも無ければ何も作らず「初回セットアップ未実施のためスキップ。運用を始めるには『Xアカウントの運用を立ち上げたい』と依頼」とだけ報告して終了する（空回り防止）。
+  - 数値取得: ユーザー提供値が振り返りログに未反映なら最優先で反映 → 無ければ hermes-relay で posted 行の投稿URLの反応を調査 → 取得不可は「数値なし」と記録（Epistemia対策: 推測で数字を埋めない）。
+  - バッチ: リサーチ→企画→執筆→レビュー→post-queue.md に draft 追記（本数は戦略ファイルの投稿頻度）。
+- Verifier: 2層。(1) ④レビュー担当エージェント（炎上・法令・トーン・AIっぽさ。executor と分離） (2) draft→approved の昇格は Ryo のみ（キュー行の自動承認禁止）。数値なき「学び」は書かない・1回の結果で戦略を変えない（3回ルール）。
+- Stop Rules:
+  - 成功条件: 振り返りログ追記＋今週分 draft 追記＋PR 作成まで（マージしない）。
+  - 安全上限: 最大60分・レビュー再生成2周まで。収束しなければ途中結果を PR に書いて終了。
+  - 数値が2週連続取得不可 → バッチは作るが PR に「数値取得手段の相談」を明記。
+  - 炎上兆候（否定的リプ急増・フォロワー急減）→ 新規 draft を作らず、その報告のみで終了。
+- Memory/State: `sns/<アカウント>/sns-strategy.md` の振り返りログ（数値・学び）と `post-queue.md`（キュー本体）。勝ち3回再現時は x-post-quality.md への追記を PR で提案。
+- Skills/Routines: sns-ops-team（手順の正）、twitter-intel / hermes-relay（数値・リサーチ）、sns-auto-posting（配信。このループの外、approved 後に実行）。
+- Human gate: ①approved への変更は Ryo のみ ②ファイル変更はすべて PR 経由でマージは Ryo ③戦略・リファレンスの書き換えは PR 内で提案として明示。
+- 失敗モードチェック: Blind（レビュー担当分離＋approved は人間）/ Tangled（Doer は既存スキル手順の実行のみ）/ Amnesiac（振り返りログ＋post-queue に永続化）/ Manual（Routine で自動起動）いずれも該当なし。
+- 履歴: 2026-07-10 設計・Routine 作成。戦略ファイル未作成のため、初回セットアップ完了までは毎週スキップ報告のみ。
