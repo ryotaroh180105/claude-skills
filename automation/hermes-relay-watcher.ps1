@@ -25,9 +25,12 @@ $MaxParallelNotebookLm = if ($env:HERMES_MAX_PARALLEL_NOTEBOOKLM) { [int]$env:HE
 $MaxNotebookLmQueriesPerJob = if ($env:HERMES_MAX_NOTEBOOKLM_PER_JOB) { [int]$env:HERMES_MAX_NOTEBOOKLM_PER_JOB } else { 4 }
 
 # Task Scheduler runs with a minimal environment; watcher.env.ps1 pins the
-# hermes / notebooklm binary paths captured at setup time.
+# hermes / notebooklm binary paths captured at setup time, and optionally
+# $McUrl / $McApiKey for the Mission Control task queue integration below.
 $HermesBin = $null
 $NotebookLmBin = $null
+$McUrl = $null
+$McApiKey = $null
 $envFile = Join-Path $RelayDir "watcher.env.ps1"
 if (Test-Path $envFile) { . $envFile }
 if (-not $HermesBin) {
@@ -286,6 +289,30 @@ try {
         if ($LASTEXITCODE -ne 0) {
             git pull -q --rebase origin $Branch
             git push -q origin $Branch
+        }
+    }
+
+    # Mission Control task queue (optional, best-effort). Independent of the
+    # git-based query/result flow above -- no commit/push involved, just a
+    # REST poll-execute-report loop against a locally running dashboard.
+    # Claims and processes at most one task per watcher run; Hermes is
+    # search-focused, so tasks routed here should be research/search asks.
+    if ($McUrl -and $McApiKey) {
+        try {
+            $mcHeaders = @{ "X-API-Key" = $McApiKey }
+            $queueResp = Invoke-RestMethod -Uri "$McUrl/api/tasks/queue?agent=Hermes" -Headers $mcHeaders -Method Get -TimeoutSec 15
+            if ($queueResp.reason -eq "assigned" -and $queueResp.task) {
+                $mcTask = $queueResp.task
+                Log "mission-control: claimed task $($mcTask.id) ($($mcTask.title))"
+                $mcQuery = if ($mcTask.description) { $mcTask.description } else { $mcTask.title }
+                $mcQuery = $mcQuery -replace '"', '\"'
+                $mcOutput = (& $HermesBin -z $mcQuery --accept-hooks 2>&1 | Out-String).Trim()
+                $mcBody = @{ status = "review"; resolution = $mcOutput } | ConvertTo-Json
+                Invoke-RestMethod -Uri "$McUrl/api/tasks/$($mcTask.id)" -Headers $mcHeaders -Method Put -Body $mcBody -ContentType "application/json" -TimeoutSec 15 | Out-Null
+                Log "mission-control: completed task $($mcTask.id), moved to review"
+            }
+        } catch {
+            Log "mission-control: poll/execute failed: $($_.Exception.Message)"
         }
     }
 } finally {
