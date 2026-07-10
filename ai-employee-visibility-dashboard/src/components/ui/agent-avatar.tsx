@@ -1,5 +1,7 @@
 'use client'
 
+import type { ReactElement } from 'react'
+
 interface AgentAvatarProps {
   name?: string | null
   size?: 'xs' | 'sm' | 'md'
@@ -14,7 +16,7 @@ function hashString(value: string): number {
   return hash
 }
 
-function getPixelCharacter(name: string, size: 'xs' | 'sm' | 'md'): JSX.Element {
+function getPixelCharacter(name: string, size: 'xs' | 'sm' | 'md'): ReactElement {
   const hash = hashString((name ?? '').toLowerCase())
   const style = hash % 6
   const sizeMap = { xs: 16, sm: 24, md: 32 }
@@ -72,11 +74,11 @@ function getPixelCharacter(name: string, size: 'xs' | 'sm' | 'md'): JSX.Element 
       height={s}
       viewBox={`0 0 ${s} ${s}`}
       className="shrink-0"
-      title={name ?? 'Agent'}
       role="img"
       aria-label={name || 'Agent'}
       style={{ imageRendering: 'pixelated' }}
     >
+      <title>{name ?? 'Agent'}</title>
       <rect width={s} height={s} fill="transparent" />
       {pixelPatterns[style]}
     </svg>
