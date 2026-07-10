@@ -83,7 +83,7 @@ async function dispatchTask(agentName, taskDesc) {
     title: `[${agentName}] ${taskDesc}`,
     description: taskDesc,
     assigned_to: agentName,
-    status: 'todo',
+    status: 'assigned',
     priority: 'medium',
   });
   return result.data;
