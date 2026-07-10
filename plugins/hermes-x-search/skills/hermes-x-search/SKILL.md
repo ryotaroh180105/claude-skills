@@ -123,14 +123,33 @@ results; the local machine executes them.
 
 ### Automated relay (preferred — user does nothing per query)
 
-The repo's `hermes-relay` branch is a git-based message queue between Claude
-Code and a cron watcher on the user's machine. Once the user has run the
-one-time local setup (below), the full round trip is automatic: Claude Code
-pushes a query file, the local watcher executes it within ~1 minute, and
-pushes the result back. Expected end-to-end latency: **1–4 minutes**.
+The repo's `hermes-relay` branch is a git-based message queue. As of
+2026-07-10 the execution side runs on **GitHub Actions**
+(`.github/workflows/hermes-relay-exec.yml`, pushed to the `hermes-relay`
+branch), triggered automatically on every push — not on the user's local
+machine. Claude Code pushes a query file, the Actions run installs/seeds
+Hermes and executes it, and pushes the result back. Expected end-to-end
+latency: **~30 seconds to 3 minutes**. This removes the prior constraint
+that the user's PC had to be powered on and awake — see
+`docs/hermes-actions-relay-design.md` for the full design, go/no-go
+findings, and rollback path.
 
-**One-time local setup** (the only thing the user ever runs by hand; includes
-one interactive OAuth browser login). Linux / macOS / WSL2:
+Auth/config are seeded from the repo secret `HERMES_SEED_B64` (a
+tar.gz+base64 of `auth.json`/`config.yaml`/`.env`, built once from the
+user's local `%LOCALAPPDATA%\hermes` on Windows or `~/.hermes` on
+Linux/macOS). **Never paste that base64 string into a chat/session** —
+copy it from a local file (e.g. via Notepad's Select All) straight into
+GitHub's Secret field. If it ever ends up in a chat transcript, treat the
+credential as compromised and re-run `hermes auth add xai-oauth` to get a
+fresh one before reseeding.
+
+The old local-PC cron/Task-Scheduler watcher (below) is **kept disabled,
+not deleted**, as a fallback if Actions ever needs to be rolled back — see
+the design doc §8 for when to use it instead (e.g. if xAI OAuth ever starts
+rejecting datacenter IPs, which testing on 2026-07-10 did not show).
+
+**One-time local setup** (fallback path only, not the current default).
+Linux / macOS / WSL2:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ryotaroh180105/claude-skills/hermes-relay/automation/setup-local.sh | bash
@@ -290,18 +309,25 @@ Hermes uses is driven by the prompt:
   x_search は使わないでください。回答末尾に使用ツール名を列挙してください。"
   The tool self-report lets Claude confirm web_search (not x_search) ran.
 
-**web_extract (specific-URL full-text extraction) is NOT available** on this
-setup and must not be attempted:
+**web_extract (Grok's own tool) is still NOT available** regardless of host:
 - Grok's web backend is **search-only** — `web_extract` errors with "xAI Web
   Search (Grok) is a search-only backend and cannot extract URL content."
-- `browser`/`navigate` fails on this machine: it is **ARM64 Windows**
-  (`No binary found for win32-arm64` — Playwright/Chromium has no ARM64
-  Windows build). This also explains the earlier `spawn EFTYPE`.
+  This is a backend-level limit, unaffected by where the relay executes.
 - The paid extract backends (firecrawl/tavily/exa/parallel) are out of scope
   (no-paid-API policy).
-- **Consequence**: for "read this specific URL" (UC5), do NOT enqueue a
-  web_extract/browser query — it will fail. Ask the user to paste the page
-  content instead.
+
+**`browser`/`open_page` (specific-URL full-text extraction, UC5) — status
+changed 2026-07-10.** On the old ARM64 Windows local machine this failed
+(`No binary found for win32-arm64` — Playwright/Chromium has no ARM64
+Windows build; also the source of the earlier `spawn EFTYPE`). Since the
+relay moved to GitHub Actions (`ubuntu-latest`, x86_64), a `browser`-steered
+query against a public docs page succeeded once: full read confirmed,
+verbatim quotes extracted, tool self-report said `open_page`. **Treat this
+as promising but not yet load-bearing** — one success isn't a guarantee
+(paywalled/JS-heavy/rate-limited pages may still fail, and it hasn't been
+retried). Steer explicitly: "browser（ページ抽出）ツールでこのURLを開いて
+読んでください。" If it fails, fall back to asking the user to paste the
+page content — don't assume UC5 is fully solved from a single test.
 
 **Hallucination guard (critical).** In the browser test, Hermes reported the
 fetch as failed in one field yet **fabricated plausible headings and verbatim
@@ -411,10 +437,12 @@ APIキー・個人情報・未公開の戦略は含めないでください。
   `agent-reach`.
 - Never put `XAI_API_KEY` or OAuth tokens in chat/context; configure them via
   `hermes tools` / the credential store, not inline.
-- `web_extract` fails on the xAI backend (search-only) and `browser` has no
-  ARM64 Windows binary — see the "web_extract … is NOT available" block in
-  the engine section above. Don't promise full-text extraction of a linked
-  page; ask the user to paste page content instead.
+- `web_extract` (Grok's own tool) still fails — search-only backend, unrelated
+  to hosting. `browser`/`open_page` succeeded once on the Actions runner
+  (x86_64 Linux) after failing on the old ARM64 Windows box — see the
+  status note in the engine section above. Don't promise full-text
+  extraction as guaranteed from one success; have a paste-the-content
+  fallback ready.
 - If editing the `.ps1` relay scripts: keep `Write-Host`/comment text ASCII-only.
   Windows PowerShell 5.1 reads `.ps1` files with the system's legacy codepage
   unless the file carries a UTF-8 BOM, so non-ASCII text (e.g. Japanese) reliably

@@ -148,8 +148,11 @@ Web全般の調査も含め、**すべての調査は Hermes Agent 1本**（X検
 一般Web検索の web_search）で行う。エンジン切り替えのヘッダは不要。
 
 調査依頼が来たとき、このリポジトリに push できるセッションなら**プラグイン
-未導入でも実行できる**。ユーザーのローカルPCでタスクスケジューラ常駐の
-watcher が `hermes-relay` ブランチを毎分監視し実行する:
+未導入でも実行できる**。実行系は2026-07-10に GitHub Actions（`hermes-relay`
+ブランチへの push トリガ、workflow: `.github/workflows/hermes-relay-exec.yml`）
+に移行済み。ユーザーのPCの電源状態に依存しない（設計書
+`docs/hermes-actions-relay-design.md` 参照。旧来のローカルPC常駐 watcher は
+無効化のみで削除せず保持、ロールバック用）:
 
 - **X(Twitter)の調査** → ヘッダなし（デフォルト）で x_search を使わせる
 - **Web全般の調査**（記事・ドキュメント・比較など）→ ヘッダなしのまま、プロンプト
@@ -158,9 +161,13 @@ watcher が `hermes-relay` ブランチを毎分監視し実行する:
   `web.backend: xai` なので、既存の Grok OAuth 枠で agentic な web_search が動く
   （追加APIキー・追加課金なし。動作確認済み）。`engine:` ヘッダは一切書かない
   （NotebookLM は廃止済み。`engine: notebooklm` を書いても認証切れで失敗する）。
-- **特定URLの本文抽出（UC5）は不可**。Grok は search-only、browser は ARM64
-  Windows でバイナリ非対応、有料backend は方針外。特定URLを読ませるクエリは
-  投げず、ユーザーにページ内容の貼り付けを依頼する。
+- **特定URLの本文抽出（UC5）**: Grok(x_search/web_search)は search-only で不可
+  だが、Actions移行後（x86_64 Linuxランナー）で `browser`（open_page）ツールが
+  実際に動作し、逐語引用付きの全文抽出に成功したことを2026-07-10に1回確認済み
+  （旧ARM64 Windows機ではPlaywrightバイナリ非対応で不可だった制約が解消された
+  可能性）。ただし検証は1回のみなので、UC5を前提にした運用に切り替える前に
+  複数回の再現確認を推奨。プロンプトには「browser（ページ抽出）ツールで
+  このURLを開いて読んでください」のように明示的に誘導する。
 - **捏造ガード（重要）**: web/extract 系は失敗時に見出し・引用を捏造することが
   実際にあった。プロンプトに「取得成功したソースの内容だけ書く。失敗時は創作
   せず『取得失敗』とだけ書く」を必ず入れ、結果の使用ツール自己申告と本文を
@@ -175,8 +182,10 @@ watcher が `hermes-relay` ブランチを毎分監視し実行する:
 1. `hermes-relay` ブランチを clone し、`automation/queries/pending/<UTC時刻>-<slug>.md`
    にプロンプト全文（日本語指定・出力セクション指定・根拠URL必須。ASCIIの
    ダブルクォートは使わない）を置いて push
-2. 1〜4分後に `automation/results/<同名>.md` が返る（frontmatter に engine/status、
-   本文はセクション化された Markdown）
+2. push が GitHub Actions を自動起動し、約30秒〜3分後に
+   `automation/results/<同名>.md` が返る（frontmatter に status・実行時刻・
+   所要秒数、本文はセクション化された Markdown）。同時に複数クエリを push
+   しても直列実行され取りこぼさない（concurrency グループで直列化）。
 
 「このセッションからは Hermes を使えない」と答えるのは誤り。使えないのは
 `/plugin` のスキル読み込みであって、リレー経由の実行は git push さえできれば可能。
