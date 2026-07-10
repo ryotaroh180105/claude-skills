@@ -1,0 +1,6 @@
+{
+  "name": "product-viability-guard",
+  "description": "English, dependency-free product/go-to-market viability design skill: requires a real user signal before implementation, then runs a one-page sheet, a devil's-advocate pass, a pre-release checklist, and a monthly review.",
+  "version": "1.0.0",
+  "author": { "name": "ryotaroh180105" }
+}

@@ -164,7 +164,7 @@
     {
       "name": "biz-ops-guard",
       "source": "./plugins/biz-ops-guard",
-      "description": "導入・保守・運用・マーケティング・差別化の5観点で、アプリ/スキルを「使われるプロダクト」として成立させるビジネス・運用面設計スキル。",
+      "description": "実在ユーザーの実シグナルを実装開始の必須条件とし、ビジネス運用面シート1枚・悪魔の代弁者・3観点でプロダクト成立性を設計するスキル（v2.0）。",
       "category": "productivity"
     },
     {
@@ -291,6 +291,12 @@
       "name": "structured-task-execution",
       "source": "./plugins/structured-task-execution",
       "description": "正解のある検証可能なタスクの手戻りを減らすため、着手前に完了条件を固定し、観測を根拠に、最もリスクが高い箇所から着手する4フェーズ実行メソッドスキル。",
+      "category": "productivity"
+    },
+    {
+      "name": "product-viability-guard",
+      "source": "./plugins/product-viability-guard",
+      "description": "English, dependency-free product viability design skill: requires a real user signal before implementation, then a one-page sheet, a devil's-advocate pass, a pre-release checklist, and a monthly review.",
       "category": "productivity"
     }
   ]
