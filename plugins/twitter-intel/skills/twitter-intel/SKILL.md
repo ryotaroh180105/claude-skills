@@ -1,6 +1,6 @@
 ---
 name: twitter-intel
-description: X（Twitter）から仕事に活かせる情報を収集・要約するスキル。「Xで〜を調べて」「スキルネタを集めて」「バズ投稿を分析して」「◯◯アカウントの発信を追って」「X運用の勝ちパターンを調査して」といった依頼、または sns-ops-team のリサーチ工程から呼ばれたときに使う。xAI x_search / agent-reach / X API v2 のうち利用可能な収集経路を自動選択し、出典URL付きレポートと ROADMAP 候補リストを出力する。
+description: X（Twitter）から仕事に活かせる情報を収集・要約するスキル。「Xで〜を調べて」「スキルネタを集めて」「バズ投稿を分析して」「◯◯アカウントの発信を追って」「X運用の勝ちパターンを調査して」といった依頼、または sns-ops-team のリサーチ工程から呼ばれたときに使う。claude-skillsリポジトリで作業中（gitがある）ならhermes-relayを最優先、それ以外はxAI x_search / agent-reach / X API v2のうち利用可能な経路を自動選択し、出典URL付きレポートとROADMAP候補リストを出力する。
 ---
 
 # twitter-intel — X（Twitter）情報収集・要約
@@ -13,25 +13,39 @@ X から「仕事に活かせる情報」を集めて要約するスキル。主
 
 鉄則: **出典 URL の無い情報は成果物に載せない。捏造は絶対にしない。**
 
-## 前提セットアップ（どれか1つで動く）
+## 前提セットアップ（経路0、またはどれか1つで動く）
 
-3経路のうち **いずれか1つ** が使えれば収集できる。全滅の場合のみ縮退動作（後述）。
+**経路0（hermes-relay）が使えるなら常にそれを使う**（CLAUDE.mdの常時適用ルール
+「調査は hermes-relay で実行する」に従う）。経路0が使えない環境（このリポジトリの
+外、git push権限が無いセッション等）でのみ、経路①〜③の直接API方式にフォール
+バックする。
 
 | # | 経路 | 必要なもの | 入手先 / 導入方法 | 品質 |
 |---|---|---|---|---|
-| 1 | xAI x_search | `XAI_API_KEY` | https://console.x.ai でキー発行 | 最高（検索+要約を Grok が実行） |
+| 0 | **hermes-relay（最優先）** | `claude-skills` リポジトリへの git push 権限のみ | 詳細は `plugins/hermes-x-search/skills/hermes-x-search/SKILL.md` / `CLAUDE.md`。APIキー・CLI導入・cookie設定は一切不要 | 最高（Grokのx_search、GitHub Actions実行、追加課金なし） |
+| 1 | xAI x_search（直接） | `XAI_API_KEY` | https://console.x.ai でキー発行 | 最高（検索+要約を Grok が実行） |
 | 2 | agent-reach | `agent-reach` CLI + X 用 cookie | agent-reach スキル（`plugins/agent-reach`）の手順で導入 | 中（cookie 必須、スクレイピング系） |
 | 3 | X API v2 | `X_BEARER_TOKEN` | https://developer.x.com でアプリ作成 | 中（直近7日のみ、無料枠は低レート） |
 
 ## 収集経路の自動選択（このスキルの核）
 
 作業開始時に **必ず** 以下の判定を上から順に実行し、最初に合格した経路を採用する。
-複数使える場合も優先順位（① > ② > ③）に従う。採用した経路をユーザーに1行で報告
-してから収集に入る（例:「経路① xAI x_search を使用します」）。
+経路0(hermes-relay)が使えるかどうかを最初に確認すること — 「XAI_API_KEYが無いから
+セットアップが必要」と即断しない。複数使える場合も優先順位（0 > ① > ② > ③）に
+従う。採用した経路をユーザーに1行で報告してから収集に入る
+（例:「経路0 hermes-relay を使用します」）。
 
 ### 判定コマンド（値は表示しない）
 
 ```bash
+# 経路0: hermes-relayが使えるか（claude-skillsリポジトリにgit pushできるか）
+if git -C . remote -v 2>/dev/null | grep -qi "claude-skills"; then
+  git ls-remote --exit-code origin hermes-relay >/dev/null 2>&1 \
+    && echo "route0 hermes-relay: OK" || echo "route0 hermes-relay: NG (branch取得失敗)"
+else
+  echo "route0 hermes-relay: NG (claude-skillsリポジトリ外、またはgit未接続)"
+fi
+
 # 経路①: xAI API キー
 [ -n "${XAI_API_KEY:-}" ] && echo "route1 xai: OK" || echo "route1 xai: NG"
 
@@ -51,7 +65,19 @@ fi
 doctor の出力に X/Twitter が使用可能と読める記載があれば OK と判断してよい。
 迷ったら軽いテスト検索を1回実行して動作確認する。
 
-### 経路①: xAI x_search（最優先）
+### 経路0: hermes-relay（最優先・既定）
+
+`plugins/hermes-x-search/skills/hermes-x-search/SKILL.md` の「Automated relay」節の
+手順どおり、`hermes-relay` ブランチにクエリファイルをpushするだけでよい。
+APIキー発行・CLIインストール・cookie設定は一切不要。GitHub Actionsが自動実行し、
+数十秒〜数分で結果が返る。クエリの書式（出典URL必須・未確認事項セクション必須・
+日本語指定）は本スキルの「収集テンプレート」節をそのままプロンプト本文に使う。
+
+git push権限が無い環境（素のclaude.aiチャット等）では経路0は使えない。その場合は
+「Claude Code on the web（claude.ai/code）でこのリポジトリを開いたセッションから
+実行する必要がある」とユーザーに伝え、経路①〜③のセットアップを代替として提示する。
+
+### 経路①: xAI x_search（直接・経路0が使えない場合のフォールバック）
 
 hermes-agent-setup スキル（`plugins/hermes-agent-setup`）と同じ Agent Tools API 方式。
 旧 Live Search API（`search_parameters`）は 2026-01-12 廃止済みなので使わない。
@@ -111,8 +137,10 @@ curl -sS -G "https://api.x.com/2/tweets/search/recent" \
 
 ### 経路④（縮退）: 全経路が使用不可の場合
 
-1. まず「前提セットアップ」の表を提示し、**どれか1つ** の用意を依頼する
-   （最短は `XAI_API_KEY` の発行）。
+1. まず経路0（hermes-relay）が本当に使えないか再確認する（git push権限の有無）。
+   使えるなら経路0を優先し、①〜③のセットアップを依頼する前にそちらを案内する。
+   経路0も使えない場合のみ「前提セットアップ」の表を提示し、**どれか1つ** の用意を
+   依頼する（最短は `XAI_API_KEY` の発行）。
 2. ユーザーが「今すぐ何か欲しい」場合のみ、WebSearch による限定的な代替を提案する。
    ただし次を必ず明記する:
    - `site:x.com` 等の検索は **精度が低く、取りこぼし・古い結果が多い**。
@@ -212,8 +240,9 @@ sns-ops-team のリサーチ工程（リサーチ担当エージェント）か�
 
 ## 関連スキル
 
-- **hermes-agent-setup**: xAI キーのセットアップ・テンプレート・常駐運用（Hermes Agent）は
-  あちらが担当。本スキルは「今あるもので X 収集を実行する」実行系。セットアップ自体を
-  依頼されたら hermes-agent-setup に誘導する。
+- **hermes-x-search**: 経路0（hermes-relay）の実行手順・クエリ書式はあちらが正。
+  `claude-skills` リポジトリで作業中は基本的にこちらに誘導する。
+- **hermes-agent-setup**: 経路①（xAI直APIキー）のセットアップ・テンプレート・
+  Hermes Agent常駐運用は あちらが担当。経路0が使えない環境でのみ誘導する。
 - **agent-reach**: 経路②の導入手順とプラットフォーム別の注意はあちらを参照。
 - **sns-ops-team**: リサーチ工程の下請けとして本スキルが呼ばれる（上記連携ルール）。
