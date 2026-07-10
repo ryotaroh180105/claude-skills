@@ -1,0 +1,6 @@
+{
+  "name": "skill-design-rigor",
+  "description": "設計・指示出し前に計画ゲートを強制し、書いた指示を自己反証＋刈り込みするスキル（Fable-Sonnet運用ブリッジ）。",
+  "version": "1.0.0",
+  "author": { "name": "ryotaroh180105" }
+}

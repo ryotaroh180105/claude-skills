@@ -1,0 +1,8 @@
+{
+  "name": "code-flow-visualizer",
+  "description": "指定したエントリポイント1つを起点にコードを静的に読解し、処理の流れを Mermaid（flowchart / sequenceDiagram）の Markdown 図として生成する。リポジトリ全体の一括図化やレビュー・ADR作成は行わない。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  }
+}

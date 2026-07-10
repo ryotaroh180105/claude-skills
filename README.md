@@ -9,6 +9,8 @@ Claude Code / Claude.ai で使う Skill 集を管理するリポジトリ。
 claude-skills/
 ├── .claude-plugin/
 │   └── marketplace.json          # Plugin Marketplace 定義
+├── .claude/                      # 運用ルール（hooks, settings, agents）
+├── .agents/skills/              # 外部ベンダースキル70個（skills-lock.json が台帳）
 ├── plugins/
 │   └── <plugin-name>/
 │       ├── .claude-plugin/
@@ -16,13 +18,37 @@ claude-skills/
 │       └── skills/
 │           └── <skill-name>/
 │               └── SKILL.md      # 実際のスキル本体
+├── docs/
+│   └── designs/                 # 設計書（NN-slug 形式）
+├── intel/                       # intel-hub の情報集約DB
 ├── .github/workflows/validate-skills.yml
 ├── scripts/
-│   ├── validate_skills.py        # marketplace.json とスキルの整合性チェック
+│   ├── validate_skills.py        # marketplace.json 整合性 + ルート許可リスト検査
 │   ├── package_skill.py          # スキルを .skill (zip) に固める
 │   └── sync_to_claude_ai.sh      # 全スキルをまとめて .skill 化
+├── CLAUDE.md / MISTAKES.md / AGENT_TEAM.md   # 運用ルール
 └── README.md
 ```
+
+## リポジトリ構造と配置規約
+
+このリポジトリは以下の6分類で管理する。新規ファイル・ディレクトリを追加する前に、
+どの分類に属するかを確認する（`repo-skill-creator` の「配置レビュー観点」を使う）。
+
+| # | 分類 | 置き場 |
+|---|---|---|
+| A | 運用ルール | `CLAUDE.md` `MISTAKES.md` `AGENT_TEAM.md` `.claude/`（hooks, settings, agents） |
+| B | 自作スキル | `plugins/` `.claude-plugin/marketplace.json` `scripts/` `.github/` |
+| C | 外部ベンダースキル | `.agents/skills/` + 台帳 `skills-lock.json` |
+| D | 設計書・計画 | `docs/designs/`（新規は `NN-slug` 形式のみ）`ROADMAP.md` `LOOPS.md`。`docs/` 直下の既存ファイルは凍結 |
+| E | アプリ | **別リポジトリ**。`ryotaroh180105/<app-name>` を1アプリ1リポジトリで作成 |
+| F | 実データ・自動化ログ | 実データはコミット禁止（ローカル or private リポジトリ）。自動化キューは `hermes-relay` ブランチ |
+
+- アプリは別リポジトリ（`ryotaroh180105/<app-name>`、1アプリ1リポジトリ）に作る。本リポジトリには置かない。
+- 実データ（音声・投稿キュー実運用分・学習ログ・TODO.md）は本リポジトリにコミットしない。
+
+リポジトリ直下に新しいエントリを増やすときは、`scripts/validate_skills.py` の
+`ROOT_ALLOWLIST` と上記ツリーを同一コミットで更新する（CI がルート逸脱を検出する）。
 
 ## インストール方法
 

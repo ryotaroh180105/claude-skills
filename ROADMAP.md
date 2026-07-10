@@ -142,6 +142,7 @@ v1.0.0 は叩き台。作って終わりではなく、以下のループで練�
 
 | 追加日 | 候補 | ソース | 状態 |
 |---|---|---|---|
+| 2026-07-05 | [Fable 5 戦略的設計資産一覧](docs/fable5-design-assets.md)（personal-growth-strategy-engine、情報集約エージェント、Kindle AI VPN、レポジトリ整理エージェント、マルチエージェント・チーム設計 等、詳細はリンク先） | ユーザー提示（Fable 5 セッション） | 一部実装済み（設計08〜21参照）・アプリ系は各設計書の実装ゲート待ち |
 | 2026-07-07 | Xブックマーク一括取り込み（詳細は docs/x-posts-inventory.md） | Ryo提供のX投稿群 | 採択済み・Batch 7 で実装 |
 | 2026-07-07 | taste-skill（AI生成UIの"安っぽさ"防止。`npx skills add Leonxlnx/taste-skill --skill design-taste-frontend`） | https://github.com/leonxlnx/taste-skill | 採択済み・導入結果の確認待ち（Ryoの端末でnpx実行、出力未確認） |
 | 2026-07-07 | claude-video（実体は「Claudeに動画を見せる」ツール。プラグインIDは`watch`。要ffmpeg/yt-dlp） | https://github.com/bradautomates/claude-video | 🎉 導入済み（`watch@claude-video`、2026-07-08確認。ffmpeg/yt-dlpの導入は継続中） |
