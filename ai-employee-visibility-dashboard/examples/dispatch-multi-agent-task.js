@@ -80,9 +80,11 @@ async function makeRequest(method, path, body = null) {
 async function dispatchTask(agentName, taskDesc) {
   console.log(`[${agentName}] Dispatching task...`);
   const result = await makeRequest('POST', '/api/tasks', {
-    agent: agentName,
-    prompt: taskDesc,
-    max_capacity: 1,
+    title: `[${agentName}] ${taskDesc}`,
+    description: taskDesc,
+    assigned_to: agentName,
+    status: 'todo',
+    priority: 'medium',
   });
   return result.data;
 }
