@@ -1,0 +1,49 @@
+name: hermes-relay-exec
+on:
+  push:
+    branches: [hermes-relay]
+  workflow_dispatch: {}
+concurrency:
+  group: hermes-relay-exec
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  run-queries:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: hermes-relay
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.hermes/hermes-agent
+            ~/.local/bin
+            ~/.local/share/uv
+          key: hermes-install-${{ runner.os }}-v1
+      - name: Install hermes if missing
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          if ! command -v hermes >/dev/null 2>&1; then
+            curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+          fi
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          hermes --version
+      - name: Seed hermes auth/config from secret
+        env:
+          HERMES_SEED_B64: ${{ secrets.HERMES_SEED_B64 }}
+        run: |
+          if [ -z "$HERMES_SEED_B64" ]; then
+            echo "::error::HERMES_SEED_B64 secret is not set"; exit 1
+          fi
+          printf '%s' "$HERMES_SEED_B64" | base64 -d | tar -xzf - -C "$HOME"
+          # 中身は絶対に echo/cat しない（public リポジトリ。マスクされるのは
+          # Secret の文字列そのものだけで、展開後のファイル内容はマスクされない）
+      - name: Run relay watcher
+        env:
+          HERMES_RELAY_DIR: ${{ github.workspace }}
+          GIT_AUTHOR_NAME: hermes-relay-actions
+          GIT_AUTHOR_EMAIL: actions@hermes-relay
+        run: bash automation/hermes-relay-watcher.sh
