@@ -8,9 +8,31 @@
  */
 
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
-const MC_URL = process.env.MC_URL || 'http://localhost:3000';
-const MC_API_KEY = process.env.MC_API_KEY || '';
+function loadEnv() {
+  const envPath = path.join(__dirname, '..', '.env.local');
+  const env = {};
+
+  if (fs.existsSync(envPath)) {
+    const content = fs.readFileSync(envPath, 'utf8');
+    content.split('\n').forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) return;
+      const [key, ...valueParts] = trimmed.split('=');
+      if (key) {
+        env[key.trim()] = valueParts.join('=').trim();
+      }
+    });
+  }
+
+  return env;
+}
+
+const envLocal = loadEnv();
+const MC_URL = process.env.MC_URL || envLocal.MC_URL || 'http://localhost:3000';
+const MC_API_KEY = process.env.MC_API_KEY || envLocal.MC_API_KEY || '';
 
 if (!MC_API_KEY) {
   console.error('Error: MC_API_KEY not set in .env.local');
@@ -29,7 +51,7 @@ async function makeRequest(method, path, body = null) {
       method,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${MC_API_KEY}`,
+        'X-API-Key': MC_API_KEY,
       },
     };
 
