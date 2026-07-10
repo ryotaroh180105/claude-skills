@@ -1,15 +1,26 @@
 ---
 name: hermes-x-search
-description: Install, configure, and use Hermes Agent (github.com/NousResearch/hermes-agent) to research X (Twitter) posts, threads, and profiles via its x_search tool, run against the user's existing X/Grok subscription (tier requirements are inconsistently enforced — try before assuming a paid tier is needed) instead of per-call X API charges. Use when the user wants daily X research, trend/competitor monitoring, or quote-repost source verification without paying for the X API.
+description: Install, configure, and use Hermes Agent (github.com/NousResearch/hermes-agent) to research X (Twitter) posts/threads/profiles via its x_search tool, and general web content (articles, docs, comparisons) via its web_search tool, both run against the user's existing X/Grok subscription (tier requirements are inconsistently enforced — try before assuming a paid tier is needed) instead of per-call API charges. Use when the user wants daily X research, general web research, trend/competitor monitoring, or quote-repost source verification without paying for the X API. NotebookLM is retired — all research (X and general web) now routes through this single Hermes path.
 ---
 
-# Hermes x_search
+# Hermes research — X search + general web search
 
 Hermes Agent is NousResearch's self-hosted, MIT-licensed AI agent
-(`github.com/NousResearch/hermes-agent`). It bundles `x_search`, a tool backed by
-xAI's Grok Responses API that searches X (Twitter) posts, threads, and profiles
-directly from chat. Grok runs the search server-side and returns synthesized
-results with citations — no scraping, no separate X API key.
+(`github.com/NousResearch/hermes-agent`). It bundles two research tools usable
+directly from chat:
+
+- **`x_search`** — backed by xAI's Grok Responses API, searches X (Twitter)
+  posts, threads, and profiles. Grok runs the search server-side and returns
+  synthesized results with citations — no scraping, no separate X API key.
+- **`web_search`** — general web search (articles, docs, comparisons, blogs).
+  Same backend family as `x_search`; enabled the same way via `hermes tools`.
+
+Both tools are selected automatically by Hermes based on the natural-language
+query — there is no engine header or manual switch to set. **NotebookLM is
+retired** (its Google-account OAuth expired repeatedly and made it unreliable
+as a background pipeline); do not route queries to it or reference it as an
+option. All general web research that used to go to NotebookLM now goes to
+`web_search` on this same Hermes path.
 
 ## Cost reality — read this before promising "free"
 
@@ -63,13 +74,14 @@ terminal tab (it needs a POSIX PTY Windows doesn't provide) — irrelevant for
 `x_search` usage from the CLI. Don't tell the user WSL2 is a prerequisite unless
 they specifically want that dashboard tab.
 
-## Enabling x_search
+## Enabling x_search and web_search
 
-`x_search` is disabled by default. Enable it interactively:
+Both tools are disabled by default. Enable them interactively:
 
 ```bash
 hermes tools
-# select "🐦 X (Twitter) Search"
+# select "🐦 X (Twitter) Search" for x_search
+# select the general web search entry for web_search
 ```
 
 Authenticate via browser OAuth against whatever X/Grok subscription the user
@@ -256,29 +268,27 @@ turn to clarify or reshape, so everything must be in the prompt up front:
    with a hermes usage error (hit twice in production). The watcher now
    escapes quotes as a backstop, but don't rely on it.
 
-### Engine routing: X → x_search, general web → Grok web_search
+### Single engine: Hermes handles both X and general web research
 
 Web research is done by Hermes itself (v0.18+), not by a separate engine.
-The user's local Hermes has `web.backend: xai`, so `web_search` runs through
-the same xAI Grok OAuth as x_search — agentic web search (search → read →
-synthesize), no extra API key, no per-call charge beyond the existing
-subscription. Verified working: a `web_search`-steered query returned
-source-URL-backed, quote-bearing results in ~120s.
+**NotebookLM is fully retired** (repeated Google OAuth expiry made it
+unreliable as a background pipeline) — do not write `engine: notebooklm`
+headers; a query file needs no header at all. The user's local Hermes has
+`web.backend: xai`, so `web_search` runs through the same xAI Grok OAuth as
+x_search — agentic web search (search → read → synthesize), no extra API
+key, no per-call charge beyond the existing subscription. Verified working:
+a `web_search`-steered query returned source-URL-backed, quote-bearing
+results in ~120s.
 
-Routing (optional `engine:` header at the top of the query file):
+Every query file runs through `hermes -z` on the local machine. Which tool
+Hermes uses is driven by the prompt:
 
-- **No header / `engine: hermes`** → `hermes -z`. This is now the path for
-  **both X research and general web research** — which one Hermes uses is
-  driven by the prompt, not a separate engine:
-  - X (Twitter) posts/threads/profiles → let it use `x_search` (default).
-  - General web (docs, blogs, articles, comparisons) → steer it explicitly:
-    open the prompt with "web_search（Web検索）を使って調べてください。
-    x_search は使わないでください。回答末尾に使用ツール名を列挙してください。"
-    The tool self-report lets Claude confirm web_search (not x_search) ran.
-- **`engine: notebooklm`** → retained only for **accumulate-then-ask** work
-  (build a source set once, ask it many questions). Not the default for
-  one-off web research anymore — Grok web_search is faster to set up and
-  needs no browser/profile. Keep it for the narrow case it's good at.
+- X (Twitter) posts/threads/profiles → let it use `x_search` (default for
+  X-flavored asks like "Xで〜の反応を調べて").
+- General web (docs, blogs, articles, comparisons) → steer it explicitly:
+  open the prompt with "web_search（Web検索）を使って調べてください。
+  x_search は使わないでください。回答末尾に使用ツール名を列挙してください。"
+  The tool self-report lets Claude confirm web_search (not x_search) ran.
 
 **web_extract (specific-URL full-text extraction) is NOT available** on this
 setup and must not be attempted:
@@ -305,8 +315,9 @@ fabricated and discard them.
 **Policy: Claude does not do the researching.** Route research through the
 relay (X and web both via `hermes`), then do only query design and result
 formatting. Claude's own WebSearch is for meta-purposes (debugging this
-pipeline, checking tool availability), not for answering the user's research
-questions.
+pipeline, checking tool availability) or for a user-authorized fallback when
+the relay is stalled/erroring — not the default path for answering the
+user's research questions.
 
 After the result returns, Claude Code still does the editorial pass (verify
 suspicious claims, reformat for the user's actual purpose) — reshaping the
@@ -336,6 +347,9 @@ sns-auto-posting, article-writer) can reference sections by name:
 3. `投稿に使える切り口` — post-ready angles
 4. `未確認・断定できない点` — what NOT to state as fact
 5. `明日以降も追うべき項目` — follow-up watchlist
+6. `使用ツール` — which internal tool Hermes actually used (x_search /
+   web_search / web_extract), so downstream consumers can tell the search
+   path without guessing from the content
 
 For non-SNS uses (market research for `biz-ops-guard`, technical research),
 rename headings 1/3/5 to fit the purpose. Only 2 (source URLs, one per claim)
@@ -349,6 +363,11 @@ parser and raw-text fallback) if a non-LLM consumer ever needs to read
 results without Claude in the loop.
 
 ### Preserve source material, not just summaries (link-extraction queries)
+
+**Currently inapplicable on this setup** — link extraction requires
+`web_extract` or `browser`, both unavailable (see "web_extract … is NOT
+available" above). Keep this pattern for the day an extract backend is
+configured; until then ask the user to paste page content instead.
 
 A summary alone destroys the source information — it can't be re-verified,
 re-quoted, or re-analyzed from a different angle later. Whenever the query
@@ -392,6 +411,10 @@ APIキー・個人情報・未公開の戦略は含めないでください。
   `agent-reach`.
 - Never put `XAI_API_KEY` or OAuth tokens in chat/context; configure them via
   `hermes tools` / the credential store, not inline.
+- `web_extract` fails on the xAI backend (search-only) and `browser` has no
+  ARM64 Windows binary — see the "web_extract … is NOT available" block in
+  the engine section above. Don't promise full-text extraction of a linked
+  page; ask the user to paste page content instead.
 - If editing the `.ps1` relay scripts: keep `Write-Host`/comment text ASCII-only.
   Windows PowerShell 5.1 reads `.ps1` files with the system's legacy codepage
   unless the file carries a UTF-8 BOM, so non-ASCII text (e.g. Japanese) reliably
