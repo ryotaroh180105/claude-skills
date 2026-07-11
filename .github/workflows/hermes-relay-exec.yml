@@ -38,19 +38,20 @@ jobs:
           if [ -z "$HERMES_SEED_B64" ]; then
             echo "::error::HERMES_SEED_B64 secret is not set"; exit 1
           fi
-          printf '%s' "$HERMES_SEED_B64" | base64 -d | tar -xzf - -C "$HOME"
+          # フラット構造（auth.json 直下）と .hermes/ プレフィックス付きの両方を受け付ける
+          TMP="$(mktemp -d)"
+          printf '%s' "$HERMES_SEED_B64" | base64 -d | tar -xzf - -C "$TMP"
+          mkdir -p "$HOME/.hermes"
+          if [ -d "$TMP/.hermes" ]; then
+            cp -a "$TMP/.hermes/." "$HOME/.hermes/"
+          else
+            cp -a "$TMP/." "$HOME/.hermes/"
+          fi
+          rm -rf "$TMP"
           # 中身は絶対に echo/cat しない（public リポジトリ。マスクされるのは
           # Secret の文字列そのものだけで、展開後のファイル内容はマスクされない）
-      - name: Diagnose seeded layout (filenames only, never contents)
-        env:
-          HERMES_SEED_B64: ${{ secrets.HERMES_SEED_B64 }}
-        run: |
-          echo "--- tar entry names in secret ---"
-          printf '%s' "$HERMES_SEED_B64" | base64 -d | tar -tzf - || true
-          echo "--- ls -A ~/.hermes ---"
-          ls -A "$HOME/.hermes" 2>/dev/null || echo "(no ~/.hermes)"
-          echo "--- stray seed files in HOME root ---"
-          ls -A "$HOME" | grep -E '^(auth\.json|config\.yaml|\.env|seed)' || echo "(none)"
+          echo "--- ls -A ~/.hermes (filenames only) ---"
+          ls -A "$HOME/.hermes"
       - name: Run relay watcher
         env:
           HERMES_RELAY_DIR: ${{ github.workspace }}
