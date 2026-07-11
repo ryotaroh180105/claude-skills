@@ -310,21 +310,41 @@ try {
                 Log "mission-control: claimed task $($mcTask.id) ($($mcTask.title)) [$($queueResp.reason)]"
                 $mcQuery = if ($mcTask.description) { $mcTask.description } else { $mcTask.title }
                 $mcQuery = $mcQuery -replace '"', '\"'
-                # Match the UTF-8 setup used for the job-based hermes calls
-                # above -- without it, non-ASCII output (e.g. Japanese) comes
-                # back mojibake'd through this process's default codepage.
-                [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-                $OutputEncoding = [System.Text.Encoding]::UTF8
-                $env:PYTHONIOENCODING = "utf-8"
-                $mcOutput = (& $HermesBin -z $mcQuery --accept-hooks 2>&1 | Out-String).Trim()
+                # Run hermes in a child job, same as the pending-query batch
+                # above -- setting [Console]::OutputEncoding in THIS process
+                # does not reliably apply when it was launched non-interactively
+                # (e.g. by Task Scheduler), which is what caused mojibake here.
+                $mcJob = Start-Job -ScriptBlock {
+                    param($bin, $q)
+                    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+                    $OutputEncoding = [System.Text.Encoding]::UTF8
+                    $env:PYTHONIOENCODING = "utf-8"
+                    & $bin -z $q --accept-hooks 2>&1 | Out-String
+                } -ArgumentList $HermesBin, $mcQuery
+                $null = Wait-Job -Job $mcJob -Timeout $QueryTimeout
+                if ($mcJob.State -eq "Completed") {
+                    $mcOutput = (Receive-Job $mcJob | Out-String).Trim()
+                } else {
+                    Stop-Job $mcJob -ErrorAction SilentlyContinue
+                    $mcOutput = "(timed out or failed after ${QueryTimeout}s; job state: $($mcJob.State))"
+                }
+                Remove-Job $mcJob -Force -ErrorAction SilentlyContinue
+
+                # Windows PowerShell 5.1's Invoke-RestMethod -Body <string>
+                # re-encodes through the process's default codepage (e.g.
+                # CP932 on Japanese Windows) before sending, mangling any
+                # character that codepage can't represent. Encode to UTF-8
+                # bytes ourselves so the JSON on the wire is exact.
                 # The dashboard UI has no rendering path for the `resolution`
                 # field (only comments are shown), so report results as a
                 # comment instead -- same channel Claude Code's task
                 # dispatch already uses successfully.
-                $commentBody = @{ content = $mcOutput } | ConvertTo-Json
-                Invoke-RestMethod -Uri "$McUrl/api/tasks/$($mcTask.id)/comments" -Headers $mcHeaders -Method Post -Body $commentBody -ContentType "application/json" -TimeoutSec 15 | Out-Null
-                $statusBody = @{ status = "review" } | ConvertTo-Json
-                Invoke-RestMethod -Uri "$McUrl/api/tasks/$($mcTask.id)" -Headers $mcHeaders -Method Put -Body $statusBody -ContentType "application/json" -TimeoutSec 15 | Out-Null
+                $commentJson = @{ content = $mcOutput } | ConvertTo-Json -Compress
+                $commentBytes = [System.Text.Encoding]::UTF8.GetBytes($commentJson)
+                Invoke-RestMethod -Uri "$McUrl/api/tasks/$($mcTask.id)/comments" -Headers $mcHeaders -Method Post -Body $commentBytes -ContentType "application/json; charset=utf-8" -TimeoutSec 15 | Out-Null
+                $statusJson = @{ status = "review" } | ConvertTo-Json -Compress
+                $statusBytes = [System.Text.Encoding]::UTF8.GetBytes($statusJson)
+                Invoke-RestMethod -Uri "$McUrl/api/tasks/$($mcTask.id)" -Headers $mcHeaders -Method Put -Body $statusBytes -ContentType "application/json; charset=utf-8" -TimeoutSec 15 | Out-Null
                 Log "mission-control: completed task $($mcTask.id), moved to review"
             }
         } catch {
