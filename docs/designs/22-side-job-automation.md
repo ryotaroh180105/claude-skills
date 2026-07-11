@@ -110,34 +110,51 @@
 - [ ] Phase 0 手順書（`sidejob/SETUP.md`）に、各操作の意図・内容・確認方法が3点セットで書かれている
 - [ ] `python scripts/validate_skills.py` が exit 0（既存スキルを壊していない）
 
+**§13.9 による訂正**: 上記1・2・3の `pipeline-state.md`・`proposals/`・`receipts/` は、実装当初このブランチ直下に置いていたが、実運用で実データ（クライアント名・単価・案件URL）を持つことが判明したため `sidejob-ledger` ブランチへ移設した（README「配置規約」F区分違反の是正）。DoDの検証手順自体は変わらない（`sidejob-ledger` ブランチのワークツリー上で同じ手順を実行する）。
+
 ## 4. 成果物の構成（ファイルレイアウト）
+
+**構造とデータを分離する（§13.9 で確定）**: 案件台帳・提案文・受入監査ログは実運用が始まると実際のクライアント名・単価・案件URLを含む「実データ」になる。README「配置規約」F区分（実データはコミット禁止・自動化キューは専用ブランチ）に従い、以下のとおり2ブランチに分ける。
+
+**メインの機能ブランチ（構造のみ。将来 main にマージされる）**:
 
 ```
 sidejob/
 ├── SETUP.md                    # Phase 0 ユーザー準備手順（意図/内容/確認方法つき）
 ├── config.md                   # 選別基準・単価下限・除外条件・人間ゲート定義
-├── pipeline-state.md           # 案件台帳（唯一の進捗ファイル）
 ├── templates/
 │   ├── proposal.md             # 応募提案文の型（Lane B）
 │   ├── listing.md              # 出品サービス文の型（Lane A/C）
 │   └── delivery.md             # 納品メッセージの型
-├── fixtures/
-│   ├── mail-cw-ok.md           # 通知メールサンプル（基準内・CW想定）
-│   ├── mail-lancers-ok.md      # 同（基準内・ランサーズ想定）
-│   └── mail-cw-ng.md           # 同（基準外: AI利用禁止案件）
-├── proposals/                  # 提案文下書き置き場（YYYY-MM-DD-<id>.md）
-├── work/                       # 案件ごとの制作ディレクトリ（<id>/）
-└── receipts/                   # 実行監査ログ（YYYY-MM-DD.md、追記専用）
+└── fixtures/
+    ├── mail-cw-ok.md           # 通知メールサンプル（基準内・CW想定）
+    ├── mail-lancers-ok.md      # 同（基準内・ランサーズ想定）
+    └── mail-cw-ng.md           # 同（基準外: AI利用禁止案件）
 loops/
 ├── sidejob-intake/             # ループ1: 日次の案件発見→選別→提案文
 │   ├── CONTRACT.md
 │   ├── schedule.md
 │   └── rubric.md
-└── sidejob-weekly-review/      # ループ4: 週次KPI・撤退判断
+├── sidejob-weekly-review/      # ループ4: 週次KPI・撤退判断
+│   ├── CONTRACT.md
+│   ├── schedule.md
+│   └── rubric.md
+└── sidejob-expansion-review/   # ループ5（§13）: 月次の拡張候補レビュー
     ├── CONTRACT.md
     ├── schedule.md
     └── rubric.md
 docs/designs/22-side-job-automation.md   # 本書
+```
+
+**`sidejob-ledger` ブランチ（実データ。hermes-relay ブランチと同じパターン。main にはマージしない）**:
+
+```
+sidejob/
+├── pipeline-state.md           # 案件台帳（唯一の進捗ファイル）
+├── proposals/                  # 提案文下書き置き場（YYYY-MM-DD-<id>.md）
+├── work/                       # 案件ごとの制作ディレクトリ（<id>/）
+├── receipts/                   # 実行監査ログ（YYYY-MM-DD.md、追記専用）
+└── expansion-candidates.md     # 拡張候補ログ（§13。追記専用）
 ```
 
 ループ2（production）とループ3（stock）はイベント駆動・低頻度のため専用フォルダを作らず、`sidejob/config.md` 内の手順節と各制作スキルで賄う（loop-engineering の「軽量ループは設計書1エントリ」原則）。
@@ -343,3 +360,67 @@ Markdown 表。1案件=1行。列は以下で確定:
 5. **ココナラ出品の初期価格**: 相場の下限（LP 30,000円等）で始めるか、実績づくり期はさらに下げるか
 6. ~~hermes-relay の再認証~~ → **解決済み**（2026-07-11 再認証＋ワークフローのシード両対応化で復旧、x_search 成功を確認）
 7. **海外プラットフォーム（Fiverr/Upwork）拡張**: 英語対応の Doer は揃っているが、決済・本人確認・時差対応が別課題。Phase 3 以降に検討するか
+
+## 13. 実装後拡張: 改善ループ（拡張候補レビュー）
+
+実装完了後、ユーザーから「運用する中で分析して改善していく仕組み」の追加依頼があり実装。
+
+### 13.1 背景・既存との違い
+
+工程12（実績記録・改善還流、§6.1）は weekly-review（§6.5）が担うが、weekly-review は**既存カテゴリの継続/調整/縮小/撤退のみ**を判定し、「次に新しいカテゴリ・レーンを追加すべきか」は判定しない。本節はその欠落を埋める月次ループを追加する。
+
+### 13.2 やること/やらないこと
+
+- やる: `sidejob/pipeline-state.md` の実データ（蓄積後）と、本設計書§0の静的市場知識を突き合わせ、拡張候補を提案する月次ループ
+- やらない: config.md の自動書き換え（提案のみ。採択は人間）。新カテゴリの Doer スキルを自動生成すること（yagni。既存スキルで賄えない候補は「新スキルが必要」と明記するだけに留める）
+
+### 13.3 成果物
+
+```
+loops/sidejob-expansion-review/
+├── CONTRACT.md
+├── schedule.md
+└── rubric.md
+sidejob/expansion-candidates.md   # 追記専用ログ（Memory/State）
+```
+
+### 13.4 処理フロー
+
+1. `sidejob/pipeline-state.md` を weekly-review と同じロジックでレーン×カテゴリ別集計（受注率・実効時給・G1消化率）
+2. `sidejob/config.md` の現行カテゴリ表と、本設計書§0.2（自動化適性・単価圧力）・§0.4（X実例）の静的知識を突き合わせ
+3. 現行カテゴリの実データ傾向（高実効時給/低実効時給）から、隣接カテゴリへの拡張可否を推論
+4. 候補を `sidejob/expansion-candidates.md` に追記（日付見出し・追記専用。config.md は書き換えない）
+
+### 13.5 Verifier 判定基準
+
+- (a) 実データを実際に引用しているか（架空値で埋めていないか。Epistemia対策）
+- (b) §2.2 のスコープ除外カテゴリ（動画編集・データ入力・翻訳・AI生成イラスト主体の出品）を無断で推奨していないか
+- (c) 直近の weekly-review 実行が4回未満（4週未満）の状態で拡張提案を出していないか（頻繁な方向転換は§0.4の挫折要因と同型のため、既存レーンの検証期間を優先する）
+
+### 13.6 Stop Rules / Trigger
+
+- Trigger: 月次（cron `0 0 1 * *` UTC）。未登録（Routine登録は§12と同じくユーザー承認後）。手動起動可
+- 成功条件: 候補リストの提示のみ
+- 安全上限: 月1回・読み取り専用（config.md/pipeline-state.md への書き込みなし。提案は expansion-candidates.md への追記のみ）
+
+### 13.7 初回実行の特例（実データ無し期）
+
+Phase 0（アカウント未開設・実データ無し）の間は、静的市場知識のみで暫定推薦を行い、`expansion-candidates.md` に「実データなし・市場調査ベースの暫定推薦」と明記する。実データが4週分以上蓄積したら本来のデータ駆動判定に切り替える。
+
+### 13.8 初回分析結果（2026-07-11実施。実データ無し・静的知識ベースの観察記録）
+
+`sidejob/expansion-candidates.md` に記録。**Verifier検証で「実データ0件・weekly-review実行0回の段階で推奨度ラベルを付けるのは§0.4の挫折要因（早すぎる方向転換）を誘発しかねない」との指摘を受け、確定的な推奨度ラベルを外し中立的な観察記録に訂正済み**（§13.7の特例条項とVerifierのrubric(c)も同時に整合させた）。要点は以下（詳細は同ファイル。優先順位は未定）:
+
+1. **SNS運用代行** — sns-ops-team・sns-auto-posting が既存スキルとして完成済みで新規Doerコスト実質ゼロ。月額契約型のため4レーンに無い「継続収益」の形を追加できる
+2. **業務自動化・AIエージェント構築の受託**（国内ココナラ出品から） — X実例（§0.4）で単価上限が高い（CW/ココナラ1.5〜5万円、海外$2k〜5k+リテイナー）が、案件ごとに個別のエンジニアリング判断が要り、既存のDoer→Verifierパイプラインにテンプレ化しにくい。専用スキル無し（新設が必要）
+3. **AI占い・エンタメ系出品** — X上の高収益報告はあるが自己申告・生存者バイアスが強く、既存スキルとの適合度が低い（懸念点として記録。積極推奨はしない）
+4. 動画編集・データ入力・翻訳は既存の除外理由（§0.2・§2.2）を覆す新情報なし。除外維持
+
+## 13.9 実装後の是正: 実データをブランチ分離（2026-07-11）
+
+`validate_scripts.py`（ROOT_ALLOWLIST検査）実行時に、`sidejob/`・`loops/` を許可リストに未登録のまま実装していたことが判明。この確認の過程で、README「配置規約」F区分（「実データはコミット禁止（ローカル or private リポジトリ）。自動化キューは `hermes-relay` ブランチ」）にも抵触していたことに気づいた: `sidejob/pipeline-state.md`（案件台帳）・`sidejob/proposals/`（生成した提案文）・`sidejob/receipts/`（実行監査ログ）は、実運用が始まれば実際のクライアント名・単価・案件URLを蓄積する「実データ」であり、このリポジトリの機能ブランチ（将来 main にマージされる）に置くべきではなかった。
+
+**是正内容**: `hermes-relay` ブランチと同じパターンで `sidejob-ledger` ブランチ（orphan、`.github`等を含まない最小構成）を新設し、実データを持つ4ファイル/ディレクトリ（`pipeline-state.md`, `proposals/`, `work/`, `receipts/`, `expansion-candidates.md`）を移設した。機能ブランチには構造のみ（`config.md`・`templates/`・`fixtures/`・`SETUP.md`・3ループの `CONTRACT.md`/`schedule.md`/`rubric.md`）を残す。各 CONTRACT.md に「データの読み書き手順」節を追加し、実データアクセス時は `sidejob-ledger` ブランチを worktree で開いて操作することを明記した。
+
+**気づいた経緯（レッドチーム的教訓）**: 新しいトップレベルディレクトリを作る前に README「リポジトリ構造と配置規約」を確認する手順を踏まなかった（`repo-skill-creator` の「配置レビュー観点」を使うべきだった）。実データが0件の段階で気づけたため実害はないが、実運用データが数週間分蓄積してから気づいていた場合、公開GitHub履歴から実クライアントデータを完全に除去するには履歴書き換え（force-push）が必要になり、影響がはるかに大きかった。MISTAKES.md に記録する。
+

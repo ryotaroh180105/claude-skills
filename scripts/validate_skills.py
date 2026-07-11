@@ -11,6 +11,7 @@ ROOT_ALLOWLIST = {
     ".agents", "agent", ".claude", ".claude-plugin", ".github", ".gitignore",
     "CLAUDE.md", "LOOPS.md", "MISTAKES.md", "README.md", "ROADMAP.md",
     "AGENT_TEAM.md", "docs", "intel", "plugins", "scripts", "skills-lock.json",
+    "sidejob", "loops",
 }
 
 
