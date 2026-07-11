@@ -2,7 +2,7 @@ import os
 
 import yaml
 
-from journal import close_entry, list_due_for_review, next_id, parse_journal_file
+from journal import close_entry, list_due_for_review, next_id, parse_journal_file, validate_journal_entry
 from datetime import datetime, timezone
 
 ENTRY = {
@@ -54,6 +54,21 @@ def test_list_due_excludes_closed(tmp_path):
     today = datetime(2026, 7, 15, tzinfo=timezone.utc)
     due = list_due_for_review(str(tmp_path), today)
     assert due == []
+
+
+def test_validate_journal_entry_ips_check_pass_is_valid():
+    errors = validate_journal_entry(dict(ENTRY, ips_check="pass"))
+    assert errors == []
+
+
+def test_validate_journal_entry_ips_check_override_is_valid():
+    errors = validate_journal_entry(dict(ENTRY, ips_check="override(1銘柄上限は超過していない)"))
+    assert errors == []
+
+
+def test_validate_journal_entry_ips_check_other_is_invalid():
+    errors = validate_journal_entry(dict(ENTRY, ips_check="skipped"))
+    assert "ips_check は pass または override(理由) のみ有効" in errors
 
 
 def test_close_entry(tmp_path):

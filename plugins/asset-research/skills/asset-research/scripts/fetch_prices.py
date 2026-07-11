@@ -46,23 +46,26 @@ def fetch_stooq_close(ticker: str) -> Optional[float]:
         return None
 
 
-def fetch_yfinance_close(ticker: str, period: str) -> tuple[Optional[float], Optional[float], list[float]]:
+def fetch_yfinance_close(
+    ticker: str, period: str
+) -> tuple[Optional[float], Optional[float], list[float], list[str]]:
     if yf is None:
-        return None, None, []
+        return None, None, [], []
     try:
         hist = yf.Ticker(ticker).history(period=period)
         if hist.empty:
-            return None, None, []
+            return None, None, [], []
         closes = hist["Close"].tolist()
+        dates = [str(d.date()) for d in hist.index]
         latest = closes[-1]
         prev = closes[-2] if len(closes) > 1 else latest
-        return latest, prev, closes
+        return latest, prev, closes, dates
     except Exception:  # noqa: BLE001
-        return None, None, []
+        return None, None, [], []
 
 
 def build_price_report(ticker: str, period: str) -> dict:
-    yf_close, yf_prev, series = fetch_yfinance_close(ticker, period)
+    yf_close, yf_prev, series, dates = fetch_yfinance_close(ticker, period)
     stooq_close = fetch_stooq_close(ticker)
 
     value, mismatch_flag = reconcile_prices(yf_close, stooq_close)
@@ -79,6 +82,8 @@ def build_price_report(ticker: str, period: str) -> dict:
         "corporate_action": corp_action,
         "retrieved_at": now_iso(),
         "series_length": len(series),
+        "dates": dates,
+        "closes": series,
     }
 
 
@@ -88,6 +93,12 @@ def render_report(report: dict) -> str:
         lines.append(
             f"PRICE_MISMATCH: yfinance={report['yfinance_close']} vs stooq={report['stooq_close']}"
             "（乖離1%超のため値を採用しません。手動確認してください）"
+        )
+    elif report["flag"] == "SINGLE_SOURCE":
+        lines.append(
+            f"終値（単一ソース・突合不可）: {report['reconciled_value']}\n"
+            f"  [source: yfinance, retrieved: {report['retrieved_at']}, tier: 二次]\n"
+            "単一ソースのため分析メモの『事実』セクションには使用不可（tier: 二次・未突合）"
         )
     elif report["flag"] == "FETCH_FAILED" or report["reconciled_value"] is None:
         lines.append("値: 未検証（FETCH_FAILED: 片方または両方のソース取得に失敗）")
@@ -104,14 +115,27 @@ def render_report(report: dict) -> str:
     return "\n".join(lines)
 
 
+def render_csv(report: dict) -> str:
+    """終値系列をdate,close形式で出力し、末尾に出典・取得日時のコメント行を付ける。"""
+    lines = ["date,close"]
+    for d, c in zip(report["dates"], report["closes"]):
+        lines.append(f"{d},{c}")
+    lines.append(f"# [source: yfinance, retrieved: {report['retrieved_at']}, tier: 二次]")
+    return "\n".join(lines)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ticker", required=True)
     parser.add_argument("--period", default="1y")
+    parser.add_argument("--csv", action="store_true", help="終値系列をdate,close形式のCSVで出力する")
     args = parser.parse_args()
 
     report = build_price_report(args.ticker, args.period)
-    print(render_report(report))
+    if args.csv:
+        print(render_csv(report))
+    else:
+        print(render_report(report))
     return 0
 
 

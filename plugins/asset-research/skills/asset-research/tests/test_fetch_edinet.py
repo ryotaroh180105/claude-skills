@@ -45,3 +45,13 @@ def test_parse_financial_csv():
     assert "売上高" in result
     assert result["売上高"]["value"] == "1000000"
     assert result["売上高"]["consolidated"] is True
+
+
+def test_parse_financial_csv_non_consolidated():
+    """F1: NonConsolidatedMember は "Consolidated" を部分文字列に含むため、
+    誤判定（常にTrue）にならないことを検証する。"""
+    header = "要素ID\tコンテキストID\t値\t単位\n"
+    row = "jppfs_cor:NetSales\tCurrentYearDuration_NonConsolidatedMember\t500000\t円\n"
+    csv_bytes = (header + row).encode("utf-16")
+    result = fetch_edinet.parse_financial_csv(csv_bytes)
+    assert result["売上高"]["consolidated"] is False

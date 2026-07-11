@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from datetime import datetime, timezone
 from typing import Optional
 
 from common import DataPoint, FetchError, is_stale, percentile_position, require_env
@@ -33,10 +34,18 @@ ESTAT_SERIES = {
 
 
 def fetch_fred_series(series_id: str, api_key: str) -> list[tuple[str, float]]:
+    """FRED系列を取得する。百分位算出の対象は過去10年分のみとする
+    （observation_startを指定しないと月次系列などで全履歴が対象になり、
+    設計上の「過去10年レンジ」からずれるため）。"""
+    now = datetime.now(timezone.utc)
+    try:
+        ten_years_ago = now.replace(year=now.year - 10).strftime("%Y-%m-%d")
+    except ValueError:  # 2/29のうるう年対策
+        ten_years_ago = now.replace(year=now.year - 10, day=28).strftime("%Y-%m-%d")
     url = (
         "https://api.stlouisfed.org/fred/series/observations"
         f"?series_id={series_id}&api_key={api_key}&file_type=json"
-        "&sort_order=desc&limit=3650"
+        f"&sort_order=desc&limit=3650&observation_start={ten_years_ago}"
     )
     data = http_get_json(url)
     obs = data.get("observations", [])
@@ -85,7 +94,8 @@ def fetch_estat_datapoint(key: str, name: str, stats_data_id: str, unit: str, ap
         values = data["GET_STATS_DATA"]["STATISTICAL_DATA"]["DATA_INF"]["VALUE"]
         if isinstance(values, dict):
             values = [values]
-        latest = values[-1]
+        # 返却順が時系列である保証がないため、@timeで明示的にソートして最新を選ぶ
+        latest = sorted(values, key=lambda v: str(v.get("@time", "")))[-1]
         latest_val = float(latest["$"])
         latest_date = str(latest.get("@time", ""))
     except Exception as e:  # noqa: BLE001

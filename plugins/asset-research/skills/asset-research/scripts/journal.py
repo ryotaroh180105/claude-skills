@@ -37,8 +37,9 @@ def validate_journal_entry(fm: dict) -> list[str]:
     for field in REQUIRED_JOURNAL_FIELDS:
         if field not in fm or fm[field] in (None, ""):
             errors.append(f"必須項目が未入力: {field}")
-    if fm.get("ips_check") not in ("pass", None) and not str(fm.get("ips_check", "")).startswith("override"):
-        pass
+    ips_check = str(fm.get("ips_check", ""))
+    if ips_check != "pass" and not ips_check.startswith("override("):
+        errors.append("ips_check は pass または override(理由) のみ有効")
     return errors
 
 

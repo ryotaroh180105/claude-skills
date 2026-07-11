@@ -76,6 +76,9 @@ E4承認後、`docs/designs/23-asset-research-engine.md §5.4` のスキーマ�
 python plugins/asset-research/skills/asset-research/scripts/journal.py --journal-dir <invest-journal>/journal
 ```
 
+クーリングオフ起点の `first_seen_at` は、対象テーマの最初の分析メモの frontmatter `date`
+（日付のみの場合は当日00:00Z）とする。メモが無い場合はゲートを実行できない（先にメモを書く）。
+
 ## 5. 月次レビュー（30分に収める）
 
 ```bash

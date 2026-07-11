@@ -2,7 +2,7 @@
 
 ```markdown
 ---
-purpose: "老後resource形成、20年運用"
+purpose: "老後資金形成、20年運用"
 horizon_years: 20
 monthly_contribution_available: true
 max_acceptable_drawdown_pct: 30

@@ -64,7 +64,7 @@ def parse_financial_csv(csv_bytes: bytes) -> dict:
             elem = row.get("要素ID", "")
             if elem in element_ids:
                 context = row.get("コンテキストID", "")
-                is_consolidated = "Consolidated" in context or "NonConsolidatedMember" not in context
+                is_consolidated = "NonConsolidated" not in context
                 result[label] = {
                     "value": row.get("値"),
                     "unit": row.get("単位", "unknown"),

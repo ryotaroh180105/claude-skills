@@ -83,13 +83,18 @@ def percentile_position(current: float, series: list[float]) -> Optional[float]:
 
 
 def reconcile_prices(primary: Optional[float], secondary: Optional[float], threshold_pct: float = 1.0):
-    """価格2系統突合。乖離threshold_pct%超なら値を出さずPRICE_MISMATCHを返す。"""
+    """価格2系統突合。乖離threshold_pct%超なら値を出さずPRICE_MISMATCHを返す。
+
+    投信などstooq側に気配が無い銘柄は2系統突合が構造的に不可能なため、
+    primaryのみ取得できた場合は値を捨てずSINGLE_SOURCEとして返す
+    （secondaryのみの場合は引き続きFETCH_FAILED）。
+    """
     if primary is None and secondary is None:
         return None, "FETCH_FAILED"
     if primary is None:
         return None, "FETCH_FAILED"
     if secondary is None:
-        return None, "FETCH_FAILED"
+        return primary, "SINGLE_SOURCE"
     if primary == 0:
         return None, "PRICE_MISMATCH"
     diff_pct = abs(primary - secondary) / abs(primary) * 100

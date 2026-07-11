@@ -23,8 +23,15 @@ def test_reconcile_prices_mismatch():
     assert flag == "PRICE_MISMATCH"
 
 
-def test_reconcile_prices_missing_source():
+def test_reconcile_prices_missing_secondary_is_single_source():
+    """F5: secondaryが取れない場合（投信等）はprimaryを捨てずSINGLE_SOURCEとして返す。"""
     value, flag = reconcile_prices(100.0, None)
+    assert value == 100.0
+    assert flag == "SINGLE_SOURCE"
+
+
+def test_reconcile_prices_missing_primary_is_fetch_failed():
+    value, flag = reconcile_prices(None, 100.0)
     assert value is None
     assert flag == "FETCH_FAILED"
 
