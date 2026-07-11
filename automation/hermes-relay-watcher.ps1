@@ -301,9 +301,13 @@ try {
         try {
             $mcHeaders = @{ "X-API-Key" = $McApiKey }
             $queueResp = Invoke-RestMethod -Uri "$McUrl/api/tasks/queue?agent=Hermes" -Headers $mcHeaders -Method Get -TimeoutSec 15
-            if ($queueResp.reason -eq "assigned" -and $queueResp.task) {
+            # "continue_current" covers a task left in_progress by a previous
+            # run that crashed/timed out before reporting back (or was claimed
+            # out-of-band, e.g. a manual queue poll) -- without it, that task
+            # is claimed forever but never actually processed.
+            if (($queueResp.reason -eq "assigned" -or $queueResp.reason -eq "continue_current") -and $queueResp.task) {
                 $mcTask = $queueResp.task
-                Log "mission-control: claimed task $($mcTask.id) ($($mcTask.title))"
+                Log "mission-control: claimed task $($mcTask.id) ($($mcTask.title)) [$($queueResp.reason)]"
                 $mcQuery = if ($mcTask.description) { $mcTask.description } else { $mcTask.title }
                 $mcQuery = $mcQuery -replace '"', '\"'
                 $mcOutput = (& $HermesBin -z $mcQuery --accept-hooks 2>&1 | Out-String).Trim()
