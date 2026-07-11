@@ -41,6 +41,16 @@ jobs:
           printf '%s' "$HERMES_SEED_B64" | base64 -d | tar -xzf - -C "$HOME"
           # 中身は絶対に echo/cat しない（public リポジトリ。マスクされるのは
           # Secret の文字列そのものだけで、展開後のファイル内容はマスクされない）
+      - name: Diagnose seeded layout (filenames only, never contents)
+        env:
+          HERMES_SEED_B64: ${{ secrets.HERMES_SEED_B64 }}
+        run: |
+          echo "--- tar entry names in secret ---"
+          printf '%s' "$HERMES_SEED_B64" | base64 -d | tar -tzf - || true
+          echo "--- ls -A ~/.hermes ---"
+          ls -A "$HOME/.hermes" 2>/dev/null || echo "(no ~/.hermes)"
+          echo "--- stray seed files in HOME root ---"
+          ls -A "$HOME" | grep -E '^(auth\.json|config\.yaml|\.env|seed)' || echo "(none)"
       - name: Run relay watcher
         env:
           HERMES_RELAY_DIR: ${{ github.workspace }}
