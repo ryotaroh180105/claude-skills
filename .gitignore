@@ -1,3 +1,4 @@
 watcher.log
 watcher.env
+watcher.env.ps1
 .watcher.lock.d/
