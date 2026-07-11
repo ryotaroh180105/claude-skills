@@ -1,0 +1,8 @@
+---
+id: 20260711T173929Z-fable5-latest-ai-monetization-retry
+status: error (exit 1)
+executed_at: 2026-07-11T17:39:56Z
+duration_seconds: 3
+---
+
+hermes -z: agent failed: xAI token refresh failed. Response: {"error":"invalid_grant","error_description":"Refresh token has been revoked"}
