@@ -1,5 +1,5 @@
 # 理想の Claude / Claude Code の使い方 — 評価基準リファレンス
-（daily-feedback の3軸分析が参照する基準集。出典付き。2026-07-05 リサーチ実施）
+（daily-feedback の4軸分析が参照する基準集。出典付き。2026-07-05 リサーチ実施）
 
 ## ① プロンプティング力
 
@@ -224,12 +224,85 @@
   5分追加するだけで、チーム全体のプロンプト品質が上がります。」
   出典: [Claude Codeベストプラクティス20選｜法人導入知見 - Uravation](https://uravation.com/media/claude-code-best-practices-top10-2026/)
 
-## 採点ルーブリック（5点満点×3軸）
+## ④ コンテキストエンジニアリング
+
+### 原則
+
+- **コンテキストウィンドウが最重要リソース**: 「Most best practices are based on one
+  constraint: Claude's context window fills up fast, and performance degrades
+  as it fills. The context window is the most important resource to manage.」
+  （多くのベストプラクティスは1つの制約に基づく。Claudeのコンテキストウィンドウは
+  すぐに埋まり、埋まるほど性能が劣化する。コンテキストウィンドウは管理すべき
+  最重要リソースである。）
+  出典: [Best practices for Claude Code - Claude Code Docs](https://code.claude.com/docs/en/best-practices)
+
+- **必要なコンテキストを最初に渡す**: 「The more precise your instructions, the fewer
+  corrections you'll need. Claude can infer intent, but it can't read your
+  mind. Reference specific files, mention constraints, and point to example
+  patterns.」（指示が正確であればあるほど、修正の必要は少なくなります。特定の
+  ファイルを参照し、制約に言及し、例となるパターンを示してください。）
+  後出しの往復は、失敗したやり取りごとコンテキストに残り続ける。
+  出典: [Best practices for Claude Code - Claude Code Docs](https://code.claude.com/docs/en/best-practices)
+
+- **調査はサブエージェントに分離する**: 「Use subagents for investigation: They're
+  useful for tasks that read many files or need specialized focus without
+  cluttering your main conversation.」（多くのファイルを読む、あるいはメインの
+  会話を乱さず特化した焦点が必要なタスクにサブエージェントを使う。）
+  出典: [Best practices for Claude Code - Claude Code Docs](https://code.claude.com/docs/en/best-practices)
+
+- **選択的な読み込み**: 「Grep before fetching and use selective tools (don't load
+  50 files for a 30-line change)」（取得前にGrepし、選択的にツールを使う。
+  30行の変更のために50ファイルを読み込まない）
+  出典（X）: https://x.com/sairahul1/status/2073388319023755718
+
+- **永続コンテキスト化**: 「CLAUDE.md (or SKILL.md) files for persistent context...
+  instead of rebuilding knowledge every session」（永続コンテキストとして
+  CLAUDE.md/SKILL.mdを使い、毎セッションの知識再構築を避ける）
+  出典（X）: https://x.com/Mar_3simai/status/2073802937818824884
+
+- **計画と実行のコンテキスト分離**: 「The Context Reset: planning and execution
+  should happen in separate conversations. ... A fresh context with just the
+  plan document means Claude starts execution with a clean mental model.」
+  （計画と実行は別々の会話で行う。計画書だけの新鮮なコンテキストで、実行を
+  クリーンなメンタルモデルから開始する。）
+  出典: [Claude Code Best Practices: 5 Agentic Engineering Techniques - ClaudeFast](https://claudefa.st/blog/guide/development/agentic-engineering-best-practices)
+
+### アンチパターン
+
+- **キッチンシンクセッション**: 「You start with one task, then ask Claude
+  something unrelated, then go back to the first task. Context is full of
+  irrelevant information.」（1つのタスクで始め、無関係なことを尋ね、また最初の
+  タスクに戻る。コンテキストが無関係な情報でいっぱいになる。）
+  出典: [Best practices for Claude Code - Claude Code Docs](https://code.claude.com/docs/en/best-practices)
+
+- **汚染されたコンテキストでの修正継続**: 「If you've corrected Claude more than
+  twice on the same issue in one session, the context is cluttered with failed
+  approaches. Run /clear and start fresh with a more specific prompt that
+  incorporates what you learned.」（同じ問題を1セッションで2回以上修正したら、
+  コンテキストは失敗したアプローチで乱雑。/clearして学びを反映した新しい
+  プロンプトで始める。）
+  出典: [Best practices for Claude Code - Claude Code Docs](https://code.claude.com/docs/en/best-practices)
+
+- **chatbotモード（毎回同じ説明の繰り返し）**: CLAUDE.md未整備のまま同じ背景説明
+  を毎セッション繰り返す運用。「.claude/フォルダ作成＋CLAUDE.md（/init活用）で
+  永続メモリ化」が対策。
+  出典（X）: https://x.com/swadeshkumar_/status/2040446579036082495
+
+- compaction 頻発はコンテキスト詰め込みすぎの兆候。「/compactを60%使用時や通知で
+  実行、auto_compactオン」という運用目安（**未確認**: モデルバージョンによる
+  閾値の差異は未確認）。
+  出典（X）: https://x.com/u1/status/2073295840962302016
+
+**②コスト最適化との棲み分け**: `compactions`・`cache_hit_pct` は②と共通の指標だが、
+②では「いくら損したか（コスト面）」、④では「なぜそうなったか（コンテキスト設計の
+原因分析）」を書く。
+
+## 採点ルーブリック（5点満点×4軸）
 
 daily-feedback の SKILL.md 本体で使う採点基準。TOJETのタスク定義明確さ
 ルーブリック、ResearchRubricsの重み付け（明確な要求+5／暗黙の要求+3／情報の統合
 +4／引用の質+3／致命的欠陥-5）、グライスの公理（量・質・関連性・方法）、4要素
-ブレ率（主語・責務・境界・例外のブレ）を材料に、daily-feedbackの3軸に翻訳した
+ブレ率（主語・責務・境界・例外のブレ）を材料に、daily-feedbackの4軸に翻訳した
 具体的な状態記述。
 
 ### ① プロンプティング力
@@ -277,6 +350,23 @@ daily-feedback の SKILL.md 本体で使う採点基準。TOJETのタスク定�
   大量作業をメインセッションで直列実行している（Agent tool未使用）。既存スキルの
   守備範囲を素の指示で毎回やり直している。同型の依頼を繰り返しても自動化を
   提案していない。
+
+### ④ コンテキストエンジニアリング
+
+- **5点**: 依頼の冒頭でファイルパス・エラー全文・期待動作を渡しており、後出しの
+  往復がほぼ発生していない。無関係タスクは `/clear` するか別セッションに分けている。
+  大量ファイル読み込みを伴う調査はサブエージェントに委譲している。毎回の背景説明は
+  CLAUDE.md/スキルに永続化済みで、同じ説明の手打ち繰り返しがない。`compactions` が
+  ほぼ0。
+- **3点**: 大抵は必要なコンテキストを最初に渡しているが、時々ファイルパスや
+  エラー全文が後出しになる往復がある。セッションの分け方は概ね適切だが、無関係
+  タスクを同一セッションで続けた場面や、調査をメインセッションの Read で済ませた
+  場面が散見される。`compactions` は1〜3回。同じ背景説明の繰り返しが一部残っている。
+- **1点**: キッチンシンクセッションが常態化している。`compactions` が3回超。
+  同一問題への2回超の訂正後も `/clear` せず修正を続けている。大量ファイル調査を
+  メインセッションで Read 連打している。同じ背景説明を毎セッション手打ちしている
+  （CLAUDE.md/スキル化漏れ）。根拠となる引用ができない場合はこの軸を「データ不足で
+  評価不能」とする。
 
 ## 出典リスト
 

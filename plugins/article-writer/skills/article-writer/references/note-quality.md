@@ -93,6 +93,41 @@ noteクリエイターの解説記事等）に基づく。各主張の出典URL�
 - 逆に、装飾目的だけのフリー素材（握手する人、青空など内容と無関係な写真）は
   入れない。情報を運ばない画像はノイズ。
 
+### 4-1. 画像の生成手段（2026-07-11 hermes-relay 調査）
+
+上表の「何を入れるか」が決まった後、実際の画像ファイルをどう用意するかの判断順。
+MCP画像生成ツールが導入済みなら**それを既定**とし完全自動化する。未導入ならnote公式の
+Adobe Express手動生成にフォールバックする。
+
+1. **`mcp__gpt-image-mcp__*`（OpenAI, 既定・最優先）が使えるなら**: 画像リストの各項目
+   （構図・配色・写実かイラストか）からプロンプトを組み立て、このツールで生成し保存する。
+   人間の作業は「生成された画像ファイルをnote下書きにアップロードするだけ」に減る。
+   従量課金（1枚あたり目安 Low $0.011 / Medium $0.042 / High $0.167）で、既定は Medium。
+2. **無料枠で回したい場合、またはOpenAI側でエラー・レート制限に当たった場合**:
+   `mcp__mcp-image__*`（Gemini, 代替）に切り替える。Google AI Studio の無料枠。
+3. **どちらのMCPも未セットアップ**: note記事投稿画面の「Adobe Expressで画像をつくる」
+   ボタン（2023-11-16〜note公式連携）を案内する。**手動操作**だが公式連携なので著作権・
+   規約リスクがない。出典: https://www.adobe.com/jp/express/learn/blog/note-tutorial
+4. **アフィリエイトリンク付き記事の商品画像**: ASP提供バナーは各ASPの利用規約に従う
+   （無断リサイズ・改変は規約違反になり得るため原寸のまま使う）。比較表はスクリーンショット
+   か自作のテキスト画像にする（ダウンロード物の無断使用はしない）。
+
+**画像生成MCPの前提セットアップ（任意・推奨）**: 未設定でも上記③で工程4は完結する。
+**Claude はこの登録・APIキー発行を代行できない**（本人のOpenAI/Googleアカウントでの
+操作が必要なため）。
+
+| # | 操作 | 意図 | 内容 | 確認方法 |
+|---|---|---|---|---|
+| 1 | OpenAI画像生成MCPの追加 | note・SNS用アイキャッチを既定の生成先として完全自動化するため（affiliate-monetization自動運転の前提） | [platform.openai.com](https://platform.openai.com) で課金設定込みのAPIキーを発行し、[labeveryday/gpt-image-mcp](https://github.com/labeveryday/gpt-image-mcp) を `git clone` → `uv sync` → `claude mcp add gpt-image-mcp --env OPENAI_API_KEY=<発行したキー> -- uv run gpt-image-mcp`（`cwd` はクローン先ディレクトリ） | `/mcp` で `gpt-image-mcp` が connected と表示される |
+| 2 | （任意）Gemini画像生成MCPの追加 | OpenAI側の課金を抑えたい時・エラー時の代替手段を用意するため | [Google AI Studio](https://aistudio.google.com/apikey) でAPIキーを発行し、`claude mcp add mcp-image --env GEMINI_API_KEY=<発行したキー> --env IMAGE_OUTPUT_DIR=<画像保存先の絶対パス> -- npx -y mcp-image` を実行（[shinpr/mcp-image](https://github.com/shinpr/mcp-image)、コミュニティ製・非公式） | 新しいセッションで `/mcp` を実行し `mcp-image` が connected と表示される |
+
+- どちらもコミュニティ製OSSであり、OpenAI/Google公式のMCPサーバーは2026-07時点で
+  確認されていない。ツール名（`mcp__gpt-image-mcp__*` 等）はインストール後に `/mcp` の
+  一覧で実際の名称を確認し、上記と異なる場合はそちらに合わせて呼び出す。
+  出典: https://github.com/labeveryday/gpt-image-mcp 、 https://platform.openai.com 、
+  https://github.com/shinpr/mcp-image 、 https://aistudio.google.com/apikey
+  （調査ID: `20260711T191257Z-openai-image-mcp` / `20260711T191257Z-gemini-image-mcp`）
+
 ## 5. note固有の拡散の仕組み
 
 - **読了率・CTR・スキ率・初動が評価指標**: アルゴリズムは読了率（Finish Rate）が

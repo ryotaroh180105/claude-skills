@@ -1,7 +1,7 @@
 {
   "name": "affiliate-monetization",
-  "description": "X（集客）→ note無料記事（受け皿）→ ASPアフィリエイトリンク（収益点）という収益化ファネルを設計・運用するスキル。ジャンル定義、リンク台帳管理、PR表記（景表法ステマ規制対応）の強制、週次KPIレビューによる継続/調整/撤退判断を行う。",
-  "version": "1.0.0",
+  "description": "X（集客）→ note無料記事（受け皿）→ ASPアフィリエイトリンク（収益点）という収益化ファネルを設計・運用するスキル。ジャンル定義、リンク台帳管理、PR表記（景表法ステマ規制対応）の強制、週次KPIレビューによる継続/調整/撤退判断を行う。cron/Routineによる自動運転（画像生成MCP連携含む）はreferences/automation.mdで任意に追加できる。",
+  "version": "1.1.0",
   "author": {
     "name": "ryotaroh180105"
   },
