@@ -104,3 +104,22 @@ loop-engineering スキルでループ設計書を作ってから SDK 化を検�
 | レッドチーム | red-team | — | なし（読取専用）。炎上リスク観点は red-team のユーザー視点ペルソナで実施 |
 
 sns-ops-team との関係（確定）: sns-ops-team は置き換えない。同スキルの企画→リサーチ→執筆→レビュー→キュー出力の手順・テンプレはそのまま Doer として使い、AGENT_TEAM.md は「誰がどのファイルに書けるか」「誰が Agent を起動するか」だけを上位規約として統制する。矛盾が生じた場合は AGENT_TEAM.md が優先し、sns-ops-team 側の改修要否をユーザーに確認する。
+
+### 構成例3: スキル量産チーム（docs/designs/15-agent-team-operations.md §5.3 が正）
+
+複数の新スキル／設計書を、設計（Opus）→ 批判（red-team）→ 実装（Sonnet 並列）→ 統合（リーダー）の4フェーズで量産する構成。
+
+| 役割 | 主体 | 参照スキル | 書込許可 |
+|---|---|---|---|
+| 設計 | リーダー（メインセッション = Opus）。並列で複数設計をこなす場合は設計対象ごとに別セッション | skill-design-rigor（計画ゲート・自己反証）、TEMPLATE.md | `docs/designs/**` |
+| 実装1..N | Agent（general-purpose, model: sonnet）×N 並列 | repo-skill-creator（スキル雛形・導入確認）、対象設計書 | `plugins/<プラグイン名>/`（1体1ディレクトリ。重複禁止）／必要なら `scripts/<ファイル>` |
+| レビュー | Agent（subagent_type: red-team） | — | なし（読取専用）。設計書完成時と marketplace.json 追記前に必須 |
+| 統合 | リーダー（メインセッション） | model-switcher | `marketplace.json`、`ROADMAP.md`、`docs/designs/**`（ステータス更新）、`MISTAKES.md` |
+
+起動順序（4フェーズ固定）:
+1. **並列設計** — リーダー（Opus）が設計対象ごとに TEMPLATE.md で設計書を書く。1設計 = 1ファイル `docs/designs/NN-*.md`。
+2. **red-team** — 各設計書完成時に `subagent_type: red-team` を対象パスを渡して起動し、失敗シナリオ3件に採択/棄却を明記（本ファイル章6）。
+3. **並列実装** — 設計書ごとに Agent（model: sonnet）を割当。書込許可は `plugins/<各スキル名>/` に限定し、同一ディレクトリを2体に渡さない。実装セッションの開始プロンプトは 00設計書 §5.2 の定型文を使う。
+4. **統合** — リーダーが `git status` を許可リスト和集合と照合（本ファイル章4 手順5）→ `python scripts/validate_skills.py` 通過確認 → marketplace.json へ一括登録 → red-team（リリース前）→ コミット/push。
+
+実例と詳細（2026-07-06の初回適用・コミットハッシュ対応）は docs/designs/15-agent-team-operations.md §5.3 を参照。
