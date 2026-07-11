@@ -298,6 +298,11 @@
       "source": "./plugins/product-viability-guard",
       "description": "English, dependency-free product viability design skill: requires a real user signal before implementation, then a one-page sheet, a devil's-advocate pass, a pre-release checklist, and a monthly review.",
       "category": "productivity"
+    },
+    {
+      "name": "asset-research",
+      "source": "./plugins/asset-research",
+      "description": "自分専用の資産運用分析エンジン。無料の一次データ（FRED/e-Stat/EDINET/EDGAR）でIPS・分析メモ・意思決定ジャーナルを運用し、投資判断の規律を構造化する。"
     }
   ]
 }

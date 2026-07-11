@@ -1,0 +1,9 @@
+{
+  "name": "asset-research",
+  "description": "自分専用の資産運用分析エンジン。無料の一次データ（FRED/e-Stat/EDINET/EDGAR）に基づく分析メモ・IPS・意思決定ジャーナルで、投資判断の規律を構造化する。",
+  "version": "1.0.0",
+  "author": {
+    "name": "ryotaroh180105"
+  },
+  "category": "productivity"
+}

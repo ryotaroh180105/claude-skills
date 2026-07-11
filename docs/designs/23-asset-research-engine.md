@@ -2,7 +2,7 @@
 
 | 項目 | 値 |
 |---|---|
-| ステータス | 設計完了 |
+| ステータス | 実装中（Phase 1コード実装完了、実キーでの実機検証待ち＝§12未解決事項） |
 | 種別 | スキル＋スクリプト＋データ運用（パイプライン） |
 | 優先度 | Tier F-1（docs/designs/22 案③a の実装設計） |
 | 実装モデル | Sonnet 5（推奨 effort: high）。Phase 単位で発注 |
@@ -63,6 +63,33 @@ Ryo が自分の資産運用（NISA・投信・日米株を想定。実際の対
     導入判断基準: プラグインとして正常インストールでき、DCF テンプレートが §5.2 の
     出典付与形式と両立すること。両立しない場合は手法の考え方のみ参考にし依存しない
   - 類似の流用候補（第二候補）: quant-sentiment-ai/claude-equity-research（MIT・未検証）
+
+**実機評価結果（2026-07-11、リポジトリを実際にclone・SKILL.md精読して確認）**:
+
+- 実在確認: Apache 2.0、リポジトリ構成は `plugins/agent-plugins/*`（Pitch Agent, Market
+  Researcher, Model Builder, GL Reconciler 等9エージェント）と `plugins/vertical-plugins/*`
+  （equity-research, investment-banking, private-equity 等）、`plugins/partner-built/*`
+  （lseg, spglobal — Bloomberg/FactSet系はここに分離されており**有償ライセンス前提のため
+  不使用**が正しい判断だったと確認）
+- **採用: `model-builder` エージェントの `dcf-model` / `comps-analysis` / `3-statement-model`
+  スキル**。DCFスキルは1263行の詳細SKILL.mdで、全セルを Excel 数式で書く（ハードコード
+  禁止）・全入力セルに `"Source: [System/Document], [Date], [Reference], [URL]"` 形式の
+  セルコメントを必須化・5×5/7×7感応度分析・段階ごとのユーザー確認、という設計になっており、
+  **セルコメントのURL必須ルールが本設計 §5.2 の出典付与形式とそのまま両立する**
+- 依存は軽量（`openpyxl>=3.0.0`, `requests>=2.28.0`）。導入コスト低
+- 公式免責文言（README）: 「本リポジトリの成果物は投資・法務・税務助言を構成しない。
+  アナリストの作業成果物（モデル・メモ）の草案であり、人間のレビュー前提」——
+  本設計の Q6/Q9（IPS優先・人間承認）と方針が一致する
+- 判断: **導入する**。手法（DCF/Comps/3-statement の Excel テンプレート）は
+  `model-builder` に委譲し、本設計は規律層（IPS・ジャーナル・ゲート）とデータ層
+  （無料一次ソース）に専念する。E2（業界・企業アナリスト）がバリュエーションを行う際は
+  `model-builder` の `dcf-model`/`comps-analysis` スキルを呼び出す
+- 導入コマンド（ユーザーのローカル/別セッションで実行。本セッションは `/plugin` の
+  対話コマンドを実行できないため代行不可）:
+  ```
+  /plugin marketplace add anthropics/financial-services
+  /plugin install model-builder@financial-services
+  ```
 - **Phase 2（拡張。Phase 1 を4週使ってから）**
   - Alpha Vantage または FMP の MCP サーバー接続（無料枠）
   - hermes-relay 連携: ニュース・X センチメントを「仮説の入口」として分析メモに取り込む
