@@ -299,15 +299,24 @@ try {
     # search-focused, so tasks routed here should be research/search asks.
     if ($McUrl -and $McApiKey) {
         try {
-            $mcHeaders = @{ "X-API-Key" = $McApiKey }
+            # X-Agent-Name attributes comments/activity to "Hermes" on the
+            # dashboard instead of the API key's generic "API Access" identity.
+            $mcHeaders = @{ "X-API-Key" = $McApiKey; "X-Agent-Name" = "Hermes" }
             $queueResp = Invoke-RestMethod -Uri "$McUrl/api/tasks/queue?agent=Hermes" -Headers $mcHeaders -Method Get -TimeoutSec 15
             # "continue_current" covers a task left in_progress by a previous
             # run that crashed/timed out before reporting back (or was claimed
             # out-of-band, e.g. a manual queue poll) -- without it, that task
             # is claimed forever but never actually processed.
+            # Presence: refresh last_seen every tick so the dashboard's
+            # Agent Squad / Office panels show Hermes online, and flip
+            # busy/idle around actual task execution below.
+            $presenceIdle = [System.Text.Encoding]::UTF8.GetBytes((@{ name = "Hermes"; status = "idle" } | ConvertTo-Json -Compress))
+            Invoke-RestMethod -Uri "$McUrl/api/agents" -Headers $mcHeaders -Method Put -Body $presenceIdle -ContentType "application/json; charset=utf-8" -TimeoutSec 15 | Out-Null
             if (($queueResp.reason -eq "assigned" -or $queueResp.reason -eq "continue_current") -and $queueResp.task) {
                 $mcTask = $queueResp.task
                 Log "mission-control: claimed task $($mcTask.id) ($($mcTask.title)) [$($queueResp.reason)]"
+                $presenceBusy = [System.Text.Encoding]::UTF8.GetBytes((@{ name = "Hermes"; status = "busy"; last_activity = "Searching: $($mcTask.title)" } | ConvertTo-Json -Compress))
+                Invoke-RestMethod -Uri "$McUrl/api/agents" -Headers $mcHeaders -Method Put -Body $presenceBusy -ContentType "application/json; charset=utf-8" -TimeoutSec 15 | Out-Null
                 $mcQuery = if ($mcTask.description) { $mcTask.description } else { $mcTask.title }
                 $mcQuery = $mcQuery -replace '"', '\"'
                 # Run hermes in a child job, same as the pending-query batch
@@ -345,6 +354,7 @@ try {
                 $statusJson = @{ status = "review" } | ConvertTo-Json -Compress
                 $statusBytes = [System.Text.Encoding]::UTF8.GetBytes($statusJson)
                 Invoke-RestMethod -Uri "$McUrl/api/tasks/$($mcTask.id)" -Headers $mcHeaders -Method Put -Body $statusBytes -ContentType "application/json; charset=utf-8" -TimeoutSec 15 | Out-Null
+                Invoke-RestMethod -Uri "$McUrl/api/agents" -Headers $mcHeaders -Method Put -Body $presenceIdle -ContentType "application/json; charset=utf-8" -TimeoutSec 15 | Out-Null
                 Log "mission-control: completed task $($mcTask.id), moved to review"
             }
         } catch {
