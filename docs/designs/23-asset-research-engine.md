@@ -52,6 +52,17 @@ Ryo が自分の資産運用（NISA・投信・日米株を想定。実際の対
   - 個別テーマ/銘柄/業界の分析メモ生成（§5.3 の固定8セクション）
   - 意思決定ジャーナル（事前登録→月次答え合わせ）
   - データ取得スクリプト: FRED / e-Stat / EDINET / SEC EDGAR / yfinance
+- **Phase 1.5（分析手法層の流用。Phase 1 タスク6の前に評価）**
+  - Anthropic 公式 `anthropics/financial-services`（Apache 2.0）の financial-analysis
+    プラグインを導入評価する（DCF・Comps・LBO・3-statement モデル等。2026-07-11 の
+    hermes 調査 `automation/results/20260711T192652Z-ib-plugin-repo-identify.md` で特定。
+    Star数・機能詳細は未検証）。使えれば **バリュエーション手法は自作せず全面的に流用**し、
+    本設計は規律層（IPS・ジャーナル・ゲート）とデータ層（無料一次ソース）に集中する。
+    Bloomberg/FactSet 等の接続機能は先方有償ライセンス前提のため使わない。
+    E2（業界・企業アナリスト）が個別銘柄を扱う際の手法ライブラリとして組み込む。
+    導入判断基準: プラグインとして正常インストールでき、DCF テンプレートが §5.2 の
+    出典付与形式と両立すること。両立しない場合は手法の考え方のみ参考にし依存しない
+  - 類似の流用候補（第二候補）: quant-sentiment-ai/claude-equity-research（MIT・未検証）
 - **Phase 2（拡張。Phase 1 を4週使ってから）**
   - Alpha Vantage または FMP の MCP サーバー接続（無料枠）
   - hermes-relay 連携: ニュース・X センチメントを「仮説の入口」として分析メモに取り込む
@@ -271,7 +282,8 @@ E4の差し戻し理由はメモに残す（後から「誰が何を懸念した
 3. **fetch_prices.py** — yfinance＋stooq フォールバック。完了条件: DoD 2行目
 4. **fetch_edinet.py / fetch_edgar.py** — 最新開示の主要値抽出。完了条件: DoD 3行目
 5. **IPS フロー** — SKILL.md に対話手順、スキーマ検証スクリプト。完了条件: DoD 4行目
-6. **analyze フロー** — 8セクション生成＋必須欄バリデーション。完了条件: DoD 5行目
+5b. **financial-services プラグイン導入評価（Phase 1.5）** — `claude plugin marketplace add anthropics/financial-services` を試し、DCF/Comps テンプレートの動作と §5.2 形式との両立を確認。完了条件: 導入可否と採用範囲を本設計書に1段落で追記
+6. **analyze フロー** — 8セクション生成＋必須欄バリデーション（採用した手法ライブラリを E2 から呼ぶ）。完了条件: DoD 5行目
 7. **ジャーナル＋review** — 登録・期日抽出・クローズ。完了条件: DoD 6行目
 8. **ゲート実装** — §6.5 の4チェックを SKILL.md 手順＋検証スクリプトで。完了条件: override なしで IPS 違反登録ができないこと
 8b. **AI社員定義** — `.claude/agents/` に E1〜E4 の定義（役割・禁止事項・入出力形式）。完了条件: analyze 実行時に E2→E3→E4 の順で別コンテキスト実行され、E4 の差し戻しが機能する
