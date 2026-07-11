@@ -224,7 +224,7 @@
     {
       "name": "daily-feedback",
       "source": "./plugins/daily-feedback",
-      "description": "一日のClaude/Claude Codeの使い方を3軸（プロンプティング力・コスト最適化・運用判断力）で振り返るデイリーフィードバックスキル。",
+      "description": "一日のClaude/Claude Codeの使い方を4軸（プロンプティング力・コスト最適化・運用判断力・コンテキストエンジニアリング）で振り返るデイリーフィードバックスキル。",
       "category": "productivity"
     },
     {

@@ -53,3 +53,29 @@
 - Human gate: ①approved への変更は Ryo のみ ②ファイル変更はすべて PR 経由でマージは Ryo ③戦略・リファレンスの書き換えは PR 内で提案として明示。
 - 失敗モードチェック: Blind（レビュー担当分離＋approved は人間）/ Tangled（Doer は既存スキル手順の実行のみ）/ Amnesiac（振り返りログ＋post-queue に永続化）/ Manual（Routine で自動起動）いずれも該当なし。
 - 履歴: 2026-07-10 設計・Routine 作成。戦略ファイル未作成のため、初回セットアップ完了までは毎週スキップ報告のみ。
+
+## ループ設計: affiliate-monetization 週次バッチ自動実行ループ
+
+- ゴール: SKILL.mdの週次バッチ（note誘導ポスト企画→note記事制作(画像込み)→リンク更新→数値反映）が、ユーザーが毎週依頼しなくてもRoutineで起動し、post-queue.mdのdraft追記とnote原稿（画像ファイル込み）の生成まで自動完了すること。データ契約（funnel-config.md/link-registry.md/kpi-log.md）・役割分担は一切変更しない。
+- Trigger: タイマー。Claude Code Remote の Routine（週1、曜日・時刻はユーザー指定）。
+- Doer: affiliate-monetization `references/automation.md` §1。SKILL.md週次バッチの4工程をそのまま実行。note記事制作時の画像はarticle-writer `references/note-quality.md` 4-1節（OpenAI画像生成MCP既定/Gemini代替/Adobe Express手動フォールバック）でこの場で生成。
+- Verifier: Doerと別Agent（model: haiku）がPR表記文言・link_id整合・誇大表現の不在を検証。不合格ならdraft/要修正のまま残す（不明を合格にしない）。
+- Stop Rules: 60分・Doer/Verifier各1体・修正往復3回。funnel-config.md未作成（Step 0未実施）ならDoerを起動せず報告のみで終了（空回り防止）。post-queue.mdのdraft→approved昇格は自動化しない（ユーザーのみ）。
+- Memory/State: funnel-config.md / link-registry.md / kpi-log.md（既存3ファイル）。
+- Skills/Routines: affiliate-monetization、sns-ops-team、article-writer（画像生成含む）、sns-auto-posting（承認後）。
+- Human gate: draft→approved昇格、note公開ボタン＋画像アップロード、週次数値の転記。
+- 失敗モードチェック: Blind（Verifier分離、承認は人間）/ Tangled（既存スキル手順呼び出しのみ）/ Amnesiac（既存3ファイルに永続化）/ Manual（Routineで自動起動）いずれも該当なし。
+- 履歴: 2026-07-12 設計。Routine登録待ち。
+
+## ループ設計: affiliate-monetization KPI転記・判断ループ
+
+- ゴール: kpi-log.mdの最新行にSKILL.mdのKPI判断表を適用し、継続/調整/縮小/撤退検討/撤退/保留の判断が毎週自動で1行追記されること。撤退系の判断は人間確認を経ること。
+- Trigger: タイマー。Routine（週1、週次バッチRoutineの半日〜1日後を推奨）。
+- Doer: affiliate-monetization `references/automation.md` §2。kpi-log.mdの数値にKPI判断表を上から順に適用。
+- Verifier: 別Agentが「数値→条件→適用した判断」の対応を検算。不一致なら適用を保留し両論併記。
+- Stop Rules: 20分・1体。撤退検討・撤退の適用は自動実行禁止（ユーザー確認ゲート）。
+- Memory/State: kpi-log.md（判断列への追記）。
+- Skills/Routines: affiliate-monetization のみ。
+- Human gate: 撤退検討・撤退の最終判断、数値未転記継続時の運用継続確認。
+- 失敗モードチェック: Blind（検算Agent分離）/ Tangled（既存ファイル読み書きのみ）/ Amnesiac（kpi-log.mdに永続化）/ Manual（Routineで自動起動）いずれも該当なし。
+- 履歴: 2026-07-12 設計。Routine登録待ち。
