@@ -310,9 +310,21 @@ try {
                 Log "mission-control: claimed task $($mcTask.id) ($($mcTask.title)) [$($queueResp.reason)]"
                 $mcQuery = if ($mcTask.description) { $mcTask.description } else { $mcTask.title }
                 $mcQuery = $mcQuery -replace '"', '\"'
+                # Match the UTF-8 setup used for the job-based hermes calls
+                # above -- without it, non-ASCII output (e.g. Japanese) comes
+                # back mojibake'd through this process's default codepage.
+                [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+                $OutputEncoding = [System.Text.Encoding]::UTF8
+                $env:PYTHONIOENCODING = "utf-8"
                 $mcOutput = (& $HermesBin -z $mcQuery --accept-hooks 2>&1 | Out-String).Trim()
-                $mcBody = @{ status = "review"; resolution = $mcOutput } | ConvertTo-Json
-                Invoke-RestMethod -Uri "$McUrl/api/tasks/$($mcTask.id)" -Headers $mcHeaders -Method Put -Body $mcBody -ContentType "application/json" -TimeoutSec 15 | Out-Null
+                # The dashboard UI has no rendering path for the `resolution`
+                # field (only comments are shown), so report results as a
+                # comment instead -- same channel Claude Code's task
+                # dispatch already uses successfully.
+                $commentBody = @{ content = $mcOutput } | ConvertTo-Json
+                Invoke-RestMethod -Uri "$McUrl/api/tasks/$($mcTask.id)/comments" -Headers $mcHeaders -Method Post -Body $commentBody -ContentType "application/json" -TimeoutSec 15 | Out-Null
+                $statusBody = @{ status = "review" } | ConvertTo-Json
+                Invoke-RestMethod -Uri "$McUrl/api/tasks/$($mcTask.id)" -Headers $mcHeaders -Method Put -Body $statusBody -ContentType "application/json" -TimeoutSec 15 | Out-Null
                 Log "mission-control: completed task $($mcTask.id), moved to review"
             }
         } catch {
