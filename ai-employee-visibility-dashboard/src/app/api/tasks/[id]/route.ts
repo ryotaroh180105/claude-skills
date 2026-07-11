@@ -384,7 +384,7 @@ export async function PUT(
         'task_updated',
         'task',
         taskId,
-        auth.user.username,
+        auth.user.agent_name || auth.user.username,
         `Task updated: ${changes.join(', ')}`,
         { 
           changes: changes,

@@ -188,7 +188,9 @@ export async function POST(request: NextRequest) {
     const body = validated.data;
 
     const user = auth.user
-    const actor = user.display_name || user.username || 'system'
+    // Prefer the X-Agent-Name attribution header so agent-created tasks show
+    // under the agent's name instead of "API Access" in the activity feed.
+    const actor = user.agent_name || user.display_name || user.username || 'system'
     const {
       title,
       description,

@@ -118,7 +118,9 @@ export async function POST(
     const result = await validateBody(request, createCommentSchema);
     if ('error' in result) return result.error;
     const { content: rawContent, parent_id } = result.data;
-    const author = auth.user.display_name || auth.user.username || 'system';
+    // Prefer the X-Agent-Name attribution header so agent work (MCP sessions,
+    // relay watchers) shows under the agent's name instead of "API Access".
+    const author = auth.user.agent_name || auth.user.display_name || auth.user.username || 'system';
 
     // Normalize agent payload JSON — extract text from OpenClaw result format
     let content = rawContent;

@@ -7,9 +7,14 @@
  - Add with: claude mcp add mission-control -- node /path/to/mc-mcp-server.cjs
 
  Environment:
-   MC_URL       Base URL (default: http://127.0.0.1:3000)
-   MC_API_KEY   API key for auth
-   MC_COOKIE    Session cookie (alternative auth)
+   MC_URL        Base URL (default: http://127.0.0.1:3000)
+   MC_API_KEY    API key for auth
+   MC_COOKIE     Session cookie (alternative auth)
+   MC_AGENT_NAME Agent identity for this session (default: Claude).
+                 The server self-registers this agent on startup and
+                 heartbeats while the session is open, so the dashboard
+                 (Agent Squad / Office) shows it online — busy while
+                 tools are being called, idle otherwise.
 */
 
 const fs = require('node:fs');
@@ -32,6 +37,7 @@ function loadConfig() {
     baseUrl: (process.env.MC_URL || profile.url || 'http://127.0.0.1:3000').replace(/\/+$/, ''),
     apiKey: process.env.MC_API_KEY || profile.apiKey || '',
     cookie: process.env.MC_COOKIE || profile.cookie || '',
+    agentName: (process.env.MC_AGENT_NAME || profile.agentName || 'Claude').trim(),
   };
 }
 
@@ -44,6 +50,7 @@ async function api(method, route, body) {
   const headers = { 'Accept': 'application/json' };
   if (config.apiKey) headers['x-api-key'] = config.apiKey;
   if (config.cookie) headers['Cookie'] = config.cookie;
+  if (config.agentName) headers['x-agent-name'] = config.agentName;
 
   let payload;
   if (body !== undefined) {
@@ -727,6 +734,58 @@ for (const tool of TOOLS) {
 }
 
 // ---------------------------------------------------------------------------
+// Agent presence — make this Claude Code session visible on the dashboard.
+//
+// Without this, work done through the MCP tools authenticates as the global
+// API key ("API Access") and no heartbeat is ever sent, so the Agent Squad /
+// Office panels show the agent as permanently Offline even mid-task.
+//
+// All calls are best-effort: presence failures must never break tool calls.
+// ---------------------------------------------------------------------------
+
+const BUSY_WINDOW_MS = 90_000;   // stay "busy" this long after the last tool call
+const PRESENCE_INTERVAL_MS = 45_000;
+
+let agentId = null;
+let lastToolCallAt = 0;
+let lastReportedStatus = '';
+
+async function reportPresence() {
+  const config = loadConfig();
+  if (!config.agentName) return;
+  try {
+    if (agentId == null) {
+      const reg = await api('POST', '/api/agents/register', { name: config.agentName, role: 'coder' });
+      agentId = reg?.agent?.id ?? null;
+      lastReportedStatus = 'idle';
+    }
+    const busy = Date.now() - lastToolCallAt < BUSY_WINDOW_MS;
+    if (busy) {
+      await api('PUT', '/api/agents', {
+        name: config.agentName,
+        status: 'busy',
+        last_activity: 'Claude Code session (MCP)',
+      });
+      lastReportedStatus = 'busy';
+    } else {
+      if (lastReportedStatus === 'busy') {
+        await api('PUT', '/api/agents', { name: config.agentName, status: 'idle' });
+      } else if (agentId != null) {
+        await api('POST', `/api/agents/${agentId}/heartbeat`, {});
+      }
+      lastReportedStatus = 'idle';
+    }
+  } catch { /* dashboard may be down; retry on next tick */ }
+}
+
+function notePresenceActivity() {
+  const wasIdle = Date.now() - lastToolCallAt >= BUSY_WINDOW_MS;
+  lastToolCallAt = Date.now();
+  // Flip to busy immediately on the first call of a burst, not up to 45s later.
+  if (wasIdle) void reportPresence();
+}
+
+// ---------------------------------------------------------------------------
 // JSON-RPC 2.0 / MCP protocol handler
 // ---------------------------------------------------------------------------
 
@@ -786,6 +845,7 @@ async function handleMessage(msg) {
       }
 
       try {
+        notePresenceActivity();
         const result = await tool.handler(args);
         return makeResponse(id, {
           content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
@@ -841,6 +901,12 @@ async function main() {
   rl.on('close', () => {
     process.exit(0);
   });
+
+  // Agent presence: register on startup, then keep reporting while the
+  // session is open. unref() so the timer never blocks process exit.
+  void reportPresence();
+  const presenceTimer = setInterval(reportPresence, PRESENCE_INTERVAL_MS);
+  if (typeof presenceTimer.unref === 'function') presenceTimer.unref();
 
   // Keep process alive
   process.stdin.resume();
