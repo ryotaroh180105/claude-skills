@@ -14,8 +14,8 @@
 ## 境界（Doerが呼ぶ既存スキル・入力）
 
 - 呼び出すスキル: affiliate-monetization（週次判定の4値ロジックを流用）
-- 参照する設定: `pipeline-state.md`, `receipts/`（**実データのため `sidejob-ledger` ブランチで管理**。intake の CONTRACT.md「データの読み書き手順」と同じ手順でアクセスする）
-- 更新するファイル: `pipeline-state.md` の notes 列（判定記録のみ。status は更新しない。`sidejob-ledger` ブランチ側で更新・コミット）
+- 参照する設定: `pipeline-state.md`, `receipts/`（**実データのため private リポジトリ `ryotaroh180105/sidejob-ledger` で管理**。intake の CONTRACT.md「データの読み書き手順」と同じ手順でアクセスする）
+- 更新するファイル: `pipeline-state.md` の notes 列（判定記録のみ。status は更新しない。`sidejob-ledger` リポジトリ側で更新・コミット）
 
 ## 手順（§6.5 の確定フロー）
 

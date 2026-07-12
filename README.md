@@ -22,7 +22,8 @@ claude-skills/
 │   └── designs/                 # 設計書（NN-slug 形式）
 ├── intel/                       # intel-hub の情報集約DB
 ├── sidejob/                     # 副業パイプラインの構造のみ（config/templates/fixtures/SETUP）
-│                                 #   実データ（案件台帳・receipts等）は sidejob-ledger ブランチ
+│                                 #   実データ（案件台帳・receipts等）は private リポジトリ
+│                                 #   ryotaroh180105/sidejob-ledger
 ├── loops/                       # loop-engineering のループ実体（CONTRACT/schedule/rubric）
 ├── .github/workflows/validate-skills.yml
 ├── scripts/
@@ -45,7 +46,7 @@ claude-skills/
 | C | 外部ベンダースキル | `.agents/skills/` + 台帳 `skills-lock.json` |
 | D | 設計書・計画 | `docs/designs/`（新規は `NN-slug` 形式のみ）`ROADMAP.md` `LOOPS.md`。`docs/` 直下の既存ファイルは凍結 |
 | E | アプリ | **別リポジトリ**。`ryotaroh180105/<app-name>` を1アプリ1リポジトリで作成 |
-| F | 実データ・自動化ログ | 実データはコミット禁止（ローカル or private リポジトリ）。自動化キューは `hermes-relay` ブランチ。副業パイプラインの実運用データ（案件台帳・receipts・提案文下書き）は `sidejob-ledger` ブランチ。`sidejob/`（config/templates/fixtures/SETUP）と `loops/`（CONTRACT/schedule/rubric）は構造のみのためメインの機能ブランチに置く |
+| F | 実データ・自動化ログ | 実データはコミット禁止（ローカル or private リポジトリ）。自動化キューは `hermes-relay` ブランチ（機微性の低いリサーチクエリのみのため public ブランチ分離で可）。副業パイプラインの実運用データ（案件台帳・receipts・提案文下書き）は**独立した private リポジトリ `ryotaroh180105/sidejob-ledger`**（publicリポジトリの別ブランチは非公開にならないため、ブランチ分離ではなく別リポジトリにした）。`sidejob/`（config/templates/fixtures/SETUP）と `loops/`（CONTRACT/schedule/rubric）は構造のみのためこのリポジトリに置く |
 
 - アプリは別リポジトリ（`ryotaroh180105/<app-name>`、1アプリ1リポジトリ）に作る。本リポジトリには置かない。
 - 実データ（音声・投稿キュー実運用分・学習ログ・TODO.md）は本リポジトリにコミットしない。

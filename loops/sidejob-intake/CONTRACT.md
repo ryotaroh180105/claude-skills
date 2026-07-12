@@ -14,14 +14,15 @@ Lane B（クラウドワークス・ランサーズ）の新着案件通知メ�
 ## 境界（Doerが呼ぶ既存スキル・入力）
 
 - 呼び出すスキル: pickup-automation（メール抽出観点の流用）, document-creation（提案文下書き生成の型として `sidejob/templates/proposal.md` を使用）, token-saver
-- 参照する設定: `sidejob/config.md`（選別基準・差出人検疫・単価下限・除外条件・上限。**このファイルは構造のみでメインの機能ブランチ管理**）
-- 更新するファイル: `pipeline-state.md`, `proposals/`, `receipts/YYYY-MM-DD.md`（**実データのため `sidejob-ledger` ブランチで管理。README「配置規約」F区分、hermes-relay と同じパターン**）
+- 参照する設定: `sidejob/config.md`（選別基準・差出人検疫・単価下限・除外条件・上限。**このファイルは構造のみで `claude-skills` リポジトリ管理**）
+- 更新するファイル: `pipeline-state.md`, `proposals/`, `receipts/YYYY-MM-DD.md`（**実データのため独立した private リポジトリ `ryotaroh180105/sidejob-ledger` で管理。README「配置規約」F区分。2026-07-11に「publicリポジトリの別ブランチは非公開にならない」という設計ミスの是正で独立privateリポジトリへ移行済み**）
 
-## データの読み書き手順（実データはこのブランチに置かない）
+## データの読み書き手順（実データは `claude-skills` に置かない）
 
-1. `sidejob-ledger` ブランチを（未 clone なら）separate working directory に clone/checkout する（例: `git worktree add /tmp/sidejob-ledger-wt sidejob-ledger`、無ければ `git checkout --orphan sidejob-ledger` で新規作成しルート直下に `sidejob/pipeline-state.md` 等の空ファイルを置いて初回コミット）
-2. そのワークツリー内の `sidejob/pipeline-state.md` 等を読み書きする（本 CONTRACT のファイル名は全て `sidejob-ledger` ブランチ内での相対パス）
-3. 変更後は `sidejob-ledger` ブランチにコミット・push する。このループが動くメインの機能ブランチ側には実データを一切コミットしない
+1. `ryotaroh180105/sidejob-ledger`（private）を（未 clone なら）`add_repo` でセッションに追加し、`/workspace/sidejob-ledger` に clone する
+2. そのディレクトリ内の `sidejob/pipeline-state.md` 等を読み書きする（本 CONTRACT のファイル名は全て `sidejob-ledger` リポジトリ内での相対パス）
+3. 変更後は `sidejob-ledger` リポジトリの `main` ブランチにコミット・push する。`claude-skills` 側には実データを一切コミットしない
+4. **`sidejob-ledger` の visibility が `private` であることを push 前に必ず確認する**（`list_repos` で確認できる。万一 `public` になっていた場合は push せずユーザーに報告する）
 
 ## 手順（§6.2 の確定フロー）
 

@@ -13,8 +13,8 @@
 
 ## 境界
 
-- 参照するファイル: `pipeline-state.md`（実データ。**`sidejob-ledger` ブランチで管理**。intake の CONTRACT.md「データの読み書き手順」と同じ手順でアクセス）, `sidejob/config.md`（現行カテゴリ表。構造のみでメインの機能ブランチ管理）, `docs/designs/22-side-job-automation.md` §0.2/§0.4（静的市場知識）
-- 更新するファイル: `expansion-candidates.md`（追記のみ。**実データ・分析結果を含むため `sidejob-ledger` ブランチで管理**）
+- 参照するファイル: `pipeline-state.md`（実データ。**private リポジトリ `ryotaroh180105/sidejob-ledger` で管理**。intake の CONTRACT.md「データの読み書き手順」と同じ手順でアクセス）, `sidejob/config.md`（現行カテゴリ表。構造のみで `claude-skills` リポジトリ管理）, `docs/designs/22-side-job-automation.md` §0.2/§0.4（静的市場知識）
+- 更新するファイル: `expansion-candidates.md`（追記のみ。**実データ・分析結果を含むため `sidejob-ledger` private リポジトリで管理**）
 - **書き換えないファイル**: `sidejob/config.md`（新カテゴリの採用はユーザー判断。本ループは提案のみ）、`pipeline-state.md` 本体
 
 ## 手順
