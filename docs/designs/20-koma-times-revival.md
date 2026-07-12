@@ -43,7 +43,7 @@ v2 の解決: 全工程をローカル Python + Windows タスクスケジュー
 | 5. 投稿文 | `generate.py` step4 部（自動） | Anthropic API |
 | 6. 配信（X投稿） | `post_worker.py` + `x_adapter.py`（自動・周期は §12 B-2 のプラン次第） | X API 直叩き |
 | 7. 健全性監視 | `healthcheck.py`（自動・日1回）+ 自己停止フラグ | v2 新設 |
-| 8. 反応分析・企画還流 | **意図的に対象外**（理由: まず配信の無人化を完成させる。X API の metrics 取得はプラン依存であり、Phase 3 として再稼働後に別設計） | — |
+| 8. 反応分析・企画還流 | `analytics.py`（自動・日1回）+ `weekly_review.py`（週1回。提案のみ生成、適用は人間判断） | v2.1 追加（2026-07-12 ユーザー指示）。§5.7 |
 | 9. Instagram 展開 | `insta_worker.py` 素材生成のみ（Phase 2・投稿は手動） | 自動投稿は対象外 |
 
 ### 1.2 ループ設計（loop-engineering 6要素）
@@ -70,15 +70,16 @@ v2 の解決: 全工程をローカル Python + Windows タスクスケジュー
 - `scripts/register_tasks.ps1`: タスクスケジューラ4本の一括登録（§6）
 - `docs/OPERATIONS.md`: ループ6要素・障害対応手順・鍵ローテ手順
 - Phase 2: `src/insta_worker.py`（Pillow キャプション帯合成、ローカル保存のみ）
+- Phase 3（v2.1 追加）: `src/analytics.py`（日1回・§5.7）— (a) 投稿済み記事の X エンゲージメント取得を試み、読み取り不可なプランなら「取得不可」と明記して欠測扱い（数値を捏造しない）(b) パイプライン内部ログ（除外記事・スキーマ失敗・画像失敗・カテゴリ別スコア分布）を `analytics/pipeline_log.jsonl` に追記。`scripts/weekly_review.py`（週1回）が両ログを集計して `docs/WEEKLY_REVIEW.md` に提案を書く。**提案は人間が読んで判断するまで generate.py のプロンプト/定数に反映されない**（§2.2 の「ロジック変更は移植のみ」と両立させるための human gate）
 
 ### 2.2 やらないこと（明示的スコープ外）
 
 - AskHub / PTC / system_prompt 系の維持（廃止。handover/ 凍結のみ）
 - **Composio の一切**（v1 から変更: X 投稿も Drive も使わない。理由: 自前 X アプリが必須である以上、中間 SaaS は障害点と鍵管理を増やすだけ。実投稿未検証なので「検証済み資産」でもない）
 - Google Drive 中継・アップロード（v1 の④スマホ配信含め廃止。Instagram 素材はローカル `tmp/instagram/` のみ。Drive 配信が欲しくなったら再稼働後に別途）
-- 反応分析・metrics 収集・企画還流（§1.1 工程8。Phase 3 として別設計）
 - Instagram / TikTok の自動投稿（素材生成まで）
-- 選定ロジック・台本プロンプト・画風の変更（移植のみ。改善は再稼働後）
+- **analytics/weekly_review が出した改善提案の自動適用**（人間が `docs/WEEKLY_REVIEW.md` を読んで判断し、必要なら手動で generate.py を編集する。無人ループが自分でプロンプトを書き換えることはしない — 暴走防止）
+- 選定ロジック・台本プロンプト・画風の**初期移植時点の**変更（移植は一字も変えない。運用データに基づく改善は weekly_review の提案を人間が採否判断してから）
 - hermes-relay 経由の収集（collect.py は xAI 直叩きで完結）
 - claude-skills リポジトリへのコード配置（分類E違反。本設計書のみ）
 - 投稿前の人間承認ゲート（引き継ぎ資料 §11 の決定「完全全自動」を維持。安全弁は事前の除外条件・2ソース裏取り・事後の healthcheck と B-4 目視期間で担保）
@@ -106,6 +107,11 @@ Phase 1（実 API・無人運転開始 — ユーザーのキー投入後）:
 Phase 2（Instagram 素材・任意）:
 - [ ] `python src/insta_worker.py` で1記事分のキャプション帯付き画像4枚（日本語が正しく描画）が `tmp/instagram/<article_id>/` に生成される
 
+Phase 3（分析・失敗学習 — モックで判定可能）:
+- [ ] `python src/analytics.py --mock` が exit 0 で `analytics/pipeline_log.jsonl` に `engagement_snapshot` イベントを追記する（モックは403応答を模擬し `read access unavailable` の detail を記録することを確認）
+- [ ] fixtures の `pipeline_log.jsonl`（除外・失敗・投稿イベントを10件程度含む架空データ）を投入して `python scripts/weekly_review.py` を実行すると exit 0 で `docs/WEEKLY_REVIEW.md` が生成され、カテゴリ別集計表と「提案」節が両方含まれる
+- [ ] `grep -n "def apply\|auto.*fix\|write.*generate.py" src/analytics.py scripts/weekly_review.py` が 0 件（自動適用ロジックが存在しないことの確認）
+
 ## 4. 成果物の構成（ファイルレイアウト — koma-times リポジトリ）
 
 ```
@@ -126,14 +132,18 @@ koma-times/
 │   ├── post_worker.py        # ③ 投稿
 │   ├── healthcheck.py        # ⑦ 死活監視
 │   ├── status_util.py        # status/*.json 読み書きの共通関数（4スクリプトが使用）
-│   └── insta_worker.py       # Phase 2
+│   ├── insta_worker.py       # Phase 2
+│   └── analytics.py          # Phase 3: エンゲージメント取得(best-effort) + pipeline_log 追記
 ├── scripts/
 │   ├── validate_output.py
-│   └── register_tasks.ps1
+│   ├── register_tasks.ps1
+│   └── weekly_review.py      # Phase 3: pipeline_log.jsonl 集計 → docs/WEEKLY_REVIEW.md（提案のみ・自動適用なし）
 ├── tests/
 │   ├── fixtures/search_results.sample.json   # 架空データ（実データ持ち込み禁止）
+│   ├── fixtures/pipeline_log.sample.jsonl    # 架空データ（Phase 3 テスト用）
 │   └── test_*.py
 ├── status/                   # 実行時生成（git管理外）: <task>.json / ALERT-*.txt / POSTING_DISABLED
+├── analytics/                # 実行時生成（git管理外）: pipeline_log.jsonl
 └── tmp/                      # 実行時生成（git管理外）: inbox/ inbox/done/ output/ posted/ images/ instagram/
 ```
 
@@ -210,6 +220,17 @@ post_worker が呼ぶ2関数のみ公開。OAuth 1.0a 署名は `plugins/sns-aut
   3. 成果物停滞（red-team #2 採択・プロセス緑のまま出力ゼロを検知）: `tmp/output/` に未投稿在庫が1件以上あるのに `tmp/posted/` の最新 mtime が26h超（投稿だけが空回りしている）
   4. 収集枯渇（同上）: collect の `meta.article_count` が直近2回連続で 0（status_util が直前値を `meta.prev_article_count` に保持して判定）
 
+### 5.7 analytics / weekly_review（v2.1 追加 — 反応分析・失敗学習）
+
+`analytics/pipeline_log.jsonl`（1行1イベント、追記専用。analytics.py と generate.py 双方が書く）:
+```json
+{"ts": "<ISO8601>", "run_id": "<RUN_ID>", "event": "excluded|schema_retry_failed|image_partial_fail|posted|engagement_snapshot", "category": "<カテゴリ>", "score": <int|null>, "detail": "<1行>"}
+```
+- `excluded` / `schema_retry_failed` / `image_partial_fail` は generate.py が該当箇所で1行追記（既存の除外条件・リトライ処理に副作用として1行足すだけ。ロジック自体は変更しない）
+- `engagement_snapshot` は analytics.py が posted/ の各記事について X の `GET /2/tweets/:id?tweet.fields=public_metrics` を叩いて追記。**403（読み取り権限なし）を検知したら `detail: "read access unavailable on current plan"` を記録して以後はこの記事を再試行しない**（プラン起因の恒久欠測と、一時的なエラーを区別する）
+- `weekly_review.py` は直近7日分の `pipeline_log.jsonl` を集計し `docs/WEEKLY_REVIEW.md` を上書き生成: カテゴリ別 除外率/投稿数/（取得できていれば）平均エンゲージメント、頻出する `detail` パターン上位5件、末尾に「提案」節（人間向け・自動適用なし）
+- analytics.py・weekly_review.py はいずれも generate.py / post_worker.py の実行結果を**読むだけ**（呼び出し関係なし。既存3スクリプトの疎結合を壊さない）
+
 ## 6. 処理フロー
 
 タスクスケジューラ4本（`scripts/register_tasks.ps1` が `schtasks /create` で一括登録。時刻カップリングなし・各スクリプトは1回実行して終了）:
@@ -265,6 +286,7 @@ v2 レッドチーム所見（2026-07-12 実施）と採択結果: #1 instagram_
 6. **healthcheck.py + validate_output.py + register_tasks.ps1** — §5.6/§6 どおり。完了条件: DoD の healthcheck 項目 + validate_output の正常/異常系テスト
 7. **docs 整備** — OPERATIONS.md（ループ6要素・POSTING_DISABLED 解除・鍵ローテ・スケジューラ変更手順）・CONTRACTS.md・README 完成。完了条件: DoD Phase 0 全項目のセルフチェック記録を README に記載
 8. **Phase 1 実 API 検証** — ユーザーのキー投入後: 実収集→実生成→実投稿1件→register_tasks.ps1→無人1サイクル。完了条件: DoD Phase 1 全項目
+9. **analytics.py + weekly_review.py（Phase 3）** — §5.7 どおり。generate.py への1行追記（イベントログ）は既存ロジックに副作用を足すだけで分岐を増やさない。完了条件: DoD Phase 3 全項目
 
 ## 10. テスト計画
 
@@ -290,5 +312,5 @@ v2 レッドチーム所見（2026-07-12 実施）と採択結果: #1 instagram_
 - **B-3 リポジトリ public/private**: private 推奨（運用プロンプト・収益戦略を含む）
 - B-4 立ち上げ期の投稿後24h以内目視を何週間続けるか（推奨2週間）
 - B-5 露出済み旧鍵の失効確認（COMPOSIO_API_KEY は解約/失効、X 系は新規発行で置換）
-- B-6 反応分析（工程8）を Phase 3 としていつ設計するか（無人運転が2週間安定してから推奨）
+- ~~B-6 反応分析（工程8）の設計時期~~ **解消（2026-07-12）**: ユーザー指示により初期実装スコープに §5.7 として組み込み済み。ただし X エンゲージメント取得は Free プランでは読み取り不可の可能性が高く（未検証・§5.7 の403フォールバックで対応）、Basic 以上でのみ数値が埋まる見込み。数値が取れない期間もパイプライン内部ログ（除外・失敗パターン）だけで学習は機能する
 - B-7 ALERT の通知チャネル: 既定は Windows トースト + ALERT ファイル。**推奨: PC 外に届くチャネル（メール等）を1つ追加**（red-team #2 指摘。PC 自体が長期停止した場合はトーストも出ないため）。必要なら追加指示
