@@ -62,7 +62,7 @@
 
 - 環境別スコープでの注入フィルタ（例: claude.ai 向けルールだけ除外）: ルール総数20行以下なら全注入で十分。ponytail: 上限超過が常態化したら導入。
 - アーカイブ用の別ファイル: 廃止エントリもログに残すだけで足りる規模。
-- 自動集計スクリプト: UC6 の集計は月1で件数も少なく、LLM（月次 Routine）で足りる。
+- 自動集計スクリプト: UC6 の集計は週1でも件数が少なく、LLM（週次 Routine）で足りる。
   機械化するのはスキーマ検証のみ（§6 の Verifier）。
 
 ## 6. ループ設計（loop-engineering 適用、2026-07-05）
@@ -73,7 +73,7 @@
 |---|---|---|---|---|---|
 | 記録（UC1-UC3, UC5） | イベント: ミス発覚 | セッション中の Claude（運用ルールの登録手順） | `scripts/validate_mistakes.py`（CI で毎 push 実行。スキーマ・20行上限・ID整合を機械判定） | 1コミット1ミス。書式違反は CI が落とす | MISTAKES.md 本体（git） |
 | 注入（UC4） | SessionStart フック | sed によるルール節抽出 | 注入節の肥大は validate_mistakes.py の20行上限が抑止 | 上限20行（機械強制） | MISTAKES.md ルール節 |
-| 月次レビュー（UC6-UC7） | タイマー: Routine 毎月1日 09:00 JST（`trig_015S7ZVaajbca8vmZygMFoYE`） | 新規セッションが集計・昇格/統合/廃止を提案 | 2層: validate_mistakes.py + **Ryo の PR レビュー（human gate、自己マージ禁止）** | 30分・1体・往復3回。収束しなければ途中結果を PR に書いて終了 | MISTAKES.md「レビュー履歴」 |
+| 週次レビュー（UC6-UC7） | タイマー: Routine 毎週土曜 09:00 JST（`trig_01MMifpFWbbf1rRvMtUpGoMv`。2026-07-12 に月次から変更） | 新規セッションが集計・昇格/統合/廃止を提案 | 2層: validate_mistakes.py + **Ryo の PR レビュー（human gate、自己マージ禁止）** | 30分・1体・往復3回。収束しなければ途中結果を PR に書いて終了 | MISTAKES.md「レビュー履歴」 |
 
 初版設計（§1-§5）からの是正点:
 
@@ -82,4 +82,4 @@
 - **Stop Rule の機械化**: ルール20行上限がプロンプト指示のみだった → validate_mistakes.py が超過時に CI を落とす（指示文の上限は守られない前提で設計）。
 - **Amnesiac 解消（レビュー）**: レビュー実施の記録が無かった → 「レビュー履歴」セクションを Memory 化。
 
-詳細な設計書は `LOOPS.md` の「MISTAKES.md 月次レビューループ」。
+詳細な設計書は `LOOPS.md` の「MISTAKES.md 週次レビューループ」。

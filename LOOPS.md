@@ -18,21 +18,21 @@
 - 失敗モードチェック: Blind（Verifier分離済み）/ Tangled（Doerは既存手順呼び出しのみ）/ Amnesiac（test-log.md）/ Manual（Routineで自動起動）いずれも該当なし。
 - 履歴: 2026-07-05 1周目完了（v1.2.0、fail 0）。2026-07-05 2周目完了（実地適用、v1.3.0 + hermes-x-search v1.1.0、修正必須1件=実名プライバシー。卒業カウント0リセット）。2026-07-10 Fable監査によりv2.0.0へ破壊的変更（実シグナルゲート導入・ラダー廃止・シート1枚統合・5→3観点）。旧Routine（`trig_01PfvJPPnoZd4GzXqg24FepM`）は削除し、削除提案義務化を組み込んだ本Routineに再作成。
 
-## ループ設計: MISTAKES.md 月次レビューループ
+## ループ設計: MISTAKES.md 週次レビューループ
 
-- ゴール: 再発防止ルールが「効いているか」を月1で棚卸しし、ルール行が20行上限内で高密度に保たれること（昇格・統合・廃止の判断が滞留しないこと）。
-- Trigger: タイマー。Claude Code Remote の Routine（毎月1日 09:00 JST、新規セッション起動、trigger_id: `trig_015S7ZVaajbca8vmZygMFoYE`）。
+- ゴール: 再発防止ルールが「効いているか」を週1で棚卸しし、ルール行が20行上限内で高密度に保たれること（昇格・統合・廃止の判断が滞留しないこと）。
+- Trigger: タイマー。Claude Code Remote の Routine（毎週土曜 09:00 JST = cron `0 0 * * 6` UTC、新規セッション起動、trigger_id: `trig_01MMifpFWbbf1rRvMtUpGoMv`）。
 - Doer: 起動されたセッションが docs/mistakes-db-design.md の UC6 手順を実行（validate_mistakes.py → 集計 → 昇格/統合/廃止の提案 → レビュー履歴追記 → PR 作成）。
-  - 冒頭ゲート: 前回レビュー以降の新規/再発 M-NNN が0件かつルール行が20行以内なら、「変更なし」PR も作らずレビュー履歴1行の追記のみで即終了する（空回り防止。設計17の唯一の採択差分をここに吸収）。
+  - 冒頭ゲート: 前回レビュー以降の新規/再発 M-NNN が0件かつルール行が20行以内なら、何もコミットせず「変更なし」とだけ報告して即終了する（空回り防止。週次化に伴い「変更なし PR」も廃止）。
 - Verifier: 2層。(1) `scripts/validate_mistakes.py`（CI でも毎 push 実行）がスキーマ・20行上限・ID整合を機械判定 (2) 提案の採否は Ryo が PR レビューで判断（Doer に自己マージさせない）。
 - Stop Rules:
-  - 成功条件: レビュー履歴の追記と PR 作成まで（提案ゼロの月は「変更なし」PR）。
+  - 成功条件: レビュー履歴の追記と PR 作成まで（新規/再発0件の週はゲートで即終了、PR なし）。
   - 安全上限: 最大30分・エージェント1体・修正往復3回。収束しなければ途中結果を PR に書いて終了。
-- Memory/State: MISTAKES.md の「## レビュー履歴」セクション（毎月2行以内で追記）。
+- Memory/State: MISTAKES.md の「## レビュー履歴」セクション（レビュー実施週のみ2行以内で追記）。
 - Skills/Routines: CLAUDE.md、MISTAKES.md 運用ルール、docs/mistakes-db-design.md。
 - Human gate: マージは Ryo のみ。ルールの廃止・CLAUDE.md 昇格は必ず PR 経由。
 - 失敗モードチェック: Blind（validate_mistakes.py + PR レビューで分離）/ Tangled（Doer は既存手順の実行のみ）/ Amnesiac（レビュー履歴に永続化）/ Manual（Routine で自動起動）いずれも該当なし。
-- 履歴: 2026-07-05 設計・Routine 作成。初回実行は 2026-08-01。
+- 履歴: 2026-07-05 設計・月次 Routine 作成（`trig_015S7ZVaajbca8vmZygMFoYE`、実行前に廃止）。2026-07-12 ユーザー指示により週次へ変更、Routine を作り直し（旧月次 Routine は削除）。初回実行は 2026-07-18（土）。
 
 ## ループ設計: SNS週次 配信→反応分析→次バッチループ
 
