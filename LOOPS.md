@@ -2,6 +2,8 @@
 
 `loop-engineering` スキルで設計したループの保存先。
 
+> **2026-07-12 障害対応**: MCP（create_trigger）製の新規セッション発火型 Routine は Sources 未紐付けで全滅していたことが判明（MISTAKES.md M-008）。本ファイル記載の trigger_id は全て**無効化済み**。claude.ai の Routine UI での再作成手順とプロンプト全文は `docs/routines-recreation-guide.md` を参照。再作成後に本ファイルの trigger_id を更新すること。
+
 ## ループ設計: biz-ops-guard 品質改善ループ（v2、trigger_id: `trig_017W4sdQVumbiTMdGt4xFPTX`）
 
 - ゴール: biz-ops-guard がテストシナリオで fail 0 を維持し、Verifier の判定（修正必須/推奨/削除推奨）が2周連続で0件になること（=卒業）。
