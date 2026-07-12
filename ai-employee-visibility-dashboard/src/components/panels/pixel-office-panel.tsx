@@ -18,6 +18,48 @@ interface TaskRow {
   title: string
   status: string
   assigned_to?: string | null
+  updated_at?: number
+}
+
+interface ActivityRow {
+  id: number
+  actor: string
+  description: string
+  created_at: number
+}
+
+const TASK_STATUS_LABEL: Record<string, string> = {
+  in_progress: '作業中',
+  assigned: '着手待ち',
+  inbox: '受信箱',
+  backlog: 'バックログ',
+  awaiting_owner: 'オーナー待ち',
+  review: 'レビュー待ち',
+  quality_review: '品質レビュー',
+  done: '完了',
+  failed: '失敗',
+}
+
+/** What an agent is doing right now — or the freshest thing it touched. */
+function resolveAgentWork(name: string, tasks: TaskRow[]): { label: string; title: string; active: boolean } | null {
+  const mine = tasks.filter((t) => t.assigned_to === name)
+  if (mine.length === 0) return null
+  const inProgress = mine.find((t) => t.status === 'in_progress')
+  if (inProgress) return { label: '作業中', title: inProgress.title, active: true }
+  const assigned = mine.find((t) => t.status === 'assigned')
+  if (assigned) return { label: '次のタスク', title: assigned.title, active: false }
+  const latest = [...mine].sort((a, b) => (b.updated_at || 0) - (a.updated_at || 0))[0]
+  return { label: `直近 (${TASK_STATUS_LABEL[latest.status] || latest.status})`, title: latest.title, active: false }
+}
+
+function relativeTime(ts?: number): string {
+  if (!ts) return ''
+  const diffMin = Math.floor((Date.now() / 1000 - ts) / 60)
+  if (diffMin < 1) return 'たった今'
+  if (diffMin < 60) return `${diffMin}分前`
+  const h = Math.floor(diffMin / 60)
+  if (h < 24) return `${h}時間前`
+  return `${Math.floor(h / 24)}日前`
 }
 
 /* ------------------------------------------------------------------ */
@@ -259,14 +301,16 @@ export function PixelOfficePanel() {
   const { agents: storeAgents } = useMissionControl()
   const [agents, setAgents] = useState<Agent[]>([])
   const [tasks, setTasks] = useState<TaskRow[]>([])
+  const [activities, setActivities] = useState<ActivityRow[]>([])
   const [frame, setFrame] = useState(0)
   const [selectedId, setSelectedId] = useState<number | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
-      const [agentRes, taskRes] = await Promise.all([
+      const [agentRes, taskRes, activityRes] = await Promise.all([
         fetch('/api/agents'),
-        fetch('/api/tasks?status=in_progress&limit=50'),
+        fetch('/api/tasks?limit=100'),
+        fetch('/api/activities?limit=8'),
       ])
       if (agentRes.ok) {
         const data = await agentRes.json()
@@ -275,6 +319,10 @@ export function PixelOfficePanel() {
       if (taskRes.ok) {
         const data = await taskRes.json()
         if (Array.isArray(data.tasks)) setTasks(data.tasks)
+      }
+      if (activityRes.ok) {
+        const data = await activityRes.json()
+        if (Array.isArray(data.activities)) setActivities(data.activities)
       }
     } catch { /* dashboard poll; retry next tick */ }
   }, [])
@@ -298,13 +346,14 @@ export function PixelOfficePanel() {
     return [...source].sort((a, b) => a.id - b.id).slice(0, DESK_SLOTS.length)
   }, [agents, storeAgents])
 
-  const taskByAgent = useMemo(() => {
-    const map = new Map<string, string>()
-    for (const task of tasks) {
-      if (task.assigned_to && !map.has(task.assigned_to)) map.set(task.assigned_to, task.title)
+  const workByAgent = useMemo(() => {
+    const map = new Map<string, { label: string; title: string; active: boolean }>()
+    for (const agent of displayAgents) {
+      const work = resolveAgentWork(agent.name, tasks)
+      if (work) map.set(agent.name, work)
     }
     return map
-  }, [tasks])
+  }, [displayAgents, tasks])
 
   const counts = useMemo(() => {
     const c = { busy: 0, idle: 0, offline: 0 }
@@ -349,7 +398,7 @@ export function PixelOfficePanel() {
                   x={slot.x}
                   y={slot.y}
                   frame={frame}
-                  task={taskByAgent.get(agent.name) || agent.last_activity || null}
+                  task={workByAgent.get(agent.name)?.title || agent.last_activity || null}
                   selected={selectedId === agent.id}
                 />
                 <PixelDesk x={slot.x} y={slot.y} busy={agent.status === 'busy'} frame={frame} />
@@ -365,9 +414,9 @@ export function PixelOfficePanel() {
       </div>
 
       {/* roster cards (the accessible/clickable layer) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {displayAgents.map((agent) => {
-          const task = taskByAgent.get(agent.name)
+          const work = workByAgent.get(agent.name)
           const isSelected = selectedId === agent.id
           return (
             <button
@@ -381,11 +430,15 @@ export function PixelOfficePanel() {
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full shrink-0 ${statusDotClass[agent.status]}`} />
                 <span className="text-sm font-medium text-foreground truncate">{agent.name}</span>
-                <span className="text-2xs text-muted-foreground ml-auto shrink-0">{statusText[agent.status]}</span>
+                <span className="text-2xs text-muted-foreground ml-auto shrink-0">
+                  {statusText[agent.status]}{agent.last_seen ? ` · ${relativeTime(agent.last_seen)}` : ''}
+                </span>
               </div>
-              {agent.status === 'busy' && (
-                <p className="text-xs text-muted-foreground mt-1 truncate">{task ? truncateTask(task, 24) : agent.last_activity || '作業中'}</p>
-              )}
+              <p className="text-xs text-muted-foreground mt-1 truncate">
+                {work
+                  ? `${work.label}: ${truncateTask(work.title, 30)}`
+                  : agent.last_activity || 'タスクなし'}
+              </p>
             </button>
           )
         })}
@@ -397,12 +450,30 @@ export function PixelOfficePanel() {
           <span className="font-medium text-foreground">{selected.name}</span>
           <span className="text-muted-foreground"> — {statusText[selected.status]}</span>
           {selected.role && <span className="text-muted-foreground"> · {selected.role}</span>}
-          {taskByAgent.get(selected.name) && (
-            <p className="text-muted-foreground mt-1">担当タスク: {taskByAgent.get(selected.name)}</p>
+          {workByAgent.get(selected.name) && (
+            <p className="text-muted-foreground mt-1">
+              {workByAgent.get(selected.name)!.label}: {workByAgent.get(selected.name)!.title}
+            </p>
           )}
           {selected.last_activity && (
             <p className="text-muted-foreground mt-1 text-xs">{selected.last_activity}</p>
           )}
+        </div>
+      )}
+
+      {/* office activity feed — who did what, most recent first */}
+      {activities.length > 0 && (
+        <div className="rounded-md border border-border bg-card">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 pt-3 pb-1">オフィスの動き</h2>
+          <ul className="divide-y divide-border">
+            {activities.map((a) => (
+              <li key={a.id} className="px-4 py-2 flex items-baseline gap-2 text-sm">
+                <span className="font-medium text-foreground shrink-0">{a.actor}</span>
+                <span className="text-muted-foreground truncate">{a.description}</span>
+                <span className="text-2xs text-muted-foreground ml-auto shrink-0">{relativeTime(a.created_at)}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
