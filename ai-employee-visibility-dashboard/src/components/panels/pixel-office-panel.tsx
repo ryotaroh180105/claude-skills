@@ -28,6 +28,36 @@ interface ActivityRow {
   created_at: number
 }
 
+interface SessionRow {
+  id: string
+  key: string
+  agent: string
+  kind: string
+  model: string
+  active: boolean
+  lastActivity?: number
+  workingDir?: string | null
+}
+
+/** One local Claude Code session = one worker on the floor. */
+function sessionToWorker(row: SessionRow, idx: number, nameCount: Map<string, number>): Agent {
+  const baseName = String(row.agent || 'session').trim() || 'session'
+  const seen = nameCount.get(baseName) || 0
+  nameCount.set(baseName, seen + 1)
+  const name = seen === 0 ? baseName : `${baseName}#${seen + 1}`
+  const nowSec = Math.floor(Date.now() / 1000)
+  return {
+    id: -5000 - idx,
+    name,
+    role: row.kind || 'session',
+    status: row.active ? 'busy' : 'idle',
+    last_seen: row.lastActivity ? Math.floor(row.lastActivity / 1000) : nowSec,
+    last_activity: [row.kind, row.model].filter(Boolean).join(' · ') || undefined,
+    created_at: nowSec,
+    updated_at: nowSec,
+  } as Agent
+}
+
 const TASK_STATUS_LABEL: Record<string, string> = {
   in_progress: '作業中',
   assigned: '着手待ち',
@@ -112,10 +142,11 @@ function hashString(value: string): number {
 /* ------------------------------------------------------------------ */
 
 const SCENE_W = 340
-const SCENE_H = 210
+const SCENE_H = 278
 const DESK_SLOTS: Array<{ x: number; y: number }> = [
   { x: 48, y: 84 }, { x: 122, y: 84 }, { x: 196, y: 84 }, { x: 270, y: 84 },
   { x: 48, y: 152 }, { x: 122, y: 152 }, { x: 196, y: 152 }, { x: 270, y: 152 },
+  { x: 48, y: 220 }, { x: 122, y: 220 }, { x: 196, y: 220 }, { x: 270, y: 220 },
 ]
 
 const statusDotClass: Record<Agent['status'], string> = {
@@ -283,10 +314,10 @@ function Scenery({ frame }: { frame: number }) {
       {/* plants at both ends */}
       {[10, 318].map((px) => (
         <g key={px}>
-          <rect x={px} y={182} width={12} height={9} fill={P.plantPot} />
-          <rect x={px + 2} y={170} width={8} height={12} fill={P.plantLeaf} />
-          <rect x={px - 1} y={174} width={5} height={6} fill={P.plantLeafDark} />
-          <rect x={px + 8} y={172} width={5} height={6} fill={P.plantLeafDark} />
+          <rect x={px} y={SCENE_H - 28} width={12} height={9} fill={P.plantPot} />
+          <rect x={px + 2} y={SCENE_H - 40} width={8} height={12} fill={P.plantLeaf} />
+          <rect x={px - 1} y={SCENE_H - 36} width={5} height={6} fill={P.plantLeafDark} />
+          <rect x={px + 8} y={SCENE_H - 38} width={5} height={6} fill={P.plantLeafDark} />
         </g>
       ))}
     </g>
@@ -300,6 +331,7 @@ function Scenery({ frame }: { frame: number }) {
 export function PixelOfficePanel() {
   const { agents: storeAgents } = useMissionControl()
   const [agents, setAgents] = useState<Agent[]>([])
+  const [sessionWorkers, setSessionWorkers] = useState<Agent[]>([])
   const [tasks, setTasks] = useState<TaskRow[]>([])
   const [activities, setActivities] = useState<ActivityRow[]>([])
   const [frame, setFrame] = useState(0)
@@ -307,10 +339,11 @@ export function PixelOfficePanel() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [agentRes, taskRes, activityRes] = await Promise.all([
+      const [agentRes, taskRes, activityRes, sessionRes] = await Promise.all([
         fetch('/api/agents'),
         fetch('/api/tasks?limit=100'),
         fetch('/api/activities?limit=8'),
+        fetch('/api/sessions'),
       ])
       if (agentRes.ok) {
         const data = await agentRes.json()
@@ -323,6 +356,12 @@ export function PixelOfficePanel() {
       if (activityRes.ok) {
         const data = await activityRes.json()
         if (Array.isArray(data.activities)) setActivities(data.activities)
+      }
+      if (sessionRes.ok) {
+        const data = await sessionRes.json().catch(() => ({}))
+        const rows = Array.isArray(data?.sessions) ? (data.sessions as SessionRow[]) : []
+        const nameCount = new Map<string, number>()
+        setSessionWorkers(rows.map((row, idx) => sessionToWorker(row, idx, nameCount)))
       }
     } catch { /* dashboard poll; retry next tick */ }
   }, [])
@@ -340,11 +379,22 @@ export function PixelOfficePanel() {
     return () => clearInterval(interval)
   }, [])
 
-  const displayAgents = useMemo(() => {
-    const source = agents.length > 0 ? agents : storeAgents
-    // Stable seating: sort by id so agents keep their desks across polls.
-    return [...source].sort((a, b) => a.id - b.id).slice(0, DESK_SLOTS.length)
-  }, [agents, storeAgents])
+  const allWorkers = useMemo(() => {
+    const registered = agents.length > 0 ? agents : storeAgents
+    // Registered agents (Claude, Hermes, …) first, then one worker per
+    // local Claude Code session. Skip session rows whose name collides
+    // with a registered agent — that agent is already on the floor.
+    const registeredNames = new Set(registered.map((a) => a.name.toLowerCase()))
+    const sessions = sessionWorkers.filter((s) => !registeredNames.has(s.name.toLowerCase()))
+    // Stable seating: sort each group by id so workers keep their desks.
+    return [
+      ...[...registered].sort((a, b) => a.id - b.id),
+      ...[...sessions].sort((a, b) => b.id - a.id),
+    ]
+  }, [agents, storeAgents, sessionWorkers])
+
+  const displayAgents = useMemo(() => allWorkers.slice(0, DESK_SLOTS.length), [allWorkers])
+  const overflowCount = allWorkers.length - displayAgents.length
 
   const workByAgent = useMemo(() => {
     const map = new Map<string, { label: string; title: string; active: boolean }>()
@@ -376,6 +426,7 @@ export function PixelOfficePanel() {
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-void-amber" />作業中 {counts.busy}</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-void-mint" />待機中 {counts.idle}</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-muted-foreground/40" />オフライン {counts.offline}</span>
+          {overflowCount > 0 && <span>+{overflowCount} 席外</span>}
         </div>
       </div>
 
