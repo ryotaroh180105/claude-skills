@@ -171,3 +171,16 @@ article-writer / sns-ops-team / owned-media を v1.1.0〜1.2.0 に更新、CLAUD
 「完成の定義」「Epistemia対策」を追加。見送り: compliance-checker の独立化（owned-media と
 sns-ops-team に組込済みのため）、RuView / CloakBrowser / openhuman / ViMax / bun
 （理由は docs/x-posts-inventory.md §1 参照）。
+
+## Batch 8（個人利用ツールの外部リポジトリ導入・2026-07-13 実装）
+
+採択判断: Ryo（xbtlin/ai-berkshire, DeusData/codebase-memory-mcp, msitarzewski/agency-agents
+の3件を個人利用ツールとして導入したいという明示指示）。marketplace.json追記前にred-teamで
+セキュリティ・発動条件・重複境界を検査し、指摘（curl|bash直実行リスク、未インストール時の
+案内不足）をSKILL.mdに反映済み。
+
+| Status | スキル | 内容 |
+|---|---|---|
+| ✅ | `ai-berkshire` | xbtlin/ai-berkshire（バフェット/マンガー/段永平/李録4視点の価値投資リサーチ）の Wrapper |
+| ✅ | `codebase-memory-mcp` | DeusData/codebase-memory-mcp（MIT、tree-sitterベースのコード知識グラフMCPサーバー）の Wrapper |
+| ✅ | `agency-agents` | msitarzewski/agency-agents（MIT、業務分野別51体のサブエージェント人格集）の Wrapper |

@@ -1,0 +1,6 @@
+{
+  "name": "codebase-memory-mcp",
+  "description": "tree-sitterベースの高速コード知識グラフMCPサーバー（codebase-memory-mcp）の導入ガイド",
+  "version": "1.0.0",
+  "author": { "name": "ryotaroh180105" }
+}
