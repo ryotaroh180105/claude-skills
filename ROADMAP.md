@@ -181,6 +181,8 @@ sns-ops-team に組込済みのため）、RuView / CloakBrowser / openhuman / V
 
 | Status | スキル | 内容 |
 |---|---|---|
-| ✅ | `ai-berkshire` | xbtlin/ai-berkshire（バフェット/マンガー/段永平/李録4視点の価値投資リサーチ）の Wrapper |
-| ✅ | `codebase-memory-mcp` | DeusData/codebase-memory-mcp（MIT、tree-sitterベースのコード知識グラフMCPサーバー）の Wrapper |
-| ✅ | `agency-agents` | msitarzewski/agency-agents（MIT、業務分野別51体のサブエージェント人格集）の Wrapper |
+| 🎉 | `ai-berkshire` | xbtlin/ai-berkshire（バフェット/マンガー/段永平/李録4視点の価値投資リサーチ）の Wrapper |
+| 🎉 | `codebase-memory-mcp` | DeusData/codebase-memory-mcp（MIT、tree-sitterベースのコード知識グラフMCPサーバー）の Wrapper |
+| 🎉 | `agency-agents` | msitarzewski/agency-agents（MIT、業務分野別51体のサブエージェント人格集）の Wrapper |
+
+2026-07-13 に `/plugin install` → `/reload-plugins` で3件とも enabled 確認済み。
