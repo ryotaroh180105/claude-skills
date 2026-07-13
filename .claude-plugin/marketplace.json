@@ -298,6 +298,24 @@
       "source": "./plugins/product-viability-guard",
       "description": "English, dependency-free product viability design skill: requires a real user signal before implementation, then a one-page sheet, a devil's-advocate pass, a pre-release checklist, and a monthly review.",
       "category": "productivity"
+    },
+    {
+      "name": "ai-berkshire",
+      "source": "./plugins/ai-berkshire",
+      "description": "バフェット・マンガー・段永平・李録の4視点で個別銘柄の価値投資リサーチを行う外部Skill集（xbtlin/ai-berkshire）の導入ガイド。",
+      "category": "productivity"
+    },
+    {
+      "name": "codebase-memory-mcp",
+      "source": "./plugins/codebase-memory-mcp",
+      "description": "tree-sitterベースの高速コード知識グラフMCPサーバー（DeusData/codebase-memory-mcp）の導入ガイド。",
+      "category": "productivity"
+    },
+    {
+      "name": "agency-agents",
+      "source": "./plugins/agency-agents",
+      "description": "業務分野別（51体）のAIサブエージェント人格集（msitarzewski/agency-agents）の導入ガイド。",
+      "category": "productivity"
     }
   ]
 }
